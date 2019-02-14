@@ -1,6 +1,6 @@
 # Usage
 
-### Create SDK instance:
+### Create SDK instance
 
 ```js
 import { availableEnviroments, Sdk } from '@archanova/wallet-sdk';
@@ -23,7 +23,7 @@ sdk
   .then(() => console.log('Completed!'));
 ```
 
-### (optional) Connect with `redux`
+### Connect with `redux` (optional)
 
 ```js
 import { reduxReducer } from '@archanova/wallet-sdk';
