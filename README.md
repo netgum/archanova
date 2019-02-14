@@ -11,7 +11,8 @@ $ npm i @archanova/wallet-sdk -S
 ## Docs
 
 - [Usage](docs/usage.md)
-- [API](docs/api.md)
+- [Storage Interface](docs/storage-interface.md)
+- [Services API](docs/services-api.md)
 
 
 ## Examples

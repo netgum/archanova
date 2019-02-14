@@ -1,17 +1,21 @@
 # Usage
 
-Create SDK instance:
+### Create SDK instance:
 
 ```js
 import { availableEnviroments, Sdk } from '@archanova/wallet-sdk';
 
+const storage = null;
+
 const sdk = new Sdk(
   availableEnviroments.development,
-  null, 
+  storage, 
 );
 ```
+[more about storage interface](storage-interface.md)) 
 
-Setup SDK:
+
+### Setup SDK
 
 ```js
 sdk
@@ -19,7 +23,7 @@ sdk
   .then(() => console.log('Completed!'));
 ```
 
-(optional) Connect with `redux`:
+### (optional) Connect with `redux`
 
 ```js
 import { reduxReducer } from '@archanova/wallet-sdk';
