@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "declaration": true,
+    "module": "commonjs",
+    "target": "ES2016",
+    "lib": [
+      "esnext.asynciterable",
+      "es2015.promise",
+      "es2015.proxy",
+      "es2016",
+      "es2017.object",
+      "dom"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@netgum/types/node"
+    ]
+  }
+}

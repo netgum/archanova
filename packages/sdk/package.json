@@ -1,0 +1,61 @@
+{
+  "name": "@archanova/wallet-sdk",
+  "version": "0.0.1",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/archanova/wallet-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/archanova/wallet-sdk/issues"
+  },
+  "description": "Archanova Wallet SDK",
+  "scripts": {
+    "clean": "rimraf ./build",
+    "compile": "tsc --project ./tsconfig.build.json --rootDir ./src",
+    "prebuild": "npm run clean",
+    "build": "npm run compile",
+    "prepublish": "npm run build",
+    "lint": "tslint --project ./tsconfig.json --exclude ./src/**/*.d.ts ./src/**/*.ts"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.2.0",
+    "@netgum/types": "0.0.4",
+    "@netgum/utils": "^0.0.5",
+    "@types/jest": "^23.3.12",
+    "@types/node": "^10.12.18",
+    "@types/webpack-env": "^1.13.6",
+    "bn.js": "^4.11.8",
+    "cross-fetch": "^3.0.0",
+    "deep-equal-extended": "^0.0.2",
+    "ethjs": "^0.4.0",
+    "inversify": "^5.0.1",
+    "reflect-metadata": "^0.1.12",
+    "redux": "^4.0.1",
+    "rxjs": "6.4.0",
+    "rxjs-addons": "^0.0.4"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^23.10.5",
+    "tslint": "^5.11.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "tsutils": "^3.5.2",
+    "typescript": "^3.2.2"
+  },
+  "jest": {
+    "verbose": false,
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(\\.test)\\.ts$",
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ]
+  }
+}

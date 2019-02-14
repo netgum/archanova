@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "version": "0.0.0",
+  "packages": [
+    "packages/*"
+  ],
+  "npmClient": "npm",
+  "command": {
+    "publish": {
+      "ignoreChanges": [
+        "ignored-file",
+        "*.md"
+      ]
+    }
+  }
+}

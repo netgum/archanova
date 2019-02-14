@@ -1,0 +1,10 @@
+# node.js
+node_modules/
+*.log
+build
+
+*.
+!.circleci
+!.gitignore
+/test.js
+

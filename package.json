@@ -1,0 +1,22 @@
+{
+  "name": "@archanova/wallet-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Archanova Wallet SDK",
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/archanova/wallet-sdk.git"
+  },
+  "scripts": {
+    "clean": "lerna clean --yes && lerna run clean --stream",
+    "bootstrap": "lerna bootstrap",
+    "prebuild": "npm run bootstrap",
+    "build": "lerna run --stream build",
+    "test": "lerna run test --stream",
+    "start:example-connect": "lerna run start --scope \"@archanova/wallet-sdk-example-connect\""
+  },
+  "dependencies": {
+    "lerna": "^3.8.5"
+  }
+}

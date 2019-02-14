@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  background-color: #F7D862;
+  color: black;
+  font-weight: 700;
+}
+
+a {
+  color: black;
+}
+
+div {
+  padding: 35px;
+}
+
+small {
+  display: block;
+  font-size: 10px;
+  line-height: 20px;
+}
+
+p {
+  line-height: 20px;
+  margin: 0 0 5px 0;
+}
