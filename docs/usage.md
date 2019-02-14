@@ -12,7 +12,7 @@ const sdk = new Sdk(
   storage, 
 );
 ```
-[more about storage interface](storage-interface.md)) 
+[more about storage interface](storage-interface.md))
 
 
 ### Setup SDK
