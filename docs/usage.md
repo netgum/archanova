@@ -5,14 +5,14 @@
 ```js
 import { availableEnviroments, Sdk } from '@archanova/wallet-sdk';
 
-const storage = null;
+const storage = null; // or storage object
 
 const sdk = new Sdk(
   availableEnviroments.development,
   storage, 
 );
 ```
-[more about storage interface](storage-interface.md))
+[more about storage interface](storage-interface.md)
 
 
 ### Setup SDK
