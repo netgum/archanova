@@ -21,14 +21,11 @@
 * `.fetchAccountDevice(): Promise<void>`
 * `.lookupAccountAddress(ensName: string): Promise<string>`
 
-## Account Provider Service
+## Account Provider Service `sdk.accountProviderService.*`
 
 (TODO)
 
-## Account Proxy Service
+## Account Proxy Service `sdk.accountProxyService.*`
 
 (TODO)
 
-## Session Service
-
-(TODO)
