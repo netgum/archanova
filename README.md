@@ -12,3 +12,11 @@ $ npm i @archanova/wallet-sdk -S
 
 - [Usage](docs/usage.md)
 - [API](docs/api.md)
+
+
+## Examples
+
+- [Connect](packages/sdk-example-connect)
+  ```bash
+  $ npm run start:example-connect
+  ```
