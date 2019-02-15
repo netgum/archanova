@@ -40,7 +40,30 @@ export class AccountProxyService extends PlatformService implements IAccountProx
       );
 
       result = {
-        to,
+        gasPrice,
+        ...response,
+      };
+    } catch (err) {
+      result = null;
+    }
+
+    return result;
+  }
+
+  public async estimateDeployDevice(deviceAddress: string): Promise<IAccountProxyService.IEstimatedTransaction> {
+    let result: IAccountProxyService.IEstimatedTransaction = null;
+
+    try {
+      const gasPrice = await this.ethService.getGasPrice();
+
+      const response = await this.sendEstimateDeployDevice(
+        this.options.contractAddress,
+        this.accountService.account.address,
+        deviceAddress,
+        gasPrice,
+      );
+
+      result = {
         gasPrice,
         ...response,
       };
@@ -93,6 +116,49 @@ export class AccountProxyService extends PlatformService implements IAccountProx
     return result;
   }
 
+  public async deployDevice(deviceAddress: string, estimated: IAccountProxyService.IEstimatedTransaction): Promise<string> {
+    let result: string = null;
+
+    const { nonce, data, fixedGas, gasPrice } = estimated;
+
+    const message = abiEncodePacked(
+      'address',
+      'bytes',
+      'address',
+      'uint256',
+      'bytes',
+      'uint256',
+      'uint256',
+    )(
+      this.options.contractAddress,
+      getMethodSignature('forwardAccountOwnerCall', 'address', 'uint256', 'bytes', 'uint256', 'bytes'),
+      this.accountService.account.address,
+      nonce,
+      data,
+      fixedGas,
+      gasPrice,
+    );
+
+    const signature = await this.deviceService.signPersonalMessage(message);
+
+    try {
+      result = await this.sendDeployDevice(
+        this.options.contractAddress,
+        this.accountService.account.address,
+        deviceAddress, {
+          data,
+          gasPrice,
+          nonce,
+          signature,
+        },
+      );
+    } catch (err) {
+      result = null;
+    }
+
+    return result;
+  }
+
   private sendEstimateTransaction(
     accountProviderAddress: string,
     accountAddress: string,
@@ -115,6 +181,36 @@ export class AccountProxyService extends PlatformService implements IAccountProx
     }>({
       body,
       path: `${accountProviderAddress}/account/${accountAddress}/transaction`,
+      method: 'PUT',
+    });
+
+    return hash;
+  }
+
+  private sendEstimateDeployDevice(
+    accountProviderAddress: string,
+    accountAddress: string,
+    deviceAddress: string,
+    gasPrice: IBN,
+  ): Promise<IAccountProxyService.ISendEstimateTransactionResponse> {
+    return this.sendHttpRequest<IAccountProxyService.ISendEstimateTransactionResponse>({
+      path: `${accountProviderAddress}/account/${accountAddress}/device/${deviceAddress}`,
+      method: 'POST',
+      body: { gasPrice },
+    });
+  }
+
+  private async sendDeployDevice(
+    accountProviderAddress: string,
+    accountAddress: string,
+    deviceAddress: string,
+    body: IAccountProxyService.ISendExecuteTransactionBody,
+  ): Promise<string> {
+    const { hash } = await this.sendHttpRequest<{
+      hash: string;
+    }>({
+      body,
+      path: `${accountProviderAddress}/account/${accountAddress}/device/${deviceAddress}`,
       method: 'PUT',
     });
 

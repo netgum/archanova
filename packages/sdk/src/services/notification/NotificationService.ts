@@ -47,11 +47,6 @@ export class NotificationService extends PlatformService implements INotificatio
         switchMap(({ type, payload }) => {
           let result: Observable<any> = EMPTY;
 
-          console.log({
-            type,
-            payload,
-          });
-
           switch (type) {
             case NotificationEventTypes.AccountUpdated: {
               const { accountAddress } = payload as INotificationService.IAccountDeviceEventPayload;

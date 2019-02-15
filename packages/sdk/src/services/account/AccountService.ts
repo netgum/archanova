@@ -280,6 +280,7 @@ export class AccountService extends PlatformService implements IAccountService {
           this.account.address,
           this.accountDevice.device.address,
         );
+
         this.accountDevice$.next(accountDevice);
       } catch (err) {
         //
