@@ -1,37 +1,70 @@
-import { interfaces } from 'inversify';
+import { IBN } from 'bn.js';
 import { Middleware } from 'redux';
-import { IStorage } from './storage';
-import {
-  IAccountService,
-  IAccountProviderService,
-  IAccountProxyService,
-  IDeviceService,
-  IEnsService,
-  IEthService,
-  ILinkingService,
-  INotificationService,
-  ISessionService,
-} from './services';
+import { IState } from './state';
+import { IAccount, IAccountDevice, IFaucetService, IAccountTransaction, IAccountProxyService } from './services';
 
 export interface ISdk {
-  readonly storage: IStorage;
-  readonly accountService: IAccountService;
-  readonly accountProviderService: IAccountProviderService;
-  readonly accountProxyService: IAccountProxyService;
-  readonly deviceService: IDeviceService;
-  readonly ensService: IEnsService;
-  readonly ethService: IEthService;
-  readonly linkingService: ILinkingService;
-  readonly notificationService: INotificationService;
-  readonly sessionService: ISessionService;
+  readonly state: IState;
 
-  getService<T = any>(id: interfaces.ServiceIdentifier<T>): T;
+  initialize(): Promise<void>;
 
-  extend(callback: (bind: interfaces.Bind) => any): void;
+  reset(options?: { device?: boolean, session?: boolean }): void;
 
-  setup(): Promise<void>;
+  getGasPrice(): Promise<IBN>;
 
-  reset(): Promise<void>;
+  getNetworkVersion(): Promise<string>;
+
+  getAccounts(): Promise<IAccount[]>;
+
+  createAccount(ensLabel?: string): Promise<IAccount>;
+
+  setAccountEnsLabel(ensLabel?: string): Promise<IAccount>;
+
+  connectAccount(accountAddress: string): Promise<IAccount>;
+
+  verifyAccount(): Promise<IAccount>;
+
+  disconnectAccount(): Promise<void>;
+
+  topUpAccount(): Promise<IFaucetService.IReceipt>;
+
+  getAccountDevices(): Promise<IAccountDevice[]>;
+
+  createAccountDevice(deviceAddress: string): Promise<IAccountDevice>;
+
+  removeAccountDevice(deviceAddress: string): Promise<void>;
+
+  getAccountTransactions(): Promise<IAccountTransaction[]>;
+
+  estimateAccountDeployment(gasPrice: IBN): Promise<IBN>;
+
+  estimateAccountDeviceDeployment(deviceAddress: string, gasPrice: IBN): Promise<IAccountProxyService.IEstimatedTransaction>;
+
+  estimateAccountTransaction(
+    to: string,
+    value: IBN,
+    data: Buffer,
+    gasPrice: IBN,
+  ): Promise<IAccountProxyService.IEstimatedTransaction>;
+
+  deployAccount(gasPrice: IBN): Promise<string>;
+
+  deployAccountDevice(
+    deviceAddress: string,
+    estimated: IAccountProxyService.IEstimatedTransaction,
+    gasPrice: IBN,
+  ): Promise<string>;
+
+  executeAccountTransaction(
+    estimated: IAccountProxyService.IEstimatedTransaction,
+    gasPrice: IBN,
+  ): Promise<string>;
+
+  acceptIncomingAction(): void;
+
+  dismissIncomingAction(): void;
+
+  createRequestAddAccountDeviceUrl(options?: { accountAddress?: string, endpoint?: string, callbackEndpoint?: string }): string;
 
   createReduxMiddleware(): Middleware;
 }

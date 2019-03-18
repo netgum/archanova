@@ -2,14 +2,18 @@ import { IBN } from 'bn.js';
 import {
   IAccount,
   IAccountDevice,
-  IDevice,
+  IAction,
 } from '../services';
 
 export interface IReduxState {
   account: IAccount;
   accountBalance: IBN;
   accountDevice: IAccountDevice;
-  device: IDevice;
-  online: boolean;
-  supportedEnsName: string;
+  deviceAddress: string;
+  gasPrice: IBN;
+  networkVersion: string;
+  initialized: boolean;
+  authenticated: boolean;
+  connected: boolean;
+  incomingAction: IAction;
 }

@@ -1,96 +1,26 @@
-import { combineReducers } from 'redux';
-import { Types } from './actions';
+import { AnyAction, combineReducers, Reducer } from 'redux';
+import { ReduxActionTypes } from './constants';
 
-export function account(state = null, { type, payload }) {
-  let result = state;
-
-  switch (type) {
-    case Types.SetAccount:
-      result = payload;
-      break;
-  }
-
-  return result;
+function createReducer(type: ReduxActionTypes): Reducer {
+  return (state = null, action: AnyAction) => {
+    switch (action.type) {
+      case type:
+        return action.payload;
+      default:
+        return state;
+    }
+  };
 }
 
-export function accountBalance(state = null, { type, payload }) {
-  let result = state;
-
-  switch (type) {
-    case Types.SetAccountBalance:
-      result = payload;
-      break;
-  }
-
-  return result;
-}
-
-export function accountDevice(state = null, { type, payload }) {
-  let result = state;
-
-  switch (type) {
-    case Types.SetAccountDevice:
-      result = payload;
-      break;
-  }
-
-  return result;
-}
-
-export function device(state = null, { type, payload }) {
-  let result = state;
-
-  switch (type) {
-    case Types.SetDevice:
-      result = payload;
-      break;
-  }
-
-  return result;
-}
-
-export function networkVersion(state = null, { type, payload }) {
-  let result = state;
-
-  switch (type) {
-    case Types.SetNetworkVersion:
-      result = payload;
-      break;
-  }
-
-  return result;
-}
-
-export function online(state = null, { type, payload }) {
-  let result = state;
-
-  switch (type) {
-    case Types.SetOnline:
-      result = payload;
-      break;
-  }
-
-  return result;
-}
-
-export function supportedEnsName(state = null, { type, payload }) {
-  let result = state;
-
-  switch (type) {
-    case Types.SetSupportedEnsName:
-      result = payload;
-      break;
-  }
-
-  return result;
-}
-
-export default combineReducers({
-  account,
-  accountBalance,
-  accountDevice,
-  device,
-  networkVersion,
-  online,
-  supportedEnsName,
+export const reduxReducer = combineReducers({
+  account: createReducer(ReduxActionTypes.SetAccount),
+  accountBalance: createReducer(ReduxActionTypes.SetAccountBalance),
+  accountDevice: createReducer(ReduxActionTypes.SetAccountDevice),
+  deviceAddress: createReducer(ReduxActionTypes.SetDeviceAddress),
+  gasPrice: createReducer(ReduxActionTypes.SetGasPrice),
+  networkVersion: createReducer(ReduxActionTypes.SetNetworkVersion),
+  initialized: createReducer(ReduxActionTypes.SetInitialized),
+  authenticated: createReducer(ReduxActionTypes.SetAuthenticated),
+  connected: createReducer(ReduxActionTypes.SetConnected),
+  incomingAction: createReducer(ReduxActionTypes.SetIncomingAction),
 }) as any;

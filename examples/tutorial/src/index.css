@@ -1,0 +1,17 @@
+body {
+  padding: 20px;
+}
+
+.container-fluid {
+  min-width: 900px;
+}
+
+.btn,
+.nav-link {
+  margin-right: 5pt;
+}
+
+.tab-pane {
+  margin-top: 20px;
+}
+

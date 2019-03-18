@@ -8,16 +8,21 @@
 $ npm i @archanova/wallet-sdk -S
 ```
 
-## Docs
-
-- [Usage](docs/usage.md)
-- [Storage Interface](docs/storage-interface.md)
-- [Services API](docs/services-api.md)
-
-
 ## Examples
 
-- [Connect](packages/sdk-example-connect)
+```bash
+$ git clone git@github.com:archanova/wallet-sdk.git
+$ cd ./wallet-sdk
+$ npm run build
+```
+
+### Available examples:
+
+- [Tutorial](examples/tutorial)
   ```bash
-  $ npm run start:example-connect
+  # start instance on port 5100
+  $ npm run start:example:tutorial:5100
+
+  # start instance on port 5200
+  $ npm run start:example:tutorial:5200
   ```

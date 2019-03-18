@@ -1,8 +1,4 @@
-import { TUniqueBehaviorSubject } from 'rxjs-addons';
 import { IBN } from 'bn.js';
-import { IDevice } from '../device';
-import { ILinkingService } from '../linking';
-import { IPlatformService } from '../platform';
 import {
   AccountDeviceStates,
   AccountDeviceTypes,
@@ -10,39 +6,22 @@ import {
   AccountDeployModes, AccountTransactionTypes,
 } from './constants';
 
-export interface IAccountService extends IPlatformService {
-  readonly account$: TUniqueBehaviorSubject<IAccount>;
-  readonly account: IAccount;
-  readonly accountBalance$: TUniqueBehaviorSubject<IBN>;
-  readonly accountBalance: IBN;
-  readonly accountDevice$: TUniqueBehaviorSubject<IAccountDevice>;
-  readonly accountDevice: IAccountDevice;
-
-  setup(): Promise<void>;
-
-  reset(): void;
-
-  connectAccount(accountAddress: string): Promise<ILinkingService.TUrlCreator>;
+export interface IAccountService {
+  getAccountAddressByEnsName(ensName: string): Promise<string>;
 
   getAccounts(): Promise<IAccount[]>;
 
-  getAccountDevice(): Promise<IAccountDevice[]>;
+  getAccount(accountAddress: string): Promise<IAccount>;
 
-  getAccountTransactions(): Promise<IAccountTransaction[]>;
+  getAccountDevices(accountAddress: string): Promise<IAccountDevice[]>;
 
-  requestAddAccountDevice(accountAddress?: string): ILinkingService.TUrlCreator;
+  getAccountTransactions(accountAddress: string): Promise<IAccountTransaction[]>;
 
-  createAccountDevice(deviceAddress: string): Promise<boolean>;
+  getAccountDevice(accountAddress: string, deviceAddress: string): Promise<IAccountDevice>;
 
-  removeAccountDevice(deviceAddress: string): Promise<boolean>;
+  createAccountDevice(accountAddress: string, deviceAddress: string): Promise<IAccountDevice>;
 
-  disconnectAccountDevice(): Promise<boolean>;
-
-  fetchAccount(): Promise<void>;
-
-  fetchAccountDevice(): Promise<void>;
-
-  lookupAccountAddress(ensName: string): Promise<string>;
+  removeAccountDevice(accountAddress: string, deviceAddress: string): Promise<boolean>;
 }
 
 export interface IAccount {
@@ -56,7 +35,7 @@ export interface IAccount {
 }
 
 export interface IAccountDevice {
-  device: IDevice;
+  deviceAddress: string;
   type: AccountDeviceTypes;
   state: AccountDeviceStates;
   nextState: AccountDeviceStates;
@@ -69,15 +48,4 @@ export interface IAccountTransaction {
   type: AccountTransactionTypes;
   value: IBN;
   updatedAt: any;
-}
-
-export namespace IAccountLinkingActions {
-  export enum Types {
-    AddAccountDeviceRequest = 'AddAccountDeviceRequest',
-  }
-
-  export interface IAddAccountDeviceRequestPayload {
-    accountAddress: string;
-    deviceAddress: string;
-  }
 }

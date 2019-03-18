@@ -1,12 +1,7 @@
-import { TUniqueBehaviorSubject } from 'rxjs-addons';
 import { IBN } from 'bn.js';
-import { IPlatformService } from '../platform';
 
-export interface IEthService extends IPlatformService {
-  readonly networkVersion$: TUniqueBehaviorSubject<string>;
-  readonly networkVersion: string;
-
-  setup(): Promise<void>;
+export interface IEthService {
+  getNetworkVersion(): Promise<string>;
 
   getGasPrice(): Promise<IBN>;
 
@@ -16,7 +11,8 @@ export interface IEthService extends IPlatformService {
 }
 
 export namespace IEthService {
-  export interface IOptions extends IPlatformService.IOptions {
+  export interface IOptions {
+    providerEndpoint?: string;
     customProvider?: any;
   }
 }

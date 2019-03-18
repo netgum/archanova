@@ -1,6 +1,6 @@
 {
   "name": "@archanova/wallet-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "license": "MIT",
@@ -15,6 +15,7 @@
   "scripts": {
     "clean": "rimraf ./build",
     "compile": "tsc --project ./tsconfig.build.json --rootDir ./src",
+    "compile:watch": "npm run compile -- --watch --preserveWatchOutput",
     "prebuild": "npm run clean",
     "build": "npm run compile",
     "prepublish": "npm run build",
@@ -31,8 +32,6 @@
     "cross-fetch": "^3.0.0",
     "deep-equal-extended": "^0.0.2",
     "ethjs": "^0.4.0",
-    "inversify": "^5.0.1",
-    "reflect-metadata": "^0.1.12",
     "redux": "^4.0.1",
     "rxjs": "6.4.0",
     "rxjs-addons": "^0.0.4"

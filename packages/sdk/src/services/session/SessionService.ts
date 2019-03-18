@@ -1,104 +1,64 @@
-import { injectable, inject } from 'inversify';
 import { anyToHex } from '@netgum/utils';
-import { UniqueBehaviorSubject } from 'rxjs-addons';
-import { TYPES } from '../../constants';
-import { IPlatformService, PlatformService } from '../platform';
+import { IApiService } from '../api';
 import { IDeviceService } from '../device';
 import { ISessionService } from './interfaces';
 
-@injectable()
-export class SessionService extends PlatformService implements ISessionService {
-  public static TYPES = {
-    Options: Symbol('SessionService:Options'),
-  };
-
-  public readonly ready$ = new UniqueBehaviorSubject<boolean>(false);
-
+export class SessionService implements ISessionService {
   constructor(
-    @inject(SessionService.TYPES.Options) options: IPlatformService.IOptions,
-    @inject(TYPES.DeviceService) private deviceService: IDeviceService,
+    private apiService: IApiService,
+    private deviceService: IDeviceService,
   ) {
-    super(options);
+    //
   }
 
-  public get ready(): boolean {
-    return this.ready$.getValue();
-  }
-
-  public async create(): Promise<void> {
-    if (this.ready) {
-      throw new Error('Session already created');
-    }
-
-    const code = await this.sendCreateCode();
-    const token = await this.sendCreateToken(code);
-
-    PlatformService.sessionToken$.next(token);
-
-    this.ready$.next(true);
-  }
-
-  public async reset(): Promise<void> {
-    if (!this.ready) {
-      await this.create();
-      return;
-    }
-
-    this.ready$.next(false);
-
-    await this.sendDestroy();
-
-    PlatformService.sessionToken$.next(null);
-
-    await this.create();
-  }
-
-  private async sendCreateCode(): Promise<string> {
-    const { code } = await this.sendHttpRequest<{
+  public async createSession(deviceAddress: string): Promise<boolean> {
+    // create session code
+    const { code } = await this.apiService.sendHttpRequest<{
       code: string;
     }, {
       deviceAddress: string;
     }>({
       method: 'POST',
-      path: 'session',
+      path: 'auth',
       body: {
-        deviceAddress: this.deviceService.device.address,
+        deviceAddress,
       },
     });
 
-    return code;
-  }
-
-  private async sendCreateToken(code: string): Promise<string> {
     const signature = anyToHex(await this.deviceService.signPersonalMessage(code), {
       add0x: true,
     });
 
-    const { token } = await this.sendHttpRequest<{
+    // create session token
+    const { token } = await this.apiService.sendHttpRequest<{
       token: string;
     }, {
       code: string;
       signature: string;
     }>({
       method: 'PUT',
-      path: 'session',
+      path: 'auth',
       body: {
         code,
         signature,
       },
     });
 
-    return token;
+    this.apiService.setSessionToken(token);
+
+    return true;
   }
 
-  private async sendDestroy(): Promise<boolean> {
-    const { success } = await this.sendHttpRequest<{
+  public async resetSession(): Promise<boolean> {
+    await this.apiService.sendHttpRequest<{
       success: boolean;
     }>({
       method: 'DELETE',
-      path: 'session',
+      path: 'auth',
     });
 
-    return success;
+    this.apiService.setSessionToken();
+
+    return true;
   }
 }

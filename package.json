@@ -13,10 +13,15 @@
     "bootstrap": "lerna bootstrap",
     "prebuild": "npm run bootstrap",
     "build": "lerna run --stream build",
+    "compile": "lerna run compile --stream",
+    "precompile:watch": "npm run compile",
+    "compile:watch": "lerna run compile:watch --parallel",
     "test": "lerna run test --stream",
-    "start:example-connect": "lerna run start --scope \"@archanova/wallet-sdk-example-connect\""
+    "start:example:tutorial:5100": "cross-env PORT=5100 lerna run start --scope \"@examples/tutorial\"",
+    "start:example:tutorial:5200": "cross-env PORT=5200 lerna run start --scope \"@examples/tutorial\""
   },
   "dependencies": {
+    "cross-env": "^5.2.0",
     "lerna": "^3.8.5"
   }
 }

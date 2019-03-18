@@ -1,38 +1,34 @@
-import { IAccountProviderService } from '../services/account-provider';
-import { IAccountProxyService } from '../services/account-proxy';
-import { IEnsService } from '../services/ens';
-import { IEthService } from '../services/eth';
-import { ILinkingService } from '../services/linking';
-import { IPlatformService } from '../services/platform';
+import {
+  IAccountProviderService,
+  IAccountProxyService,
+  IActionService,
+  IApiService,
+  IEthService,
+  IUrlService,
+  IStorageService,
+} from '../services';
 
 export interface IEnvironment {
-  getServiceOptions<K extends IEnvironment.TServiceKeys>(
-    serviceKey: K,
-  ): IEnvironment.IServicesOptions[K];
+  getOptions<K extends IEnvironment.TKeys>(
+    key: K,
+  ): IEnvironment.IOptions[K];
 
-  extendServiceOptions<K extends IEnvironment.TServiceKeys>(
-    serviceKey: K,
-    serviceOptions: Partial<IEnvironment.IServicesOptions[K]>,
+  extendOptions<K extends IEnvironment.TKeys>(
+    key: K,
+    options: Partial<IEnvironment.IOptions[K]>,
   ): IEnvironment;
 }
 
 export namespace IEnvironment {
-  export type TServiceKeys = keyof IServicesOptions;
+  export type TKeys = keyof IOptions;
 
-  export interface IServicesOptions {
-    account: IPlatformService.IOptions;
+  export interface IOptions {
     accountProvider: IAccountProviderService.IOptions;
     accountProxy: IAccountProxyService.IOptions;
-    ens: IEnsService.IOptions;
+    action: IActionService.IOptions;
+    api: IApiService.IOptions;
     eth: IEthService.IOptions;
-    linking: ILinkingService.IOptions;
-    notification: IPlatformService.IOptions;
-    session: IPlatformService.IOptions;
-  }
-
-  export interface IBuildLocalOptions  {
-    platformHost?: string;
-    platformStartPort: number;
-    ethProviderPort?: number;
+    url: IUrlService.IOptions;
+    storage: IStorageService.IOptions;
   }
 }

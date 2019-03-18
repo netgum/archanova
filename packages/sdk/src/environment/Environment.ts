@@ -1,27 +1,24 @@
 import { IEnvironment } from './interfaces';
 
-/**
- * Environment
- */
 export class Environment implements IEnvironment {
 
-  constructor(private servicesOptions: IEnvironment.IServicesOptions) {
+  constructor(private options: IEnvironment.IOptions) {
     //
   }
 
-  public getServiceOptions<K extends IEnvironment.TServiceKeys>(
-    serviceKey: K,
-  ): IEnvironment.IServicesOptions[K] {
-    return this.servicesOptions[serviceKey];
+  public getOptions<K extends IEnvironment.TKeys>(
+    key: K,
+  ): IEnvironment.IOptions[K] {
+    return this.options[key];
   }
 
-  public extendServiceOptions<K extends IEnvironment.TServiceKeys>(
-    serviceKey: K,
-    serviceOptions: Partial<IEnvironment.IServicesOptions[K]>,
+  public extendOptions<K extends IEnvironment.TKeys>(
+    key: K,
+    options: Partial<IEnvironment.IOptions[K]>,
   ): IEnvironment {
-    this.servicesOptions[serviceKey] = {
-      ...(this.servicesOptions[serviceKey] as any),
-      ...(serviceOptions as any),
+    this.options[key] = {
+      ...(this.options[key] as any),
+      ...(options as any),
     };
 
     return this;
