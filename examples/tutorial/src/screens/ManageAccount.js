@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import QrCode from 'qrcode.react';
 import { SdkContext } from '../sdk';
 import { Button, Tab, Tabs } from 'react-bootstrap';
 import { Block } from '../components';
@@ -6,6 +7,10 @@ import Highlight from 'react-highlight';
 
 export class ManageAccount extends Component {
   static contextType = SdkContext;
+
+  state = {
+    qrCodeUrl: null,
+  };
 
   topUpAccount() {
     const { sdk } = this.context;
@@ -42,6 +47,20 @@ export class ManageAccount extends Component {
       .catch(console.error);
   }
 
+  addDevice() {
+    const { sdk } = this.context;
+    sdk
+      .createSecureAddDeviceUrl()
+      .then((url) => {
+        console.log('url:', url);
+
+        this.setState({
+          qrCodeUrl: url,
+        });
+      })
+      .catch(console.error);
+  }
+
   render() {
     return (
       <div>
@@ -56,6 +75,9 @@ export class ManageAccount extends Component {
           </Tab>
           <Tab eventKey="deploy" title="Deploy account">
             {this.renderDeployAccount()}
+          </Tab>
+          <Tab eventKey="addDevice" title="Add account device">
+            {this.renderAddDevice()}
           </Tab>
         </Tabs>
       </div>
@@ -129,6 +151,39 @@ export class ManageAccount extends Component {
             Estimate and deploy
           </Button>
         </Block>
+      </div>
+    );
+  }
+
+  renderAddDevice() {
+    const { qrCodeUrl } = this.state;
+    return (
+      <div>
+        <Block>
+          <p>Add via QR code</p>
+          <Highlight language="javascript">
+            {
+              `sdk
+  .createSecureAddDeviceUrl()
+  .then((url) => {
+    console.log('url:', url);
+  })
+  .catch(console.error);`
+            }
+          </Highlight>
+          <Button variant="primary" onClick={() => this.addDevice()}>
+            Add device
+          </Button>
+        </Block>
+        {qrCodeUrl
+          ? (
+            <Block>
+              <p>Please scan qr code with SmartSafe app</p>
+              <QrCode value={qrCodeUrl} size={250} />
+            </Block>
+          )
+          : null
+        }
       </div>
     );
   }

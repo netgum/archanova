@@ -312,6 +312,10 @@ export class Sdk implements ISdk {
     this.actionService.dismissAction();
   }
 
+  public processIncomingUrl(url: string): void {
+    this.urlService.incoming$.next(url);
+  }
+
   public createRequestAddAccountDeviceUrl(options: { accountAddress?: string, endpoint?: string, callbackEndpoint?: string } = {}): string {
     this.require({
       accountConnected: false,
@@ -328,6 +332,23 @@ export class Sdk implements ISdk {
     );
 
     return this.urlService.buildActionUrl(action, options.endpoint || null);
+  }
+
+  public async createSecureAddDeviceUrl(): Promise<string> {
+    this.require();
+
+    const { deviceAddress } = this.state;
+
+    const code = await this.secureService.createSecureCode();
+    const action = this.actionService.createAction<actionPayload.IRequestSignSecureCode>(
+      ActionTypes.RequestSignSecureCode,
+      {
+        code,
+        creatorAddress: deviceAddress,
+      },
+    );
+
+    return this.urlService.buildActionUrl(action);
   }
 
   public createReduxMiddleware(): Middleware {
@@ -566,6 +587,7 @@ export class Sdk implements ISdk {
 
         case EventTypes.SecureCodeSigned: {
           const { payload: { code, signerAddress } } = event as IEvent<eventPayload.ISecureCode>;
+
 
           if (
             accountAddress &&

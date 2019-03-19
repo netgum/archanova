@@ -64,7 +64,11 @@ export interface ISdk {
 
   dismissIncomingAction(): void;
 
+  processIncomingUrl(url: string): void;
+
   createRequestAddAccountDeviceUrl(options?: { accountAddress?: string, endpoint?: string, callbackEndpoint?: string }): string;
+
+  createSecureAddDeviceUrl(): Promise<string>;
 
   createReduxMiddleware(): Middleware;
 }
