@@ -351,6 +351,10 @@ export class Sdk implements ISdk {
     return this.urlService.buildActionUrl(action);
   }
 
+  public signPersonalMessage(message: string | Buffer): Promise<Buffer> {
+    return this.deviceService.signPersonalMessage(message);
+  }
+
   public createReduxMiddleware(): Middleware {
     const createActionCreator = (type: ReduxActionTypes) => (payload: any) => ({
       type,
@@ -587,7 +591,6 @@ export class Sdk implements ISdk {
 
         case EventTypes.SecureCodeSigned: {
           const { payload: { code, signerAddress } } = event as IEvent<eventPayload.ISecureCode>;
-
 
           if (
             accountAddress &&

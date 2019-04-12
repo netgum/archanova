@@ -70,5 +70,7 @@ export interface ISdk {
 
   createSecureAddDeviceUrl(): Promise<string>;
 
+  signPersonalMessage(message: string | Buffer): Promise<Buffer>;
+
   createReduxMiddleware(): Middleware;
 }
