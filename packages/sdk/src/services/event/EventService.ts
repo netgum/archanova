@@ -17,7 +17,7 @@ export class EventService implements IEventService {
   public setup(): Subject<boolean> {
     const { connected$, message$ } = this.apiService.buildWsSubjects();
 
-     message$.subscribe(this.$incoming);
+    message$.subscribe(this.$incoming);
 
     return connected$;
   }

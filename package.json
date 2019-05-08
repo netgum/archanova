@@ -1,27 +1,30 @@
 {
-  "name": "@archanova/wallet-sdk",
+  "name": "archanova",
   "version": "0.0.0",
   "private": true,
-  "description": "Archanova Wallet SDK",
+  "description": "Archanova monorepo",
   "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/archanova/wallet-sdk.git"
+    "url": "git+https://github.com/netgum/archanova.git"
   },
   "scripts": {
-    "clean": "lerna clean --yes && lerna run clean --stream",
+    "lint": "tslint --project ./tsconfig.json --exclude ./packages/**/*.d.ts ./packages/**/*.ts",
     "bootstrap": "lerna bootstrap",
+    "clean": "lerna clean --yes && lerna run clean --stream",
     "prebuild": "npm run bootstrap",
     "build": "lerna run --stream build",
     "compile": "lerna run compile --stream",
     "precompile:watch": "npm run compile",
     "compile:watch": "lerna run compile:watch --parallel",
-    "test": "lerna run test --stream",
-    "start:example:tutorial:5100": "cross-env PORT=5100 lerna run start --scope \"@examples/tutorial\"",
-    "start:example:tutorial:5200": "cross-env PORT=5200 lerna run start --scope \"@examples/tutorial\""
+    "test": "npm run lint"
   },
   "dependencies": {
     "cross-env": "^5.2.0",
-    "lerna": "^3.8.5"
+    "lerna": "^3.13.4",
+    "tslint": "^5.16.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "tsutils": "^3.10.0",
+    "typescript": "^3.4.5"
   }
 }

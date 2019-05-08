@@ -6,6 +6,12 @@
       160
     ],
     "no-parameter-reassignment": false,
-    "import-name": false
+    "import-name": false,
+    "align": {
+      "options": [
+        "parameters",
+        "statements"
+      ]
+    }
   }
 }

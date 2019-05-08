@@ -1,9 +1,16 @@
-# Archanova Wallet SDK
+# Archanova SDK
 
-[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
+[![NPM version][npm-image]][npm-url]
 
 ## Installation
 
 ```bash
-$ npm i @archanova/wallet-sdk -S
+$ npm i @archanova/sdk -S
 ```
+
+## License
+
+The MIT License
+
+[npm-image]: https://badge.fury.io/js/%40archanova%2Fsdk.svg
+[npm-url]: https://npmjs.org/package/@archanova/sdk
