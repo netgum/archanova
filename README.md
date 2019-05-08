@@ -4,8 +4,8 @@
 
 ## Packages
 
-- [@archanova/sdk](packages/sdk)
 - [@archanova/cli](packages/cli)
+- [@archanova/sdk](packages/sdk)
 
 ## License
 
