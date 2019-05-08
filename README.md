@@ -6,3 +6,7 @@
 
 - [@archanova/sdk](packages/sdk)
 - [@archanova/cli](packages/cli)
+
+## License
+
+The MIT License
