@@ -1,76 +1,86 @@
-import { IBN } from 'bn.js';
-import { Middleware } from 'redux';
-import { IState } from './state';
-import { IAccount, IAccountDevice, IFaucetService, IAccountTransaction, IAccountProxyService } from './services';
+import BN from 'bn.js';
+import {
+  AccountStates,
+  AccountTypes,
+  AccountDeviceStates,
+  AccountDeviceTypes,
+  AccountGameStates,
+  AccountGamePlayers,
+  AccountTransactionTypes,
+  AppStates,
+} from './constants';
 
-export interface ISdk {
-  readonly state: IState;
+export interface IAccount {
+  address: string;
+  ensName?: string;
+  type: AccountTypes;
+  state: AccountStates;
+  nextState?: AccountStates;
+  virtualBalance: BN;
+  updatedAt: Date;
+}
 
-  initialize(): Promise<void>;
+export interface IAccountDevice {
+  device: IDevice;
+  type: AccountDeviceTypes;
+  state: AccountDeviceStates;
+  nextState: AccountDeviceStates;
+  updatedAt: Date;
+}
 
-  reset(options?: { device?: boolean, session?: boolean }): void;
+export interface IAccountGameHistory {
+  player: IAccount;
+  stateValue: string;
+  updatedAt: Date;
+}
 
-  getGasPrice(): Promise<IBN>;
+export interface IAccountGame {
+  id: number;
+  app: IApp;
+  creator: IAccount;
+  opponent: IAccount;
+  state: AccountGameStates;
+  stateValue: string;
+  creatorSignature: Buffer;
+  opponentSignature: Buffer;
+  guardianSignature: Buffer;
+  whoseTurn: AccountGamePlayers;
+  winner: AccountGamePlayers;
+  deposit: BN;
+  updatedAt: Date;
+}
 
-  getNetworkVersion(): Promise<string>;
+export interface IAccountTransaction {
+  type: AccountTransactionTypes;
+  address: string;
+  hash: string;
+  value: BN;
+  fee: BN;
+  updatedAt: Date;
+}
 
-  getAccounts(): Promise<IAccount[]>;
+export interface IAccountWithdrawal {
+  id: number;
+  value: BN;
+  guardianSignature: Buffer;
+}
 
-  createAccount(ensLabel?: string): Promise<IAccount>;
+export interface IApp {
+  creator: IAccount;
+  state: AppStates;
+  alias: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  updatedAt: string;
+}
 
-  setAccountEnsLabel(ensLabel?: string): Promise<IAccount>;
+export interface IDevice {
+  address: string;
+}
 
-  connectAccount(accountAddress: string): Promise<IAccount>;
-
-  verifyAccount(): Promise<IAccount>;
-
-  disconnectAccount(): Promise<void>;
-
-  topUpAccount(): Promise<IFaucetService.IReceipt>;
-
-  getAccountDevices(): Promise<IAccountDevice[]>;
-
-  createAccountDevice(deviceAddress: string): Promise<IAccountDevice>;
-
-  removeAccountDevice(deviceAddress: string): Promise<void>;
-
-  getAccountTransactions(): Promise<IAccountTransaction[]>;
-
-  estimateAccountDeployment(gasPrice: IBN): Promise<IBN>;
-
-  estimateAccountDeviceDeployment(deviceAddress: string, gasPrice: IBN): Promise<IAccountProxyService.IEstimatedTransaction>;
-
-  estimateAccountTransaction(
-    to: string,
-    value: IBN,
-    data: Buffer,
-    gasPrice: IBN,
-  ): Promise<IAccountProxyService.IEstimatedTransaction>;
-
-  deployAccount(gasPrice: IBN): Promise<string>;
-
-  deployAccountDevice(
-    deviceAddress: string,
-    estimated: IAccountProxyService.IEstimatedTransaction,
-    gasPrice: IBN,
-  ): Promise<string>;
-
-  executeAccountTransaction(
-    estimated: IAccountProxyService.IEstimatedTransaction,
-    gasPrice: IBN,
-  ): Promise<string>;
-
-  acceptIncomingAction(): void;
-
-  dismissIncomingAction(): void;
-
-  processIncomingUrl(url: string): void;
-
-  createRequestAddAccountDeviceUrl(options?: { accountAddress?: string, endpoint?: string, callbackEndpoint?: string }): string;
-
-  createSecureAddDeviceUrl(): Promise<string>;
-
-  signPersonalMessage(message: string | Buffer): Promise<Buffer>;
-
-  createReduxMiddleware(): Middleware;
+export interface IPaginated<T = any> {
+  items: T[];
+  currentPage: number;
+  nextPage: number;
 }
