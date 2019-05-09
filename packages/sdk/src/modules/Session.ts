@@ -3,6 +3,8 @@ import { Device } from './Device';
 import { State } from './State';
 
 export class Session {
+  private code: string;
+
   constructor(
     private api: Api,
     private device: Device,
@@ -28,10 +30,18 @@ export class Session {
     }
   }
 
-  public async reset(): Promise<void> {
-    if (this.state.session) {
+  public async reset({ token }: { token?: boolean } = {}): Promise<void> {
+    this.code = null;
+
+    if (token && this.state.session) {
       await this.destroyToken();
       this.state.session$.next(null);
+
+      const token = await this.createToken();
+
+      this.state.session$.next({
+        token,
+      });
     }
   }
 
@@ -76,10 +86,7 @@ export class Session {
   public async verifyToken(): Promise<boolean> {
     let result: boolean = true;
     try {
-
-      await this.api.sendRequest<{
-        success: boolean;
-      }>({
+      await this.api.sendRequest({
         method: 'GET',
         path: 'session',
       });
@@ -94,9 +101,7 @@ export class Session {
     let result: boolean = true;
 
     try {
-      await this.api.sendRequest<{
-        success: boolean;
-      }>({
+      await this.api.sendRequest({
         method: 'DELETE',
         path: 'session',
       });
@@ -104,6 +109,57 @@ export class Session {
     } catch (err) {
       result = false;
     }
+    return result;
+  }
+
+  public async createCode(): Promise<string> {
+    const { code } = await this.api.sendRequest<{
+      code: string;
+    }>({
+      method: 'POST',
+      path: 'session/code',
+    });
+
+    this.code = code;
+
+    return code;
+  }
+
+  public async destroyCode(): Promise<void> {
+    await this.api.sendRequest({
+      method: 'DELETE',
+      path: 'session/code',
+    });
+
+    this.code = null;
+  }
+
+  public async signCode(creator: string, code: string): Promise<boolean> {
+    const signature = this.device.signPersonalMessage(code);
+
+    const { success } = await this.api.sendRequest<{
+      success: boolean;
+    }>({
+      method: 'PUT',
+      path: 'session/code',
+      body: {
+        creator,
+        signature,
+      },
+    });
+
+    return success;
+  }
+
+  public verifyCode(code: string): boolean {
+    const result = (
+      code &&
+      this.code &&
+      code === this.code
+    );
+
+    this.code = null;
+
     return result;
   }
 }

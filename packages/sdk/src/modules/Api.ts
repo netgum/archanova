@@ -51,7 +51,7 @@ export class Api {
     };
   }
 
-  public get message$(): Subject<any> {
+  public get event$(): Subject<Api.IEvent> {
     const result = new Subject<any>();
 
     if (this.webSocketConstructor) {
@@ -228,6 +228,26 @@ export namespace Api {
         }
       }
     }
+  }
+
+  export enum EventNames {
+    AccountUpdated = 'AccountUpdated',
+    AccountDeviceUpdated = 'AccountDeviceUpdated',
+    AccountDeviceRemoved = 'AccountDeviceRemoved',
+    AccountTransactionUpdated = 'AccountTransactionUpdated',
+    AccountGameUpdated = 'AccountGameUpdated',
+    SecureCodeSigned = 'SecureCodeSigned',
+  }
+
+  export interface IEvent {
+    name: EventNames;
+    payload: Partial<{
+      account: string;
+      device: string;
+      hash: string;
+      game: number;
+      code: string;
+    }>;
   }
 
   export namespace Error {

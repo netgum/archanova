@@ -1,7 +1,8 @@
 import BN from 'bn.js';
 import { UniqueBehaviorSubject, TUniqueBehaviorSubject } from 'rxjs-addons';
-import { from, BehaviorSubject } from 'rxjs';
+import { from } from 'rxjs';
 import { skip, switchMap } from 'rxjs/operators';
+import { Action } from './Action';
 import { Storage } from './Storage';
 import { IAccount, IAccountDevice, IDevice } from '../interfaces';
 
@@ -15,7 +16,7 @@ export class State {
   public ens$ = new UniqueBehaviorSubject<State.IEns>();
   public eth$ = new UniqueBehaviorSubject<State.IEth>();
   public session$ = new UniqueBehaviorSubject<State.ISession>();
-  public error$ = new BehaviorSubject<any>(null);
+  public incomingAction$: TUniqueBehaviorSubject<Action.IAction>;
 
   constructor(private storage: Storage) {
     //
@@ -23,6 +24,10 @@ export class State {
 
   public get initialized(): boolean {
     return this.initialized$.value;
+  }
+
+  public get connected(): boolean {
+    return this.connected$.value;
   }
 
   public get account(): IAccount {
@@ -72,6 +77,10 @@ export class State {
     return value
       ? value.token
       : null;
+  }
+
+  public get incomingAction(): Action.IAction {
+    return this.incomingAction$.value;
   }
 
   public async setup(): Promise<void> {

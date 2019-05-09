@@ -1,7 +1,23 @@
-import { from, of, timer } from 'rxjs';
-import { filter, switchMap, takeUntil } from 'rxjs/operators';
+import EthJs from 'ethjs';
+import { from, of, timer, Subscription, BehaviorSubject } from 'rxjs';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { AccountDeviceTypes } from './constants';
 import { IAccount, IAccountDevice, IPaginated } from './interfaces';
-import { Account, AccountDevice, Api, Contract, Device, Ens, Environment, Eth, Event, Session, State, Storage } from './modules';
+import {
+  Account,
+  AccountDevice,
+  Action,
+  Api,
+  Contract,
+  Device,
+  Ens,
+  Environment,
+  Eth,
+  Session,
+  State,
+  Storage,
+  Url,
+} from './modules';
 
 /**
  * Sdk
@@ -10,15 +26,19 @@ export class Sdk {
   public readonly api: Api;
   public readonly state: State;
 
+  public error$ = new BehaviorSubject<any>(null);
+  public event$ = new BehaviorSubject<Sdk.IEvent>(null);
+
   private readonly account: Account;
   private readonly accountDevice: AccountDevice;
+  private readonly action: Action;
   private readonly contract: Contract;
   private readonly device: Device;
   private readonly ens: Ens;
-  private readonly eth: Eth;
-  private readonly event: Event;
+  private readonly eth: Eth & EthJs;
   private readonly session: Session;
   private readonly storage: Storage;
+  private readonly url: Url;
 
   /**
    * constructor
@@ -62,7 +82,16 @@ export class Sdk {
     this.account = new Account(this.api, this.state);
     this.accountDevice = new AccountDevice(this.api, this.state);
     this.contract = new Contract(this.eth);
-    this.event = new Event(this.api);
+    this.action = new Action(
+      environment.getConfig('actionOptions'),
+    );
+    this.url = new Url(
+      environment.getConfig('urlOptions'),
+      environment.getConfig('urlAdapter'),
+      this.action,
+    );
+
+    this.state.incomingAction$ = this.action.$incoming;
 
     this.catchError = this.catchError.bind(this);
   }
@@ -85,7 +114,8 @@ export class Sdk {
     }
 
     this.subscribeAccountBalance();
-    this.subscribeEvents();
+    this.subscribeApiEvents();
+    this.subscribeAcceptedActions();
 
     this.state.initialized$.next(true);
   }
@@ -94,7 +124,10 @@ export class Sdk {
    * resets sdk
    */
   public async reset(): Promise<void> {
-    //
+    const { account$, accountDevice$ } = this.state;
+
+    account$.next(null);
+    accountDevice$.next(null);
   }
 
 // Account
@@ -145,7 +178,7 @@ export class Sdk {
    * @param ensLabel
    * @param ensRootName
    */
-  public async createAccount({ ensLabel, ensRootName }: { ensLabel?: string, ensRootName?: string } = {}): Promise<IAccount> {
+  public async createAccount(ensLabel?: string, ensRootName?: string): Promise<IAccount> {
     this.require({
       accountConnected: false,
     });
@@ -176,7 +209,7 @@ export class Sdk {
    * @param ensLabel
    * @param ensRootName
    */
-  public async updateAccount({ ensLabel, ensRootName }: { ensLabel: string, ensRootName?: string }): Promise<IAccount> {
+  public async updateAccount(ensLabel: string, ensRootName?: string): Promise<IAccount> {
     this.require();
 
     await this.account.updateAccount(
@@ -222,7 +255,67 @@ export class Sdk {
     return this.accountDevice.getConnectedAccountDevices(page);
   }
 
-// Utils
+  /**
+   * gets account device
+   * @param account
+   * @param device
+   */
+  public async getAccountDevice(account: string, device: string): Promise<IAccountDevice> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.accountDevice.getAccountDevice(account, device);
+  }
+
+  /**
+   * creates account device
+   * @param device
+   */
+  public async createAccountDevice(device: string): Promise<IAccountDevice> {
+    this.require();
+
+    return this.accountDevice.createAccountDevice(device, AccountDeviceTypes.Owner);
+  }
+
+  /**
+   * removes account device
+   * @param device
+   */
+  public async removeAccountDevice(device: string): Promise<boolean> {
+    this.require();
+
+    return this.accountDevice.removeAccountDevice(device);
+  }
+
+// Account Transaction
+
+// Account Game
+
+// Account Withdraw
+
+// App
+
+// Action
+
+  /**
+   * accepts incoming action
+   * @param action
+   */
+  public acceptIncomingAction(action: Action.IAction = null): this {
+    this.action.acceptAction(action);
+    return this;
+  }
+
+  /**
+   * dismisses incoming action
+   */
+  public dismissIncomingAction(): this {
+    this.action.dismissAction();
+    return this;
+  }
+
+// Signing
 
   /**
    * signs personal message
@@ -245,19 +338,15 @@ export class Sdk {
 
     let account: IAccount = null;
     let accountDevice: IAccountDevice = null;
+
     if (accountAddress) {
       account = await this.account.getAccount(accountAddress).catch(() => null);
       if (account) {
         accountDevice = await this.accountDevice.getAccountDevice(accountAddress, deviceAddress).catch(() => null);
       }
     }
-    if (account && accountDevice) {
-      account$.next(account);
-      accountDevice$.next(accountDevice);
-    } else {
-      account$.next(null);
-      accountDevice$.next(null);
-    }
+    account$.next(account && accountDevice ? account : null);
+    accountDevice$.next(accountDevice);
   }
 
   private subscribeAccountBalance(): void {
@@ -283,84 +372,171 @@ export class Sdk {
       .subscribe(accountBalance$);
   }
 
-  private subscribeEvents(): void {
+  private subscribeApiEvents(): void {
     this
-      .event
-      .ofName(Event.Names.AccountUpdated)
-      .pipe(switchMap(({ account }) => from(this.wrapAsync(async () => {
-        const { account$, accountAddress } = this.state;
-        if (accountAddress === account) {
-          const account = await this.account.getAccount(accountAddress);
-          account$.next(account);
+      .api
+      .event$
+      .pipe(
+        filter(event => !!event),
+        switchMap(({ name, payload }) => from(this.wrapAsync(async () => {
+          const { account$, accountDevice$, deviceAddress, accountAddress } = this.state;
 
-        }
-      }))))
-      .subscribe();
-
-    this
-      .event
-      .ofName(Event.Names.AccountDeviceUpdated)
-      .pipe(switchMap(({ account, device }) => from(this.wrapAsync(async () => {
-        const { accountDevice$, deviceAddress, accountAddress } = this.state;
-        if (deviceAddress === device) {
-          switch (accountAddress) {
-            case account:
-              const accountDevice = await this.accountDevice.getAccountDevice(account, device);
-              accountDevice$.next(accountDevice);
+          switch (name) {
+            case Api.EventNames.AccountUpdated: {
+              const { account } = payload;
+              if (accountAddress === account) {
+                const account = await this.account.getAccount(accountAddress);
+                if (account) {
+                  account$.next(account);
+                }
+              } else {
+                const account = await this.account.getAccount(accountAddress);
+                this.emitEvent(Sdk.EventNames.AccountUpdated, account);
+              }
               break;
+            }
+            case Api.EventNames.AccountDeviceUpdated: {
+              const { account, device } = payload;
+              if (deviceAddress === device) {
+                switch (accountAddress) {
+                  case account:
+                    const accountDevice = await this.accountDevice.getAccountDevice(account, device);
+                    if (accountDevice) {
+                      accountDevice$.next(accountDevice);
+                    }
+                    break;
 
-            case null:
-              await this.verifyAccount(account);
+                  case null:
+                    await this.verifyAccount(account);
+                    break;
+
+                  default:
+                }
+              } else if (account === accountAddress) {
+                const accountDevice = await this.accountDevice.getAccountDevice(account, device);
+                this.emitEvent(Sdk.EventNames.AccountDeviceUpdated, accountDevice);
+              }
               break;
+            }
+            case Api.EventNames.AccountDeviceRemoved: {
+              const { account, device } = payload;
+              if (accountAddress === account) {
+                if (deviceAddress === device) {
+                  await this.reset();
+                } else {
+                  this.emitEvent(Sdk.EventNames.AccountDeviceRemoved, device);
+                }
+              }
+              break;
+            }
+            case Api.EventNames.AccountTransactionUpdated: {
+              const { account, hash } = payload;
+              if (accountAddress === account) {
+                // TODO: emit sdk event
+              }
+              break;
+            }
+            case Api.EventNames.AccountGameUpdated: {
+              const { account, game } = payload;
+              if (accountAddress === account) {
+                // TODO: emit sdk event
+              }
+              break;
+            }
+            case Api.EventNames.SecureCodeSigned: {
+              const { device, code } = payload;
+              if (
+                deviceAddress &&
+                accountAddress &&
+                this.session.verifyCode(code)
+              ) {
+                const action = Action
+                  .createAction<Action.IRequestAddAccountDevicePayload>(
+                    Action.Types.RequestAddAccountDevice, {
+                      device,
+                      account: accountAddress,
+                    },
+                  );
+
+                this.action.$incoming.next(action);
+              }
+              break;
+            }
           }
-        }
-      }))))
+        }))),
+      )
       .subscribe();
+  }
 
-    this
-      .event
-      .ofName(Event.Names.AccountDeviceRemoved)
-      .pipe(switchMap(({ account, device }) => from(this.wrapAsync(async () => {
-        const { account$, accountDevice$ } = this.state;
-        if (
-          this.state.accountAddress === account &&
-          this.state.deviceAddress === device
-        ) {
-          account$.next(null);
-          accountDevice$.next(null);
-        }
-      }))))
-      .subscribe();
+  private subscribeAcceptedActions(): void {
+    const { account$ } = this.state;
+    const { $accepted } = this.action;
 
-    this
-      .event
-      .ofName(Event.Names.AccountTransactionUpdated)
-      .pipe(switchMap(({ account, hash }) => from(this.wrapAsync(async () => {
-        if (this.state.accountAddress === account) {
-          //
-        }
-      }))))
-      .subscribe();
+    let hasAccount = null;
+    let subscription: Subscription = null;
 
-    this
-      .event
-      .ofName(Event.Names.AccountGameUpdated)
-      .pipe(switchMap(({ account, game }) => from(this.wrapAsync(async () => {
-        if (this.state.accountAddress === account) {
-          //
+    account$
+      .subscribe((account) => {
+        if (hasAccount === !!account) {
+          return;
         }
-      }))))
-      .subscribe();
 
-    this
-      .event
-      .ofName(Event.Names.SecureCodeSigned)
-      .pipe(switchMap(({ device, code }) => from(this.wrapAsync(async () => {
-        if (this.state.deviceAddress === device) {
-          //
+        hasAccount = !!account;
+
+        if (subscription) {
+          subscription.unsubscribe();
         }
-      }))))
-      .subscribe();
+
+        subscription = $accepted
+          .pipe(
+            filter(action => !!action),
+            switchMap(({ type, payload }) => from(this.wrapAsync(async () => {
+              const { accountAddress } = this.state;
+
+              switch (type) {
+                case Action.Types.RequestAddAccountDevice: {
+                  const { device, account, callbackEndpoint } = payload as Action.IRequestAddAccountDevicePayload;
+                  if (
+                    accountAddress &&
+                    device &&
+                    (!account || accountAddress === account)
+                  ) {
+                    await this.createAccountDevice(device);
+                    if (callbackEndpoint) {
+                      const action = Action
+                        .createAction<Action.IAccountDeviceAddedPayload>(
+                          Action.Types.AccountDeviceAdded, {
+                            account: accountAddress,
+                          },
+                        );
+
+                      this.url.openActionUrl(action, callbackEndpoint);
+                    }
+                  }
+                  break;
+                }
+
+                case Action.Types.AccountDeviceAdded: {
+                  if (!accountAddress) {
+                    const { account } = payload as Action.IAccountDeviceAddedPayload;
+                    await this.verifyAccount(account);
+                  }
+                  break;
+                }
+
+                case Action.Types.RequestSignSecureCode: {
+                  if (!accountAddress) {
+                    const { code, creator } = payload as Action.IRequestSignSecureCodePayload;
+                    await this.session.signCode(creator, code);
+                  }
+                  break;
+                }
+              }
+            }))),
+            map(() => null),
+          )
+          .subscribe($accepted);
+      });
   }
 
   private wrapAsync(wrapped: () => Promise<void>): Promise<void> {
@@ -372,7 +548,14 @@ export class Sdk {
   }
 
   private catchError(err): void {
-    this.state.error$.next(err);
+    this.error$.next(err);
+  }
+
+  private emitEvent<T = any>(name: Sdk.EventNames, payload: T): void {
+    this.event$.next({
+      name,
+      payload,
+    });
   }
 
   private require(options: Sdk.IRequireOptions = {}): void {
@@ -422,5 +605,18 @@ export namespace Sdk {
     accountDeviceCreated?: boolean;
     accountDeviceDeployed?: boolean;
     initialized?: boolean;
+  }
+
+  export enum EventNames {
+    AccountUpdated = 'AccountUpdated',
+    AccountDeviceUpdated = 'AccountDeviceUpdated',
+    AccountDeviceRemoved = 'AccountDeviceRemoved',
+    AccountTransactionUpdated = 'AccountTransactionUpdated',
+    AccountGameUpdated = 'AccountGameUpdated',
+  }
+
+  export interface IEvent<T = any> {
+    name: EventNames;
+    payload: T;
   }
 }

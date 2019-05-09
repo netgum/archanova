@@ -1,37 +1,53 @@
 #!/usr/bin/env node
 
-import { createSdk, createLocalEnvironment } from '@archanova/sdk';
+import { createLocalEnvironment, createReduxSdkMiddleware, createSdk, EnvironmentNames, getEnvironment, sdkModules } from '@archanova/sdk';
 import { render } from 'ink';
 import React from 'react';
+import { Provider } from 'react-redux';
+import { applyMiddleware, createStore } from 'redux';
 import Ws from 'ws';
-import { App } from './App';
+import App from './App';
+import reducers from './reducers';
 import { StorageAdapter } from './StorageAdapter';
 
 console.clear();
 
 (async () => {
+  const env: string = 'rinkeby'; // 'local' | 'kovan' | 'rinkeby'
+
+  let sdkEnv: sdkModules.Environment = createLocalEnvironment();
+
+  switch (env) {
+
+    case 'kovan':
+      sdkEnv = getEnvironment(EnvironmentNames.Kovan);
+      break;
+
+    case 'rinkeby':
+      sdkEnv = getEnvironment(EnvironmentNames.Rinkeby);
+      break;
+  }
+
   const sdk = createSdk(
-    createLocalEnvironment()
-      .setConfig('storageAdapter', new StorageAdapter())
+    sdkEnv
+      .setConfig('storageAdapter', new StorageAdapter(env))
       .setConfig('apiWebSocketConstructor', Ws),
   );
 
   await sdk.initialize();
 
-  const {
-    account,
-    device,
-    eth,
-  } = sdk.state;
+  const store = createStore(
+    reducers,
+    {},
+    applyMiddleware(
+      createReduxSdkMiddleware(sdk),
+    ),
+  );
 
-  console.log(await sdk.getConnectedAccounts());
-
-  console.log();
-  console.log('account:', account);
-  console.log('device:', device);
-  console.log('eth:', eth);
-
+  render(
+    <Provider store={store}>
+      <App />
+    </Provider>,
+  );
 })()
   .catch(console.error);
-
-render(<App />);

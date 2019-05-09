@@ -1,7 +1,9 @@
+import { Action } from './Action';
 import { Api } from './Api';
 import { Ens } from './Ens';
 import { Eth } from './Eth';
 import { Storage } from './Storage';
+import { Url } from './Url';
 
 export class Environment {
   constructor(private configs: Environment.IConfigs) {
@@ -38,11 +40,14 @@ export namespace Environment {
   export type TKeys = keyof IConfigs;
 
   export interface IConfigs {
+    actionOptions?: Action.IOptions;
     apiOptions: Api.IOptions;
     apiWebSocketConstructor?: Api.IWebSocketConstructor;
     ensOptions: Ens.IOptions;
     ethOptions: Eth.IOptions;
     storageOptions: Storage.IOptions;
     storageAdapter?: Storage.IAdapter;
+    urlOptions?: Url.IOptions;
+    urlAdapter?: Url.IAdapter;
   }
 }
