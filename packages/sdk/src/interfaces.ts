@@ -59,12 +59,6 @@ export interface IAccountTransaction {
   updatedAt: Date;
 }
 
-export interface IAccountWithdrawal {
-  id: number;
-  value: BN;
-  guardianSignature: Buffer;
-}
-
 export interface IApp {
   creator: IAccount;
   state: AppStates;

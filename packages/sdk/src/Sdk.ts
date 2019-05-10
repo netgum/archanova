@@ -1,16 +1,19 @@
 import BN from 'bn.js';
 import EthJs from 'ethjs';
 import { TAbi } from 'ethjs-abi';
-import { from, of, timer, Subscription, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, from, of, Subscription, timer } from 'rxjs';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
-import { AccountDeviceTypes } from './constants';
-import { IAccount, IAccountDevice, IAccountTransaction, IPaginated } from './interfaces';
+import { AccountDeviceStates, AccountDeviceTypes, AccountStates } from './constants';
+import { IAccount, IAccountDevice, IAccountGame, IAccountTransaction, IApp, IPaginated } from './interfaces';
 import {
   Account,
   AccountDevice,
+  AccountGame,
   AccountTransaction,
+  AccountVirtualPayment,
   Action,
   Api,
+  App,
   Contract,
   Device,
   Ens,
@@ -34,8 +37,11 @@ export class Sdk {
 
   private readonly account: Account;
   private readonly accountDevice: AccountDevice;
+  private readonly accountGame: AccountGame;
   private readonly accountTransaction: AccountTransaction;
+  private readonly accountVirtualPayment: AccountVirtualPayment;
   private readonly action: Action;
+  private readonly app: App;
   private readonly contract: Contract;
   private readonly device: Device;
   private readonly ens: Ens;
@@ -83,6 +89,7 @@ export class Sdk {
       this.state,
     );
 
+    this.app = new App(this.api);
     this.account = new Account(this.api, this.state);
     this.contract = new Contract(this.eth);
     this.action = new Action(
@@ -96,6 +103,8 @@ export class Sdk {
 
     this.accountTransaction = new AccountTransaction(this.api, this.contract, this.device, this.state);
     this.accountDevice = new AccountDevice(this.accountTransaction, this.api, this.contract, this.state);
+    this.accountVirtualPayment = new AccountVirtualPayment(this.accountTransaction, this.api, this.contract, this.device, this.state);
+    this.accountGame = new AccountGame(this.api, this.contract, this.device, this.state);
 
     this.state.incomingAction$ = this.action.$incoming;
 
@@ -131,6 +140,10 @@ export class Sdk {
    * @param options
    */
   public async reset(options: { device?: boolean, session?: boolean } = {}): Promise<void> {
+    this.require({
+      accountConnected: null,
+    });
+
     const { account$, accountDevice$ } = this.state;
 
     account$.next(null);
@@ -223,7 +236,9 @@ export class Sdk {
    * disconnects account
    */
   public async disconnectAccount(): Promise<void> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+    });
 
     const { deviceAddress } = this.state;
     await this.removeAccountDevice(deviceAddress);
@@ -236,7 +251,10 @@ export class Sdk {
    * @param ensRootName
    */
   public async updateAccount(ensLabel: string, ensRootName?: string): Promise<IAccount> {
-    this.require();
+    this.require({
+      accountCreated: true,
+      accountDeviceOwner: true,
+    });
 
     await this.account.updateAccount(
       this.ens.buildName(ensLabel, ensRootName),
@@ -250,7 +268,10 @@ export class Sdk {
    * @param transactionSpeed
    */
   public async estimateAccountDeployment(transactionSpeed: Eth.TransactionSpeeds = null): Promise<Account.IEstimatedDeployment> {
-    this.require();
+    this.require({
+      accountCreated: true,
+      accountDeviceOwner: true,
+    });
 
     return this.account.estimateAccountDeployment(
       this.eth.getGasPrice(transactionSpeed),
@@ -262,7 +283,10 @@ export class Sdk {
    * @param transactionSpeed
    */
   public async deployAccount(transactionSpeed: Eth.TransactionSpeeds = null): Promise<string> {
-    this.require();
+    this.require({
+      accountCreated: true,
+      accountDeviceOwner: true,
+    });
 
     return this.account.deployAccount(
       this.eth.getGasPrice(transactionSpeed),
@@ -310,7 +334,9 @@ export class Sdk {
    * @param device
    */
   public async createAccountDevice(device: string): Promise<IAccountDevice> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+    });
 
     return this.accountDevice.createAccountDevice(device, AccountDeviceTypes.Owner);
   }
@@ -320,7 +346,9 @@ export class Sdk {
    * @param device
    */
   public async removeAccountDevice(device: string): Promise<boolean> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+    });
 
     return this.accountDevice.removeAccountDevice(device);
   }
@@ -334,7 +362,10 @@ export class Sdk {
     device: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
 
     return this.accountDevice.estimateAccountDeviceDeployment(
       device,
@@ -351,7 +382,10 @@ export class Sdk {
     device: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
 
     return this.accountDevice.estimateAccountDeviceUnDeployment(
       device,
@@ -407,7 +441,10 @@ export class Sdk {
     data: string | Buffer,
     transactionSpeed: Eth.TransactionSpeeds = null,
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
 
     return this.accountTransaction.estimateAccountTransaction(
       recipient,
@@ -422,16 +459,96 @@ export class Sdk {
    * @param estimated
    */
   public async submitAccountTransaction(estimated: AccountTransaction.IEstimatedProxyTransaction): Promise<string> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
 
     return this.accountTransaction.submitAccountProxyTransaction(estimated);
   }
 
-// Account Game
+// TODO: Account Game
 
-// Account Withdraw
+// Account Virtual Payment
+
+  /**
+   * estimates account virtual deposit
+   * @param value
+   * @param transactionSpeed
+   */
+  public async estimateAccountVirtualDeposit(
+    value: number | string | BN,
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
+
+    return this.accountVirtualPayment.estimateAccountVirtualDeposit(
+      value,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+  }
+
+  /**
+   * estimates account virtual withdrawal
+   * @param value
+   * @param transactionSpeed
+   */
+  public async estimateAccountVirtualWithdrawal(
+    value: number | string | BN,
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
+
+    return this.accountVirtualPayment.estimateAccountVirtualWithdrawal(
+      value,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+  }
 
 // App
+
+  /**
+   * gets apps
+   * @param page
+   */
+  public async getApps(page = 0): Promise<IPaginated<IApp>> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.app.getApps(page);
+  }
+
+  /**
+   * gets app
+   * @param alias
+   */
+  public async getApp(alias: string): Promise<IApp> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.app.getApp(alias);
+  }
+
+  /**
+   * gets app open games
+   * @param alias
+   * @param page
+   */
+  public async getAppOpenGames(alias: string, page = 0): Promise<IPaginated<IAccountGame>> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.app.getAppOpenGames(alias, page);
+  }
 
 // Action
 
@@ -440,6 +557,10 @@ export class Sdk {
    * @param action
    */
   public acceptIncomingAction(action: Action.IAction = null): this {
+    this.require({
+      accountConnected: null,
+    });
+
     this.action.acceptAction(action);
     return this;
   }
@@ -448,6 +569,10 @@ export class Sdk {
    * dismisses incoming action
    */
   public dismissIncomingAction(): this {
+    this.require({
+      accountConnected: null,
+    });
+
     this.action.dismissAction();
     return this;
   }
@@ -459,6 +584,10 @@ export class Sdk {
    * @param url
    */
   public processIncomingUrl(url: string): void {
+    this.require({
+      accountConnected: null,
+    });
+
     this.url.incoming$.next(url);
   }
 
@@ -488,7 +617,9 @@ export class Sdk {
    * creates request sign secure code url
    */
   public async createRequestSignSecureCodeUrl(): Promise<string> {
-    this.require();
+    this.require({
+      accountDeviceOwner: true,
+    });
 
     const { deviceAddress } = this.state;
 
@@ -512,6 +643,10 @@ export class Sdk {
    * @param address
    */
   public createContractInstance<T = string>(abi: TAbi, address: string = null): Contract.ContractInstance<T> {
+    this.require({
+      accountConnected: null,
+    });
+
     return Contract.createContractInstance(abi, address, this.eth);
   }
 
@@ -520,6 +655,10 @@ export class Sdk {
    * @param message
    */
   public signPersonalMessage(message: string | Buffer): Buffer {
+    this.require({
+      accountConnected: null,
+    });
+
     return this.device.signPersonalMessage(message);
   }
 
@@ -762,6 +901,7 @@ export class Sdk {
   private require(options: Sdk.IRequireOptions = {}): void {
     const {
       account,
+      accountDevice,
       initialized,
     } = this.state;
 
@@ -771,20 +911,43 @@ export class Sdk {
       ...options,
     };
 
+    const accountState = account && !account.nextState
+      ? account.state
+      : null;
+
+    const accountDeviceState = accountDevice && !accountDevice.nextState
+      ? accountDevice.state
+      : null;
+    const accountDeviceType = accountDevice
+      ? accountDevice.type
+      : null;
+
     if (options.initialized && !initialized) {
       throw new Sdk.Error('sdk not initialized');
     }
-
     if (!options.initialized && initialized) {
       throw new Sdk.Error('sdk already initialized');
     }
-
     if (options.accountConnected === true && !account) {
       throw new Sdk.Error('account disconnected');
     }
-
     if (options.accountConnected === false && account) {
       throw new Sdk.Error('account already connected');
+    }
+    if (options.accountCreated && accountState !== AccountStates.Created) {
+      throw new Sdk.Error('account should be in Created state');
+    }
+    if (options.accountDeployed && accountState !== AccountStates.Deployed) {
+      throw new Sdk.Error('account should be in Deployed state');
+    }
+    if (options.accountDeviceCreated && accountDeviceState !== AccountDeviceStates.Created) {
+      throw new Sdk.Error('account device should be in Created state');
+    }
+    if (options.accountDeviceDeployed && accountDeviceState !== AccountDeviceStates.Deployed) {
+      throw new Sdk.Error('account device should be in Deployed state');
+    }
+    if (options.accountDeviceOwner && accountDeviceType !== AccountDeviceTypes.Owner) {
+      throw new Sdk.Error('account device is not an Owner');
     }
   }
 }
@@ -802,9 +965,9 @@ export namespace Sdk {
     accountConnected?: boolean;
     accountCreated?: boolean;
     accountDeployed?: boolean;
-    accountDeviceOwner?: boolean;
     accountDeviceCreated?: boolean;
     accountDeviceDeployed?: boolean;
+    accountDeviceOwner?: boolean;
     initialized?: boolean;
   }
 
