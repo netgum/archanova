@@ -5,9 +5,7 @@ let storageRootPath: string = process.cwd();
 
 commander
   .arguments('[path]')
-  .option('-e --env <env>', 'environment', /^(local|kovan|rinkeby)$/i, 'kovan')
-  .option('--account-address <address>', 'account address')
-  .option('--account-ens-name <name>', 'account ens name')
+  .option('-e --env <env>', 'environment [local,kovan,rinkeby]', /^(local|kovan|rinkeby)$/i, 'kovan')
   .option('--local-env-host <host>', 'local host', 'localhost')
   .option('--admin', 'admin mode')
   .option('--no-storage', 'don\'t use storage')
@@ -20,8 +18,6 @@ commander
 
 const config = commander as any as {
   env: string,
-  accountAddress: string;
-  accountEnsName: string;
   localEnvHost: string;
   admin: boolean;
   storage: boolean;

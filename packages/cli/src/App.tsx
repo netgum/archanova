@@ -4,6 +4,8 @@ import { Box, Color } from 'ink';
 import { connect } from 'react-redux';
 import Spinner from 'ink-spinner';
 import { QrCode } from './components';
+import Link from 'ink-link';
+import Box2 from 'ink-box';
 
 export interface IStateProps {
   sdk: ISdkReduxState;
@@ -20,7 +22,7 @@ class App extends React.Component<IStateProps> {
     } = this.props.sdk;
 
     return (
-      <Box flexDirection="column">
+      <Box flexDirection="column" justifyContent="flex-end" height="100%">
         <QrCode url={device ? device.address : '-'} small={true} />
         <Box>connected: {connected ? 'Y' : 'N'}</Box>
         <Box>initialized: {initialized ? 'Y' : 'N'}</Box>
@@ -31,7 +33,14 @@ class App extends React.Component<IStateProps> {
           <Color green={true}>
             <Spinner type="dots" />
           </Color>
+          {' Please wait ...'}
         </Box>
+        <Link url="https://google.com">
+          Link <Color cyan>link</Color>
+        </Link>
+        <Box2 borderStyle="round" borderColor="cyan" padding={1} >
+          I Love <Color magenta>Unicorns</Color>
+        </Box2>
       </Box>
     );
   }
