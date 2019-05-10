@@ -1,6 +1,6 @@
 import { Environment } from '../modules';
 
-export enum EnvironmentNames {
+export enum SdkEnvironmentNames {
   // Main = 'main',
   Kovan = 'kovan',
   Rinkeby = 'rinkeby',
@@ -26,9 +26,9 @@ const mainConfig: Environment.IConfigs = {
   storageAdapter: null,
 };
 
-export const mainEnvironment = new Environment(Object.create(mainConfig));
+export const main = new Environment(Object.create(mainConfig));
 
-export const kovanEnvironment = (new Environment(Object.create(mainConfig)))
+export const kovan = (new Environment(Object.create(mainConfig)))
   .extendConfig('apiOptions', {
     host: 'kovan.archanova.run',
   })
@@ -39,7 +39,7 @@ export const kovanEnvironment = (new Environment(Object.create(mainConfig)))
     networkId: '42',
   });
 
-export const rinkebyEnvironment = (new Environment(Object.create(mainConfig)))
+export const rinkeby = (new Environment(Object.create(mainConfig)))
   .extendConfig('apiOptions', {
     host: 'rinkeby.archanova.run',
   })

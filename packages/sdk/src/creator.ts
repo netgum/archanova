@@ -1,4 +1,4 @@
-import { EnvironmentNames, getEnvironment } from './environments';
+import { SdkEnvironmentNames, getSdkEnvironment } from './environments';
 import { Environment } from './modules';
 import { Sdk } from './Sdk';
 
@@ -6,12 +6,12 @@ import { Sdk } from './Sdk';
  * creates sdk
  * @param env
  */
-export function createSdk(env: EnvironmentNames | Environment): Sdk {
+export function createSdk(env: SdkEnvironmentNames | Environment): Sdk {
   let environment: Environment = null;
   if (env instanceof Environment) {
     environment = env;
   } else {
-    environment = getEnvironment(env);
+    environment = getSdkEnvironment(env);
   }
 
   return new Sdk(environment);

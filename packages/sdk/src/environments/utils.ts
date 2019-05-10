@@ -1,25 +1,25 @@
 import { ContractNames } from '@archanova/contracts';
 import { Environment } from '../modules';
 import {
-  EnvironmentNames,
-  kovanEnvironment,
-  rinkebyEnvironment,
+  SdkEnvironmentNames,
+  kovan,
+  rinkeby,
 } from './constants';
 
 /**
- * gets environment by name
+ * gets sdk environment by name
  * @param name
  */
-export function getEnvironment(name: EnvironmentNames): Environment {
+export function getSdkEnvironment(name: SdkEnvironmentNames): Environment {
   let result: Environment = null;
 
   switch (name) {
-    case EnvironmentNames.Kovan:
-      result = kovanEnvironment;
+    case SdkEnvironmentNames.Kovan:
+      result = kovan;
       break;
 
-    case EnvironmentNames.Rinkeby:
-      result = rinkebyEnvironment;
+    case SdkEnvironmentNames.Rinkeby:
+      result = rinkeby;
       break;
   }
 
@@ -27,10 +27,10 @@ export function getEnvironment(name: EnvironmentNames): Environment {
 }
 
 /**
- * creates local environment
+ * creates local sdk environment
  * @param host
  */
-export function createLocalEnvironment(host = 'localhost'): Environment {
+export function createLocalSdkEnvironment(host = 'localhost'): Environment {
   return new Environment({
     apiOptions: {
       host,

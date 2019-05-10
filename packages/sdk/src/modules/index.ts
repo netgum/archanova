@@ -1,5 +1,6 @@
 export * from './Account';
 export * from './AccountDevice';
+export * from './AccountTransaction';
 export * from './Action';
 export * from './Api';
 export * from './Contract';

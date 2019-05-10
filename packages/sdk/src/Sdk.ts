@@ -1,11 +1,13 @@
+import BN from 'bn.js';
 import EthJs from 'ethjs';
 import { from, of, timer, Subscription, BehaviorSubject } from 'rxjs';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AccountDeviceTypes } from './constants';
-import { IAccount, IAccountDevice, IPaginated } from './interfaces';
+import { IAccount, IAccountDevice, IAccountTransaction, IPaginated } from './interfaces';
 import {
   Account,
   AccountDevice,
+  AccountTransaction,
   Action,
   Api,
   Contract,
@@ -31,6 +33,7 @@ export class Sdk {
 
   private readonly account: Account;
   private readonly accountDevice: AccountDevice;
+  private readonly accountTransaction: AccountTransaction;
   private readonly action: Action;
   private readonly contract: Contract;
   private readonly device: Device;
@@ -80,7 +83,6 @@ export class Sdk {
     );
 
     this.account = new Account(this.api, this.state);
-    this.accountDevice = new AccountDevice(this.api, this.state);
     this.contract = new Contract(this.eth);
     this.action = new Action(
       environment.getConfig('actionOptions'),
@@ -90,6 +92,9 @@ export class Sdk {
       environment.getConfig('urlAdapter'),
       this.action,
     );
+
+    this.accountTransaction = new AccountTransaction(this.api, this.contract, this.device, this.state);
+    this.accountDevice = new AccountDevice(this.accountTransaction, this.api, this.contract, this.state);
 
     this.state.incomingAction$ = this.action.$incoming;
 
@@ -122,12 +127,21 @@ export class Sdk {
 
   /**
    * resets sdk
+   * @param options
    */
-  public async reset(): Promise<void> {
+  public async reset(options: { device?: boolean, session?: boolean } = {}): Promise<void> {
     const { account$, accountDevice$ } = this.state;
 
     account$.next(null);
     accountDevice$.next(null);
+
+    if (options.device) {
+      await this.device.reset();
+    }
+
+    await this.session.reset({
+      token: options.session,
+    });
   }
 
 // Account
@@ -205,6 +219,17 @@ export class Sdk {
   }
 
   /**
+   * disconnects account
+   */
+  public async disconnectAccount(): Promise<void> {
+    this.require();
+
+    const { deviceAddress } = this.state;
+    await this.removeAccountDevice(deviceAddress);
+    await this.reset();
+  }
+
+  /**
    * updates account
    * @param ensLabel
    * @param ensRootName
@@ -256,11 +281,22 @@ export class Sdk {
   }
 
   /**
+   * gets connected account devices
+   * @param device
+   */
+  public async getConnectedAccountDevice(device: string): Promise<IAccountDevice> {
+    this.require();
+    const { accountAddress } = this.state;
+
+    return this.accountDevice.getAccountDevice(accountAddress, device);
+  }
+
+  /**
    * gets account device
    * @param account
    * @param device
    */
-  public async getAccountDevice(account: string, device: string): Promise<IAccountDevice> {
+  public async getAccountDevice(account: string = null, device: string): Promise<IAccountDevice> {
     this.require({
       accountConnected: null,
     });
@@ -288,7 +324,107 @@ export class Sdk {
     return this.accountDevice.removeAccountDevice(device);
   }
 
+  /**
+   * estimates account device deployment
+   * @param device
+   * @param transactionSpeed
+   */
+  public async estimateAccountDeviceDeployment(
+    device: string,
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    this.require();
+
+    return this.accountDevice.estimateAccountDeviceDeployment(
+      device,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+  }
+
+  /**
+   * estimates account device un-deployment
+   * @param device
+   * @param transactionSpeed
+   */
+  public async estimateAccountDeviceUnDeployment(
+    device: string,
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    this.require();
+
+    return this.accountDevice.estimateAccountDeviceUnDeployment(
+      device,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+  }
+
 // Account Transaction
+
+  /**
+   * gets connected account transactions
+   * @param page
+   */
+  public async getConnectedAccountTransactions(page = 0): Promise<IPaginated<IAccountTransaction>> {
+    this.require();
+
+    return this.accountTransaction.getConnectedAccountTransactions(page);
+  }
+
+  /**
+   * gets connected account transaction
+   * @param hash
+   */
+  public async getConnectedAccountTransaction(hash: string): Promise<IAccountTransaction> {
+    this.require();
+
+    const { accountAddress } = this.state;
+    return this.accountTransaction.getAccountTransaction(accountAddress, hash);
+  }
+
+  /**
+   * gets account transaction
+   * @param hash
+   * @param account
+   */
+  public async getAccountTransaction(account: string, hash: string): Promise<IAccountTransaction> {
+    this.require({
+      accountConnected: null,
+    });
+    return this.accountTransaction.getAccountTransaction(account, hash);
+  }
+
+  /**
+   * estimates account transaction
+   * @param recipient
+   * @param value
+   * @param data
+   * @param transactionSpeed
+   */
+  public async estimateAccountTransaction(
+    recipient: string,
+    value: number | string | BN,
+    data: string | Buffer,
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    this.require();
+
+    return this.accountTransaction.estimateAccountTransaction(
+      recipient,
+      value,
+      data,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+  }
+
+  /**
+   * submits account transaction
+   * @param estimated
+   */
+  public async submitAccountTransaction(estimated: AccountTransaction.IEstimatedProxyTransaction): Promise<string> {
+    this.require();
+
+    return this.accountTransaction.submitAccountProxyTransaction(estimated);
+  }
 
 // Account Game
 
@@ -316,6 +452,7 @@ export class Sdk {
   }
 
 // Url
+
   /**
    * processes incoming url
    * @param url
@@ -354,7 +491,7 @@ export class Sdk {
 
     const { deviceAddress } = this.state;
 
-    const code = await this.session.createCode()
+    const code = await this.session.createCode();
     const action = Action.createAction<Action.IRequestSignSecureCodePayload>(
       Action.Types.RequestSignSecureCode,
       {
@@ -483,7 +620,8 @@ export class Sdk {
             case Api.EventNames.AccountTransactionUpdated: {
               const { account, hash } = payload;
               if (accountAddress === account) {
-                // TODO: emit sdk event
+                const accountTransaction = await this.accountTransaction.getAccountTransaction(account, hash);
+                this.emitEvent(Sdk.EventNames.AccountTransactionUpdated, accountTransaction);
               }
               break;
             }

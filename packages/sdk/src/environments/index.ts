@@ -1,2 +1,2 @@
-export { EnvironmentNames } from './constants';
+export { SdkEnvironmentNames } from './constants';
 export * from './utils';

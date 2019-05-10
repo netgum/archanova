@@ -1,4 +1,4 @@
-import { createLocalEnvironment, EnvironmentNames, getEnvironment, Sdk, sdkModules, createSdk } from '@archanova/sdk';
+import { createLocalSdkEnvironment, SdkEnvironmentNames, getSdkEnvironment, Sdk, sdkModules, createSdk } from '@archanova/sdk';
 import Ws from 'ws';
 import { StorageAdapter } from './StorageAdapter';
 
@@ -11,15 +11,15 @@ export function configureSdk(options: {
     rootPath: string;
   }
 }): Sdk {
-  let sdkEnv: sdkModules.Environment = createLocalEnvironment(options.localEnv.host);
+  let sdkEnv: sdkModules.Environment = createLocalSdkEnvironment(options.localEnv.host);
 
   switch (options.env) {
     case 'kovan':
-      sdkEnv = getEnvironment(EnvironmentNames.Kovan);
+      sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Kovan);
       break;
 
     case 'rinkeby':
-      sdkEnv = getEnvironment(EnvironmentNames.Rinkeby);
+      sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Rinkeby);
       break;
   }
 

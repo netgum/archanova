@@ -1,10 +1,18 @@
+import BN from 'bn.js';
 import { AccountDeviceTypes } from '../constants';
 import { IAccountDevice, IPaginated } from '../interfaces';
+import { AccountTransaction } from './AccountTransaction';
 import { Api } from './Api';
+import { Contract } from './Contract';
 import { State } from './State';
 
 export class AccountDevice {
-  constructor(private api: Api, private state: State) {
+  constructor(
+    private accountTransaction: AccountTransaction,
+    private api: Api,
+    private contract: Contract,
+    private state: State,
+  ) {
     //
   }
 
@@ -56,5 +64,34 @@ export class AccountDevice {
     });
 
     return success;
+  }
+
+  public async estimateAccountDeviceDeployment(address: string, gasPrice: BN): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    const { account } = this.contract;
+
+    const proxyData = account.getDate(
+      'addDevice',
+      address,
+      true,
+    );
+
+    return this.accountTransaction.estimateAccountProxyTransaction(
+      proxyData,
+      gasPrice,
+    );
+  }
+
+  public async estimateAccountDeviceUnDeployment(address: string, gasPrice: BN): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    const { account } = this.contract;
+
+    const proxyData = account.getDate(
+      'removeDevice',
+      address,
+    );
+
+    return this.accountTransaction.estimateAccountProxyTransaction(
+      proxyData,
+      gasPrice,
+    );
   }
 }
