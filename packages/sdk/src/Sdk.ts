@@ -1,5 +1,6 @@
 import BN from 'bn.js';
 import EthJs from 'ethjs';
+import { TAbi } from 'ethjs-abi';
 import { from, of, timer, Subscription, BehaviorSubject } from 'rxjs';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AccountDeviceTypes } from './constants';
@@ -503,7 +504,16 @@ export class Sdk {
     return this.url.buildActionUrl(action);
   }
 
-// Signing
+// Utils
+
+  /**
+   * creates contract instance
+   * @param abi
+   * @param address
+   */
+  public createContractInstance<T = string>(abi: TAbi, address: string = null): Contract.ContractInstance<T> {
+    return Contract.createContractInstance(abi, address, this.eth);
+  }
 
   /**
    * signs personal message
@@ -512,6 +522,8 @@ export class Sdk {
   public signPersonalMessage(message: string | Buffer): Buffer {
     return this.device.signPersonalMessage(message);
   }
+
+// Private
 
   private async verifyAccount(accountAddress: string = null): Promise<void> {
     if (!accountAddress) {

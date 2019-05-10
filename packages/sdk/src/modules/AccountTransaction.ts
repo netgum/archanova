@@ -39,7 +39,7 @@ export class AccountTransaction {
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     const { account } = this.contract;
 
-    const proxyData = account.getDate(
+    const proxyData = account.encodeMethodInput(
       'executeTransaction',
       recipient,
       anyToBN(value, { defaults: new BN(0) }),
@@ -83,7 +83,7 @@ export class AccountTransaction {
       'uint256',
     )(
       accountProxy.address,
-      accountProxy.getSignature('forwardAccountOwnerCall'),
+      accountProxy.getMethodSignature('forwardAccountOwnerCall'),
       accountAddress,
       nonce,
       data,

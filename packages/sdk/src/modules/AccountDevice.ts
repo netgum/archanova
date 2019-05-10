@@ -69,7 +69,7 @@ export class AccountDevice {
   public async estimateAccountDeviceDeployment(address: string, gasPrice: BN): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     const { account } = this.contract;
 
-    const proxyData = account.getDate(
+    const proxyData = account.encodeMethodInput(
       'addDevice',
       address,
       true,
@@ -84,7 +84,7 @@ export class AccountDevice {
   public async estimateAccountDeviceUnDeployment(address: string, gasPrice: BN): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     const { account } = this.contract;
 
-    const proxyData = account.getDate(
+    const proxyData = account.encodeMethodInput(
       'removeDevice',
       address,
     );

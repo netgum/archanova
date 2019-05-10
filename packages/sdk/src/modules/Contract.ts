@@ -1,12 +1,14 @@
 import { ContractNames, getContractAbi } from '@archanova/contracts';
-import { encodeMethod, encodeSignature, IAbiItem, TAbi } from 'ethjs-abi';
+import EthJs from 'ethjs';
+import { encodeMethod, encodeSignature, IAbiItem, TAbi, decodeMethod, IResult } from 'ethjs-abi';
 import { Eth } from './Eth';
 
 export class Contract {
-  public static createContract<T = string>(abi: TAbi, address: string = null): Contract.ContractInstance<T> {
+  public static createContractInstance<T = string>(abi: TAbi, address: string = null, eth: EthJs = null): Contract.ContractInstance<T> {
     return new Contract.ContractInstance(
       address,
       abi,
+      eth,
     );
   }
 
@@ -18,27 +20,35 @@ export class Contract {
   public virtualPaymentManager: Contract.ContractInstance<'depositPayment' | 'withdrawPayment' | 'withdrawDeposit'>;
 
   constructor(private eth: Eth) {
-    this.account = Contract.createContract(
+    this.account = Contract.createContractInstance(
       getContractAbi(ContractNames.Account),
+      null,
+      eth,
     );
-    this.accountProvider = Contract.createContract(
+    this.accountProvider = Contract.createContractInstance(
       getContractAbi(ContractNames.AccountProvider),
       eth.getContractAddress(ContractNames.AccountProvider),
+      eth,
     );
-    this.accountProxy = Contract.createContract(
+    this.accountProxy = Contract.createContractInstance(
       getContractAbi(ContractNames.AccountProxy),
       eth.getContractAddress(ContractNames.AccountProxy),
+      eth,
     );
-    this.ensRegistry = Contract.createContract(
+    this.ensRegistry = Contract.createContractInstance(
       getContractAbi(ContractNames.ENSRegistry),
       eth.getContractAddress(ContractNames.ENSRegistry),
+      eth,
     );
-    this.ensResolver = Contract.createContract(
+    this.ensResolver = Contract.createContractInstance(
       getContractAbi(ContractNames.ENSResolver),
+      null,
+      eth,
     );
-    this.virtualPaymentManager = Contract.createContract(
+    this.virtualPaymentManager = Contract.createContractInstance(
       getContractAbi(ContractNames.VirtualPaymentManager),
       eth.getContractAddress(ContractNames.VirtualPaymentManager),
+      eth,
     );
   }
 }
@@ -48,20 +58,46 @@ export namespace Contract {
     constructor(
       public address: string,
       public abi: TAbi,
+      public eth: EthJs,
     ) {
       //
     }
 
-    public getSignature(method: T): string {
+    public at(address: string): ContractInstance<T> {
+      return new ContractInstance(
+        address,
+        this.abi,
+        this.eth,
+      );
+    }
+
+    public getMethodSignature(method: T): string {
       return encodeSignature(
         this.getAbiItem(method),
       );
     }
 
-    public getDate(method: T, ...args: any[]): string {
+    public async callMethod<R = IResult>(method: T, ...args: any[]): Promise<R> {
+      const input = this.encodeMethodInput(method, ...args);
+      const output = await this.eth.call({
+        data: input,
+        to: this.address,
+      }, 'pending');
+
+      return this.decodeMethodOutput(method, output) as any;
+    }
+
+    public encodeMethodInput(method: T, ...args: any[]): string {
       return encodeMethod(
         this.getAbiItem(method),
         args,
+      );
+    }
+
+    public decodeMethodOutput(method: T, output: string): IResult {
+      return decodeMethod(
+        this.getAbiItem(method),
+        output,
       );
     }
 
