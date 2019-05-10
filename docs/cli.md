@@ -12,7 +12,7 @@ $ npm i @archanova/cli -g
 $ archanova-cli [options] [path]
 ```
 
-Options:
+**Options:**
   * `-e --env <env>` - environment [local,kovan,rinkeby] (default: "kovan")
   * `--local-env-host <host>` - local host (default: "localhost")
   * `--admin` - admin mode
