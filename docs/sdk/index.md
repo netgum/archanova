@@ -8,7 +8,7 @@ $ npm i @archanova/sdk -S
 
 ## Usage
 
-## Resources
-
+- [Configuration](configuration.md)
+- [State](state.md)
 - [Api](api.md)
 - [Redux Integration](redux_integration.md)
