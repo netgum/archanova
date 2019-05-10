@@ -1,7 +1,8 @@
 import { ISdkReduxState } from '@archanova/sdk';
 import React from 'react';
-import { Box } from 'ink';
+import { Box, Color } from 'ink';
 import { connect } from 'react-redux';
+import Spinner from 'ink-spinner';
 import { QrCode } from './components';
 
 export interface IStateProps {
@@ -17,6 +18,7 @@ class App extends React.Component<IStateProps> {
       account,
       device,
     } = this.props.sdk;
+
     return (
       <Box flexDirection="column">
         <QrCode url={device ? device.address : '-'} small={true} />
@@ -25,8 +27,12 @@ class App extends React.Component<IStateProps> {
         <Box>authenticated: {authenticated ? 'Y' : 'N'}</Box>
         <Box>account: {account ? account.address : '-'}</Box>
         <Box>device: {device ? device.address : '-'}</Box>
+        <Box>
+          <Color green={true}>
+            <Spinner type="dots" />
+          </Color>
+        </Box>
       </Box>
-
     );
   }
 }

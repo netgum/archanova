@@ -1,39 +1,31 @@
 #!/usr/bin/env node
 
-import { createLocalEnvironment, createReduxSdkMiddleware, createSdk, EnvironmentNames, getEnvironment, sdkModules } from '@archanova/sdk';
+import { createReduxSdkMiddleware } from '@archanova/sdk';
 import { render } from 'ink';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { applyMiddleware, createStore } from 'redux';
-import Ws from 'ws';
+import { configureSdk } from './sdk';
 import App from './App';
 import reducers from './reducers';
-import { StorageAdapter } from './StorageAdapter';
+import config from './config';
+
+const sdk = configureSdk({
+  env: config.env,
+  localEnv: {
+    host: config.localEnvHost,
+  },
+  storage: config.storage
+    ? {
+      rootPath: config.storageRootPath,
+    }
+    : null,
+});
 
 console.clear();
+console.log('Please wait ...');
 
 (async () => {
-  const env: string = 'rinkeby'; // 'local' | 'kovan' | 'rinkeby'
-
-  let sdkEnv: sdkModules.Environment = createLocalEnvironment();
-
-  switch (env) {
-
-    case 'kovan':
-      sdkEnv = getEnvironment(EnvironmentNames.Kovan);
-      break;
-
-    case 'rinkeby':
-      sdkEnv = getEnvironment(EnvironmentNames.Rinkeby);
-      break;
-  }
-
-  const sdk = createSdk(
-    sdkEnv
-      .setConfig('storageAdapter', new StorageAdapter(env))
-      .setConfig('apiWebSocketConstructor', Ws),
-  );
-
   await sdk.initialize();
 
   const store = createStore(
@@ -43,6 +35,8 @@ console.clear();
       createReduxSdkMiddleware(sdk),
     ),
   );
+
+  console.clear();
 
   render(
     <Provider store={store}>

@@ -49,6 +49,6 @@ export class Device {
 
 export namespace Device {
   export enum StorageKeys {
-    PrivateKey = 'privateKey',
+    PrivateKey = 'private_key',
   }
 }

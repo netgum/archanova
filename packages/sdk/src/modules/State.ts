@@ -111,7 +111,7 @@ export class State {
 export namespace State {
   export enum StorageKeys {
     Account = 'account',
-    AccountDevice = 'accountDevice',
+    AccountDevice = 'account_device',
     Session = 'session',
   }
 
