@@ -1,4 +1,4 @@
 ## Docs
 
-- CLI
-- SDK
+- [CLI](cli.md)
+- [SDK](sdk/index.md)
