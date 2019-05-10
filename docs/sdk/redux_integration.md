@@ -8,7 +8,6 @@ interface ISdkReduxAction<T = any> {
   type: ReduxSdkActionTypes;
   payload: T;
 }
-
 ```
 
 ## Reducers
@@ -31,10 +30,10 @@ import reducers from './reducers';
 
 const sdk;
 const store = createStore<ISdkReduxState>(
-    reducers,
-    {},
-    applyMiddleware(
-      createReduxSdkMiddleware(sdk),
-    ),
-  );
+  reducers,
+  {},
+  applyMiddleware(
+    createReduxSdkMiddleware(sdk),
+  ),
+);
 ```
