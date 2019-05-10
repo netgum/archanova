@@ -4,7 +4,7 @@ import { TAbi } from 'ethjs-abi';
 import { BehaviorSubject, from, of, Subscription, timer } from 'rxjs';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AccountDeviceStates, AccountDeviceTypes, AccountStates } from './constants';
-import { IAccount, IAccountDevice, IAccountGame, IAccountTransaction, IApp, IPaginated } from './interfaces';
+import { IAccount, IAccountDevice, IAccountGame, IAccountGameHistory, IAccountTransaction, IApp, IPaginated } from './interfaces';
 import {
   Account,
   AccountDevice,
@@ -220,14 +220,14 @@ export class Sdk {
 
   /**
    * connects account
-   * @param address
+   * @param accountAddress
    */
-  public async connectAccount(address: string): Promise<IAccount> {
+  public async connectAccount(accountAddress: string): Promise<IAccount> {
     this.require({
       accountConnected: false,
     });
 
-    await this.verifyAccount();
+    await this.verifyAccount(accountAddress);
 
     return this.state.account;
   }
@@ -307,59 +307,59 @@ export class Sdk {
 
   /**
    * gets connected account devices
-   * @param device
+   * @param deviceAddress
    */
-  public async getConnectedAccountDevice(device: string): Promise<IAccountDevice> {
+  public async getConnectedAccountDevice(deviceAddress: string): Promise<IAccountDevice> {
     this.require();
     const { accountAddress } = this.state;
 
-    return this.accountDevice.getAccountDevice(accountAddress, device);
+    return this.accountDevice.getAccountDevice(accountAddress, deviceAddress);
   }
 
   /**
    * gets account device
-   * @param account
-   * @param device
+   * @param accountAddress
+   * @param deviceAddress
    */
-  public async getAccountDevice(account: string = null, device: string): Promise<IAccountDevice> {
+  public async getAccountDevice(accountAddress: string = null, deviceAddress: string): Promise<IAccountDevice> {
     this.require({
       accountConnected: null,
     });
 
-    return this.accountDevice.getAccountDevice(account, device);
+    return this.accountDevice.getAccountDevice(accountAddress, deviceAddress);
   }
 
   /**
    * creates account device
-   * @param device
+   * @param deviceAddress
    */
-  public async createAccountDevice(device: string): Promise<IAccountDevice> {
+  public async createAccountDevice(deviceAddress: string): Promise<IAccountDevice> {
     this.require({
       accountDeviceOwner: true,
     });
 
-    return this.accountDevice.createAccountDevice(device, AccountDeviceTypes.Owner);
+    return this.accountDevice.createAccountDevice(deviceAddress, AccountDeviceTypes.Owner);
   }
 
   /**
    * removes account device
-   * @param device
+   * @param deviceAddress
    */
-  public async removeAccountDevice(device: string): Promise<boolean> {
+  public async removeAccountDevice(deviceAddress: string): Promise<boolean> {
     this.require({
       accountDeviceOwner: true,
     });
 
-    return this.accountDevice.removeAccountDevice(device);
+    return this.accountDevice.removeAccountDevice(deviceAddress);
   }
 
   /**
    * estimates account device deployment
-   * @param device
+   * @param deviceAddress
    * @param transactionSpeed
    */
   public async estimateAccountDeviceDeployment(
-    device: string,
+    deviceAddress: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     this.require({
@@ -368,18 +368,18 @@ export class Sdk {
     });
 
     return this.accountDevice.estimateAccountDeviceDeployment(
-      device,
+      deviceAddress,
       this.eth.getGasPrice(transactionSpeed),
     );
   }
 
   /**
    * estimates account device un-deployment
-   * @param device
+   * @param deviceAddress
    * @param transactionSpeed
    */
   public async estimateAccountDeviceUnDeployment(
-    device: string,
+    deviceAddress: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     this.require({
@@ -388,7 +388,7 @@ export class Sdk {
     });
 
     return this.accountDevice.estimateAccountDeviceUnDeployment(
-      device,
+      deviceAddress,
       this.eth.getGasPrice(transactionSpeed),
     );
   }
@@ -418,14 +418,14 @@ export class Sdk {
 
   /**
    * gets account transaction
+   * @param accountAddress
    * @param hash
-   * @param account
    */
-  public async getAccountTransaction(account: string, hash: string): Promise<IAccountTransaction> {
+  public async getAccountTransaction(accountAddress: string, hash: string): Promise<IAccountTransaction> {
     this.require({
       accountConnected: null,
     });
-    return this.accountTransaction.getAccountTransaction(account, hash);
+    return this.accountTransaction.getAccountTransaction(accountAddress, hash);
   }
 
   /**
@@ -467,7 +467,39 @@ export class Sdk {
     return this.accountTransaction.submitAccountProxyTransaction(estimated);
   }
 
-// TODO: Account Game
+// Account Game
+
+  /**
+   * gets connected account games
+   * @param appAlias
+   * @param page
+   */
+  public async getConnectedAccountGames(appAlias: string = null, page = 0): Promise<IPaginated<IAccountGame>> {
+    this.require();
+
+    return this.accountGame.getConnectedAccountGames(appAlias, page);
+  }
+
+  /**
+   * gets connected account game
+   * @param gameId
+   */
+  public async getConnectedAccountGame(gameId: number): Promise<IAccountGame> {
+    this.require();
+
+    return this.accountGame.getConnectedAccountGame(gameId);
+  }
+
+  /**
+   * gets connected account game history
+   * @param gameId
+   * @param page
+   */
+  public async getConnectedAccountGameHistory(gameId: number, page = 0): Promise<IPaginated<IAccountGameHistory>> {
+    this.require();
+
+    return this.accountGame.getConnectedAccountGameHistory(gameId);
+  }
 
 // Account Virtual Payment
 
@@ -527,27 +559,27 @@ export class Sdk {
 
   /**
    * gets app
-   * @param alias
+   * @param appAlias
    */
-  public async getApp(alias: string): Promise<IApp> {
+  public async getApp(appAlias: string): Promise<IApp> {
     this.require({
       accountConnected: null,
     });
 
-    return this.app.getApp(alias);
+    return this.app.getApp(appAlias);
   }
 
   /**
    * gets app open games
-   * @param alias
+   * @param appAlias
    * @param page
    */
-  public async getAppOpenGames(alias: string, page = 0): Promise<IPaginated<IAccountGame>> {
+  public async getAppOpenGames(appAlias: string, page = 0): Promise<IPaginated<IAccountGame>> {
     this.require({
       accountConnected: null,
     });
 
-    return this.app.getAppOpenGames(alias, page);
+    return this.app.getAppOpenGames(appAlias, page);
   }
 
 // Action
