@@ -1,7 +1,4 @@
-import { relative, resolve } from 'path';
 import commander from 'commander';
-
-let storageRootPath: string = process.cwd();
 
 commander
   .arguments('[path]')
@@ -9,11 +6,6 @@ commander
   .option('--local-env-host <host>', 'local host', 'localhost')
   .option('--admin', 'admin mode')
   .option('--no-storage', 'don\'t use storage')
-  .action((workingDir) => {
-    if (workingDir) {
-      storageRootPath = resolve(relative(storageRootPath, workingDir));
-    }
-  })
   .parse(process.argv);
 
 const config = commander as any as {
@@ -21,9 +13,6 @@ const config = commander as any as {
   localEnvHost: string;
   admin: boolean;
   storage: boolean;
-  storageRootPath: string;
 };
-
-config.storageRootPath = resolve(__dirname, '../demo');
 
 export default config;

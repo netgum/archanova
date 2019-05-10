@@ -1,15 +1,10 @@
+import { homedir } from 'os';
 import { sdkModules } from '@archanova/sdk';
 import { join } from 'path';
 import { ensureDir, remove, writeFile, readFile } from 'fs-extra';
 
 export class StorageAdapter implements sdkModules.Storage.IAdapter {
-  private static PREFIX = '.archanova';
-
-  constructor(
-    private rootPath: string,
-  ) {
-    //
-  }
+  private static ROOT_PATH = join(homedir(), '.archanova');
 
   public async getItem(key: string): Promise<string> {
     await this.prepareDir();
@@ -44,14 +39,13 @@ export class StorageAdapter implements sdkModules.Storage.IAdapter {
 
   private prepareDir(): Promise<void> {
     return ensureDir(
-      join(this.rootPath, StorageAdapter.PREFIX),
+      StorageAdapter.ROOT_PATH,
     );
   }
 
   private keyToPath(key: string): string {
     return join(
-      this.rootPath,
-      StorageAdapter.PREFIX,
+      StorageAdapter.ROOT_PATH,
       `${key}.json`,
     );
   }

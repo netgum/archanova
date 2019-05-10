@@ -7,9 +7,7 @@ export function configureSdk(options: {
   localEnv: {
     host: string;
   };
-  storage: {
-    rootPath: string;
-  }
+  storage: boolean;
 }): Sdk {
   let sdkEnv: sdkModules.Environment = createLocalSdkEnvironment(options.localEnv.host);
 
@@ -24,9 +22,7 @@ export function configureSdk(options: {
   }
 
   const storageAdapter: sdkModules.Storage.IAdapter = options.storage
-    ? new StorageAdapter(
-      options.storage.rootPath,
-    )
+    ? new StorageAdapter()
     : null;
 
   return createSdk(

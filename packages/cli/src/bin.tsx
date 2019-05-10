@@ -15,11 +15,7 @@ const sdk = configureSdk({
   localEnv: {
     host: config.localEnvHost,
   },
-  storage: config.storage
-    ? {
-      rootPath: config.storageRootPath,
-    }
-    : null,
+  storage: config.storage,
 });
 
 console.clear();
