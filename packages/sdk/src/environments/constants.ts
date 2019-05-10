@@ -21,7 +21,7 @@ const mainConfig: Environment.IConfigs = {
   },
   apiWebSocketConstructor: null,
   storageOptions: {
-    namespace: '@archanova',
+    namespace: '@archanova:main',
   },
   storageAdapter: null,
 };
@@ -37,6 +37,9 @@ export const kovan = (new Environment(Object.create(mainConfig)))
   })
   .extendConfig('ethOptions', {
     networkId: '42',
+  })
+  .extendConfig('storageOptions', {
+    namespace: '@archanova:kovan',
   });
 
 export const rinkeby = (new Environment(Object.create(mainConfig)))
@@ -48,4 +51,7 @@ export const rinkeby = (new Environment(Object.create(mainConfig)))
   })
   .extendConfig('ethOptions', {
     networkId: '4',
+  })
+  .extendConfig('storageOptions', {
+    namespace: '@archanova:rinkeby',
   });

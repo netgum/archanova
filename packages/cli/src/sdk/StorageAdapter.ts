@@ -6,7 +6,6 @@ export class StorageAdapter implements sdkModules.Storage.IAdapter {
   private static PREFIX = '.archanova';
 
   constructor(
-    private env: string,
     private rootPath: string,
   ) {
     //
@@ -45,7 +44,7 @@ export class StorageAdapter implements sdkModules.Storage.IAdapter {
 
   private prepareDir(): Promise<void> {
     return ensureDir(
-      join(this.rootPath, StorageAdapter.PREFIX, this.env),
+      join(this.rootPath, StorageAdapter.PREFIX),
     );
   }
 
@@ -53,7 +52,6 @@ export class StorageAdapter implements sdkModules.Storage.IAdapter {
     return join(
       this.rootPath,
       StorageAdapter.PREFIX,
-      this.env,
       `${key}.json`,
     );
   }

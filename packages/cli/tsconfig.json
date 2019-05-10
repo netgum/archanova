@@ -4,7 +4,8 @@
     "jsx": "react",
     "typeRoots": [
       "./node_modules/@types",
-      "./src/@types"
+      "./node_modules/@netgum/types/ink",
+      "./node_modules/@netgum/types/node"
     ]
   },
   "include": [

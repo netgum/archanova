@@ -25,7 +25,6 @@ export function configureSdk(options: {
 
   const storageAdapter: sdkModules.Storage.IAdapter = options.storage
     ? new StorageAdapter(
-      options.env,
       options.storage.rootPath,
     )
     : null;

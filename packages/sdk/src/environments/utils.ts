@@ -53,7 +53,7 @@ export function createLocalSdkEnvironment(host = 'localhost'): Environment {
     },
     apiWebSocketConstructor: null,
     storageOptions: {
-      namespace: '@archanova',
+      namespace: '@archanova:local',
     },
     storageAdapter: null,
   });
