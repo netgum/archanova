@@ -3,7 +3,7 @@ import EthJs from 'ethjs';
 import { TAbi } from 'ethjs-abi';
 import { BehaviorSubject, from, of, Subscription, timer } from 'rxjs';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
-import { AccountDeviceStates, AccountDeviceTypes, AccountStates } from './constants';
+import { AccountDeviceStates, AccountDeviceTypes, AccountGamePlayers, AccountGameStates, AccountStates } from './constants';
 import { IAccount, IAccountDevice, IAccountGame, IAccountGameHistory, IAccountTransaction, IApp, IPaginated } from './interfaces';
 import {
   Account,
@@ -501,6 +501,92 @@ export class Sdk {
     return this.accountGame.getConnectedAccountGameHistory(gameId);
   }
 
+  /**
+   * creates account game
+   * @param appAlias
+   * @param deposit
+   * @param stateValue
+   */
+  public async createAccountGame(appAlias: string, deposit: string | number | BN, stateValue: string): Promise<IAccountGame> {
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
+
+    return this.accountGame.createAccountGame(
+      appAlias,
+      deposit,
+      stateValue,
+    );
+  }
+
+  /**
+   * joins account game
+   * @param game
+   * @param stateValue
+   */
+  public async joinAccountGame(game: IAccountGame, stateValue: string): Promise<IAccountGame> {
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
+
+    if (game.state !== AccountGameStates.Opened) {
+      throw new Sdk.Error('invalid game state');
+    }
+
+    return this.accountGame.joinAccountGame(
+      game,
+      stateValue,
+    );
+  }
+
+  /**
+   * makes account game move
+   * @param gameId
+   * @param stateValue
+   */
+  public async makeAccountGameMove(gameId: number, stateValue: string): Promise<IAccountGame> {
+    this.require();
+
+    const { accountAddress } = this.state;
+
+    const game = await this.accountGame.getConnectedAccountGame(gameId);
+
+    if (game.state !== AccountGameStates.Locked) {
+      throw new Sdk.Error('invalid game state');
+    }
+
+    const { creator, opponent, creatorSignature, opponentSignature, whoseTurn } = game;
+
+    if (creator.address === accountAddress) {
+      if (whoseTurn !== AccountGamePlayers.Creator) {
+        throw new Sdk.Error('waiting for opponent move');
+      }
+      if (!creatorSignature) {
+        this.require({
+          accountDeviceOwner: true,
+          accountDeviceDeployed: true,
+        });
+      }
+    } else if (opponent.address === accountAddress) {
+      if (whoseTurn !== AccountGamePlayers.Opponent) {
+        throw new Sdk.Error('waiting for opponent move');
+      }
+      if (!opponentSignature) {
+        this.require({
+          accountDeviceOwner: true,
+          accountDeviceDeployed: true,
+        });
+      }
+    }
+
+    return this.accountGame.makeAccountGameMove(
+      game,
+      stateValue,
+    );
+  }
+
 // Account Virtual Payment
 
   /**
@@ -811,7 +897,8 @@ export class Sdk {
             case Api.EventNames.AccountGameUpdated: {
               const { account, game } = payload;
               if (accountAddress === account) {
-                // TODO: emit sdk event
+                const accountGame = await this.accountGame.getConnectedAccountGame(game);
+                this.emitEvent(Sdk.EventNames.AccountGameUpdated, accountGame);
               }
               break;
             }
