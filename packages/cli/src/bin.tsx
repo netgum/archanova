@@ -23,6 +23,19 @@ console.log('Please wait ...');
 
 (async () => {
   await sdk.initialize();
+  {
+    const { accountAddress } = sdk.state;
+    if (!accountAddress) {
+      const { items } = await sdk.getConnectedAccounts();
+
+      if (items.length) {
+        const [{ address }] = items;
+        await sdk.connectAccount(address);
+      } else {
+        await sdk.createAccount();
+      }
+    }
+  }
 
   const store = createStore(
     reducers,
