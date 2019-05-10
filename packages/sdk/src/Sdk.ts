@@ -315,6 +315,57 @@ export class Sdk {
     return this;
   }
 
+// Url
+  /**
+   * processes incoming url
+   * @param url
+   */
+  public processIncomingUrl(url: string): void {
+    this.url.incoming$.next(url);
+  }
+
+  /**
+   * creates request add account device url
+   * @param options
+   */
+  public createRequestAddAccountDeviceUrl(options: { account?: string, endpoint?: string, callbackEndpoint?: string } = {}): string {
+    this.require({
+      accountConnected: false,
+    });
+
+    const { deviceAddress } = this.state;
+    const action = Action.createAction<Action.IRequestAddAccountDevicePayload>(
+      Action.Types.RequestAddAccountDevice,
+      {
+        device: deviceAddress,
+        account: options.account || null,
+        callbackEndpoint: options.callbackEndpoint || null,
+      },
+    );
+
+    return this.url.buildActionUrl(action, options.endpoint || null);
+  }
+
+  /**
+   * creates request sign secure code url
+   */
+  public async createRequestSignSecureCodeUrl(): Promise<string> {
+    this.require();
+
+    const { deviceAddress } = this.state;
+
+    const code = await this.session.createCode()
+    const action = Action.createAction<Action.IRequestSignSecureCodePayload>(
+      Action.Types.RequestSignSecureCode,
+      {
+        code,
+        creator: deviceAddress,
+      },
+    );
+
+    return this.url.buildActionUrl(action);
+  }
+
 // Signing
 
   /**
