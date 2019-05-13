@@ -9,8 +9,20 @@ import { IAccount, IAccountDevice, IDevice } from '../interfaces';
 export class State {
   public initialized$ = new UniqueBehaviorSubject<boolean>();
   public connected$ = new UniqueBehaviorSubject<boolean>();
-  public account$ = new UniqueBehaviorSubject<IAccount>();
-  public accountBalance$ = new UniqueBehaviorSubject<BN>();
+  public account$ = new UniqueBehaviorSubject<IAccount>(null, {
+    prepare: (newValue, oldValue) => {
+      if (
+        newValue &&
+        oldValue &&
+        !newValue.balance.real &&
+        oldValue.balance.real
+      ) {
+        newValue.balance.real = oldValue.balance.real;
+      }
+
+      return newValue;
+    },
+  });
   public accountDevice$ = new UniqueBehaviorSubject<IAccountDevice>();
   public device$ = new UniqueBehaviorSubject<IDevice>();
   public ens$ = new UniqueBehaviorSubject<State.IEns>();
@@ -39,10 +51,6 @@ export class State {
     return value
       ? value.address
       : null;
-  }
-
-  public get accountBalance(): BN {
-    return this.accountBalance$.value;
   }
 
   public get accountDevice(): IAccountDevice {

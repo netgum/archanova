@@ -16,7 +16,6 @@ class App extends React.Component<IStateProps> {
       initialized,
       authenticated,
       account,
-      accountBalance,
       device,
     } = this.props.sdk;
 
@@ -27,7 +26,7 @@ class App extends React.Component<IStateProps> {
         <Box>initialized: <Color magenta={true}>{initialized ? 'Y' : 'N'}</Color></Box>
         <Box>authenticated: <Color magenta={true}>{authenticated ? 'Y' : 'N'}</Color></Box>
         <Box>account: <Color magenta={true}>{account ? account.address : '-'}</Color></Box>
-        <Box>accountBalance: <Color magenta={true}>{accountBalance ? `${weiToEth(accountBalance).toFixed(6)} ETH` : '-'}</Color></Box>
+        <Box>accountBalance: <Color magenta={true}>{account && account.balance.real ? `${weiToEth(account.balance.real).toFixed(6)} ETH` : '-'}</Color></Box>
         <Box>device: <Color magenta={true}>{device ? device.address : '-'}</Color></Box>
       </Box>
     );

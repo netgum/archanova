@@ -20,10 +20,10 @@ export enum AccountDeviceTypes {
 }
 
 export enum AccountGameStates {
+  Open = 'Open',
   Opened = 'Opened',
-  Locked = 'Locked',
-  Unlocked = 'Unlocked',
-  Closed = 'Closed',
+  Started = 'Started',
+  Finished = 'Finished',
 }
 
 export enum AccountGamePlayers {
@@ -32,9 +32,24 @@ export enum AccountGamePlayers {
 }
 
 export enum AccountTransactionTypes {
-  Deployment = 'Deployment',
-  Incoming = 'Incoming',
-  Outgoing = 'Outgoing',
+  CreateAccount = 'CreateAccount',
+  AddDevice = 'AddDevice',
+  RemoveDevice = 'RemoveDevice',
+  ExecuteTransaction = 'ExecuteTransaction',
+}
+
+export enum AccountTransactionStates {
+  Created = 'Created',
+  Completed = 'Completed',
+}
+
+export enum AccountPaymentStates {
+  Reserved = 'Reserved',
+  Locked = 'Locked',
+  Created = 'Created',
+  Signed = 'Signed',
+  Completed = 'Completed',
+  Processed = 'Processed',
 }
 
 export enum AppStates {
