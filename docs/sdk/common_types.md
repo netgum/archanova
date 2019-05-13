@@ -27,10 +27,10 @@ export enum AccountDeviceTypes {
 }
 
 export enum AccountGameStates {
+  Open = 'Open',
   Opened = 'Opened',
-  Locked = 'Locked',
-  Unlocked = 'Unlocked',
-  Closed = 'Closed',
+  Started = 'Started',
+  Finished = 'Finished',
 }
 
 export enum AccountGamePlayers {
@@ -39,15 +39,31 @@ export enum AccountGamePlayers {
 }
 
 export enum AccountTransactionTypes {
-  Deployment = 'Deployment',
-  Incoming = 'Incoming',
-  Outgoing = 'Outgoing',
+  CreateAccount = 'CreateAccount',
+  AddDevice = 'AddDevice',
+  RemoveDevice = 'RemoveDevice',
+  ExecuteTransaction = 'ExecuteTransaction',
+}
+
+export enum AccountTransactionStates {
+  Created = 'Created',
+  Completed = 'Completed',
+}
+
+export enum AccountPaymentStates {
+  Reserved = 'Reserved',
+  Locked = 'Locked',
+  Created = 'Created',
+  Signed = 'Signed',
+  Completed = 'Completed',
+  Processed = 'Processed',
 }
 
 export enum AppStates {
   Accepted = 'Accepted',
   Rejected = 'Rejected',
 }
+
 ```
 
 ## Interfaces
@@ -59,11 +75,14 @@ import BN from 'bn.js';
 
 export interface IAccount {
   address: string;
-  ensName?: string;
+  ensName: string;
   type: AccountTypes;
   state: AccountStates;
-  nextState?: AccountStates;
-  virtualBalance: BN;
+  nextState: AccountStates;
+  balance: {
+    real: BN;
+    virtual: BN;
+  };
   updatedAt: Date;
 }
 
@@ -76,21 +95,24 @@ export interface IAccountDevice {
 }
 
 export interface IAccountGameHistory {
-  player: IAccount;
-  stateValue: string;
+  player: AccountGamePlayers;
+  data: string;
   updatedAt: Date;
 }
 
 export interface IAccountGame {
   id: number;
   app: IApp;
-  creator: IAccount;
-  opponent: IAccount;
+  creator: {
+    account: IAccount;
+    payment: IAccountPayment;
+  };
+  opponent: {
+    account: IAccount;
+    payment: IAccountPayment;
+  };
   state: AccountGameStates;
-  stateValue: string;
-  creatorSignature: Buffer;
-  opponentSignature: Buffer;
-  guardianSignature: Buffer;
+  data: string;
   whoseTurn: AccountGamePlayers;
   winner: AccountGamePlayers;
   deposit: BN;
@@ -98,16 +120,48 @@ export interface IAccountGame {
 }
 
 export interface IAccountTransaction {
-  type: AccountTransactionTypes;
-  address: string;
+  from: {
+    account: IAccount;
+    address: string;
+  };
+  to: {
+    account: IAccount;
+    address: string;
+  };
   hash: string;
+  type: AccountTransactionTypes;
+  state: AccountTransactionStates;
   value: BN;
   fee: BN;
+  gas: {
+    used: BN;
+    price: BN;
+  };
+  updatedAt: Date;
+}
+
+export interface IAccountPayment {
+  sender: {
+    account: IAccount;
+    signature: Buffer;
+  };
+  receiver: {
+    account: IAccount;
+    address: string;
+  };
+  guardian: {
+    signature: Buffer;
+  };
+  hash: string;
+  state: AccountPaymentStates;
+  value: BN;
   updatedAt: Date;
 }
 
 export interface IApp {
-  creator: IAccount;
+  creator: {
+    account: IAccount;
+  };
   state: AppStates;
   alias: string;
   name: string;

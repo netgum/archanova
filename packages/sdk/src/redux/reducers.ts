@@ -8,7 +8,6 @@ export const reduxSdkReducer = combineReducers({
   authenticated: createReducer(ReduxSdkActionTypes.SetAuthenticated),
   account: createReducer(ReduxSdkActionTypes.SetAccount),
   accountDevice: createReducer(ReduxSdkActionTypes.SetAccountDevice),
-  accountBalance: createReducer(ReduxSdkActionTypes.SetAccountBalance),
   device: createReducer(ReduxSdkActionTypes.SetDevice),
   ens: createReducer(ReduxSdkActionTypes.SetEns),
   eth: createReducer(ReduxSdkActionTypes.SetEth),

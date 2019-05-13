@@ -10,7 +10,6 @@ import {
   AccountDevice,
   AccountGame,
   AccountTransaction,
-  AccountVirtualPayment,
   Action,
   Api,
   App,
@@ -39,7 +38,6 @@ export class Sdk {
   private readonly accountDevice: AccountDevice;
   private readonly accountGame: AccountGame;
   private readonly accountTransaction: AccountTransaction;
-  private readonly accountVirtualPayment: AccountVirtualPayment;
   private readonly action: Action;
   private readonly app: App;
   private readonly contract: Contract;
@@ -103,7 +101,6 @@ export class Sdk {
 
     this.accountTransaction = new AccountTransaction(this.api, this.contract, this.device, this.state);
     this.accountDevice = new AccountDevice(this.accountTransaction, this.api, this.contract, this.state);
-    this.accountVirtualPayment = new AccountVirtualPayment(this.accountTransaction, this.api, this.contract, this.device, this.state);
     this.accountGame = new AccountGame(this.api, this.contract, this.device, this.state);
 
     this.state.incomingAction$ = this.action.$incoming;
@@ -467,168 +464,6 @@ export class Sdk {
     return this.accountTransaction.submitAccountProxyTransaction(estimated);
   }
 
-// Account Game
-
-  /**
-   * gets connected account games
-   * @param appAlias
-   * @param page
-   */
-  public async getConnectedAccountGames(appAlias: string = null, page = 0): Promise<IPaginated<IAccountGame>> {
-    this.require();
-
-    return this.accountGame.getConnectedAccountGames(appAlias, page);
-  }
-
-  /**
-   * gets connected account game
-   * @param gameId
-   */
-  public async getConnectedAccountGame(gameId: number): Promise<IAccountGame> {
-    this.require();
-
-    return this.accountGame.getConnectedAccountGame(gameId);
-  }
-
-  /**
-   * gets connected account game history
-   * @param gameId
-   * @param page
-   */
-  public async getConnectedAccountGameHistory(gameId: number, page = 0): Promise<IPaginated<IAccountGameHistory>> {
-    this.require();
-
-    return this.accountGame.getConnectedAccountGameHistory(gameId);
-  }
-
-  /**
-   * creates account game
-   * @param appAlias
-   * @param deposit
-   * @param stateValue
-   */
-  public async createAccountGame(appAlias: string, deposit: string | number | BN, stateValue: string): Promise<IAccountGame> {
-    this.require({
-      accountDeviceOwner: true,
-      accountDeviceDeployed: true,
-    });
-
-    return this.accountGame.createAccountGame(
-      appAlias,
-      deposit,
-      stateValue,
-    );
-  }
-
-  /**
-   * joins account game
-   * @param game
-   * @param stateValue
-   */
-  public async joinAccountGame(game: IAccountGame, stateValue: string): Promise<IAccountGame> {
-    this.require({
-      accountDeviceOwner: true,
-      accountDeviceDeployed: true,
-    });
-
-    if (game.state !== AccountGameStates.Opened) {
-      throw new Sdk.Error('invalid game state');
-    }
-
-    return this.accountGame.joinAccountGame(
-      game,
-      stateValue,
-    );
-  }
-
-  /**
-   * makes account game move
-   * @param gameId
-   * @param stateValue
-   */
-  public async makeAccountGameMove(gameId: number, stateValue: string): Promise<IAccountGame> {
-    this.require();
-
-    const { accountAddress } = this.state;
-
-    const game = await this.accountGame.getConnectedAccountGame(gameId);
-
-    if (game.state !== AccountGameStates.Locked) {
-      throw new Sdk.Error('invalid game state');
-    }
-
-    const { creator, opponent, creatorSignature, opponentSignature, whoseTurn } = game;
-
-    if (creator.address === accountAddress) {
-      if (whoseTurn !== AccountGamePlayers.Creator) {
-        throw new Sdk.Error('waiting for opponent move');
-      }
-      if (!creatorSignature) {
-        this.require({
-          accountDeviceOwner: true,
-          accountDeviceDeployed: true,
-        });
-      }
-    } else if (opponent.address === accountAddress) {
-      if (whoseTurn !== AccountGamePlayers.Opponent) {
-        throw new Sdk.Error('waiting for opponent move');
-      }
-      if (!opponentSignature) {
-        this.require({
-          accountDeviceOwner: true,
-          accountDeviceDeployed: true,
-        });
-      }
-    }
-
-    return this.accountGame.makeAccountGameMove(
-      game,
-      stateValue,
-    );
-  }
-
-// Account Virtual Payment
-
-  /**
-   * estimates account virtual deposit
-   * @param value
-   * @param transactionSpeed
-   */
-  public async estimateAccountVirtualDeposit(
-    value: number | string | BN,
-    transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
-    this.require({
-      accountDeviceOwner: true,
-      accountDeviceDeployed: true,
-    });
-
-    return this.accountVirtualPayment.estimateAccountVirtualDeposit(
-      value,
-      this.eth.getGasPrice(transactionSpeed),
-    );
-  }
-
-  /**
-   * estimates account virtual withdrawal
-   * @param value
-   * @param transactionSpeed
-   */
-  public async estimateAccountVirtualWithdrawal(
-    value: number | string | BN,
-    transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
-    this.require({
-      accountDeviceOwner: true,
-      accountDeviceDeployed: true,
-    });
-
-    return this.accountVirtualPayment.estimateAccountVirtualWithdrawal(
-      value,
-      this.eth.getGasPrice(transactionSpeed),
-    );
-  }
-
 // App
 
   /**
@@ -807,26 +642,42 @@ export class Sdk {
   }
 
   private subscribeAccountBalance(): void {
-    const { account$, accountBalance$ } = this.state;
+    const { account$ } = this.state;
+
+    let subscription: Subscription = null;
 
     account$
-      .pipe(
-        switchMap(account => account
-          ? timer(0, 5000)
-            .pipe(
-              switchMap(() => from(
-                this
-                  .eth
-                  .getBalance(account.address, 'pending')
-                  .catch(() => null)),
-              ),
-              filter(balance => !!balance),
-              takeUntil(account$.pipe(filter(account => !account))),
-            )
-          : of([null]),
-        ),
-      )
-      .subscribe(accountBalance$);
+      .subscribe((account) => {
+        if (account) {
+          if (!subscription) {
+            subscription = timer(0, 5000)
+              .pipe(
+                switchMap(() => from(
+                  this
+                    .eth
+                    .getBalance(account.address, 'pending')
+                    .catch(() => null)),
+                ),
+                filter(balance => !!balance),
+                map((real) => {
+                  const { account } = this.state;
+
+                  return {
+                    ...account,
+                    balance: {
+                      real,
+                      virtual: account.balance.virtual,
+                    },
+                  };
+                }),
+              )
+              .subscribe(account$);
+          }
+        } else if (subscription) {
+          subscription.unsubscribe();
+          subscription = null;
+        }
+      });
   }
 
   private subscribeApiEvents(): void {
@@ -896,10 +747,10 @@ export class Sdk {
             }
             case Api.EventNames.AccountGameUpdated: {
               const { account, game } = payload;
-              if (accountAddress === account) {
-                const accountGame = await this.accountGame.getConnectedAccountGame(game);
-                this.emitEvent(Sdk.EventNames.AccountGameUpdated, accountGame);
-              }
+              break;
+            }
+            case Api.EventNames.AccountPaymentUpdated: {
+              const { account, hash } = payload;
               break;
             }
             case Api.EventNames.SecureCodeSigned: {

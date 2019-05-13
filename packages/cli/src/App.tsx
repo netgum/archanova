@@ -1,6 +1,7 @@
 import { ISdkReduxState } from '@archanova/sdk';
+import { weiToEth } from '@netgum/utils';
 import React from 'react';
-import { Box } from 'ink';
+import { Box, Color } from 'ink';
 import { connect } from 'react-redux';
 import { QrCode } from './components';
 
@@ -21,11 +22,12 @@ class App extends React.Component<IStateProps> {
     return (
       <Box flexDirection="column" justifyContent="flex-end" height="100%">
         <QrCode url={device ? device.address : '-'} small={true} />
-        <Box>connected: {connected ? 'Y' : 'N'}</Box>
-        <Box>initialized: {initialized ? 'Y' : 'N'}</Box>
-        <Box>authenticated: {authenticated ? 'Y' : 'N'}</Box>
-        <Box>account: {account ? account.address : '-'}</Box>
-        <Box>device: {device ? device.address : '-'}</Box>
+        <Box>connected: <Color magenta={true}>{connected ? 'Y' : 'N'}</Color></Box>
+        <Box>initialized: <Color magenta={true}>{initialized ? 'Y' : 'N'}</Color></Box>
+        <Box>authenticated: <Color magenta={true}>{authenticated ? 'Y' : 'N'}</Color></Box>
+        <Box>account: <Color magenta={true}>{account ? account.address : '-'}</Color></Box>
+        <Box>accountBalance: <Color magenta={true}>{account && account.balance.real ? `${weiToEth(account.balance.real).toFixed(6)} ETH` : '-'}</Color></Box>
+        <Box>device: <Color magenta={true}>{device ? device.address : '-'}</Color></Box>
       </Box>
     );
   }

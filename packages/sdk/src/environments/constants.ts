@@ -2,8 +2,9 @@ import { Environment } from '../modules';
 
 export enum SdkEnvironmentNames {
   // Main = 'main',
-  Kovan = 'kovan',
+  Ropsten = 'ropsten',
   Rinkeby = 'rinkeby',
+  Kovan = 'kovan',
 }
 
 const mainConfig: Environment.IConfigs = {
@@ -28,18 +29,18 @@ const mainConfig: Environment.IConfigs = {
 
 export const main = new Environment(Object.create(mainConfig));
 
-export const kovan = (new Environment(Object.create(mainConfig)))
+export const ropsten = (new Environment(Object.create(mainConfig)))
   .extendConfig('apiOptions', {
-    host: 'kovan.archanova.run',
+    host: 'ropsten.archanova.run',
   })
   .extendConfig('ensOptions', {
-    supportedRootNames: ['archanova.kovan'],
+    supportedRootNames: ['archanova.ropsten'],
   })
   .extendConfig('ethOptions', {
-    networkId: '42',
+    networkId: '3',
   })
   .extendConfig('storageOptions', {
-    namespace: '@archanova:kovan',
+    namespace: '@archanova:ropsten',
   });
 
 export const rinkeby = (new Environment(Object.create(mainConfig)))
@@ -54,4 +55,18 @@ export const rinkeby = (new Environment(Object.create(mainConfig)))
   })
   .extendConfig('storageOptions', {
     namespace: '@archanova:rinkeby',
+  });
+
+export const kovan = (new Environment(Object.create(mainConfig)))
+  .extendConfig('apiOptions', {
+    host: 'kovan.archanova.run',
+  })
+  .extendConfig('ensOptions', {
+    supportedRootNames: ['archanova.kovan'],
+  })
+  .extendConfig('ethOptions', {
+    networkId: '42',
+  })
+  .extendConfig('storageOptions', {
+    namespace: '@archanova:kovan',
   });

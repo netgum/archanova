@@ -12,12 +12,16 @@ export function configureSdk(options: {
   let sdkEnv: sdkModules.Environment = createLocalSdkEnvironment(options.localEnv.host);
 
   switch (options.env) {
-    case 'kovan':
-      sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Kovan);
+    case 'ropsten':
+      sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Ropsten);
       break;
 
     case 'rinkeby':
       sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Rinkeby);
+      break;
+
+    case 'kovan':
+      sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Kovan);
       break;
   }
 

@@ -2,7 +2,6 @@ export * from './Account';
 export * from './AccountDevice';
 export * from './AccountGame';
 export * from './AccountTransaction';
-export * from './AccountVirtualPayment';
 export * from './Action';
 export * from './Api';
 export * from './App';

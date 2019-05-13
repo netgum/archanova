@@ -235,6 +235,7 @@ export namespace Api {
     AccountDeviceUpdated = 'AccountDeviceUpdated',
     AccountDeviceRemoved = 'AccountDeviceRemoved',
     AccountTransactionUpdated = 'AccountTransactionUpdated',
+    AccountPaymentUpdated = 'AccountPaymentUpdated',
     AccountGameUpdated = 'AccountGameUpdated',
     SecureCodeSigned = 'SecureCodeSigned',
   }

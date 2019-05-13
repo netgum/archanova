@@ -1,7 +1,5 @@
 # Api
 
-## Account
-
 ### `initialize`
 ```
 sdk.initialize(): Promise<void>
@@ -11,6 +9,8 @@ sdk.initialize(): Promise<void>
 ```
 reset(options: { device?: boolean, session?: boolean } = {}): Promise<void>
 ```
+
+## Account
 
 ### `getConnectedAccounts`
 ```
@@ -129,57 +129,11 @@ submitAccountTransaction(estimated: AccountTransaction.IEstimatedProxyTransactio
 
 ## Account Game
 
-### `getConnectedAccountGames`
-```
-getConnectedAccountGames(appAlias: string = null, page = 0): Promise<IPaginated<IAccountGame>>
-```
+(TODO)
 
-### `getConnectedAccountGame`
-```
-getConnectedAccountGame(gameId: number): Promise<IAccountGame>
-```
+## Account Payment
 
-### `getConnectedAccountGameHistory`
-```
-getConnectedAccountGameHistory(gameId: number, page = 0): Promise<IPaginated<IAccountGameHistory>>
-```
-
-### `createAccountGame`
-```
-createAccountGame(
-  appAlias: string, 
-  deposit: string | number | BN, 
-  stateValue: string
-): Promise<IAccountGame>
-```
-
-### `joinAccountGame`
-```
-joinAccountGame(game: IAccountGame, stateValue: string): Promise<IAccountGame>
-```
-
-### `makeAccountGameMove`
-```
-makeAccountGameMove(gameId: number, stateValue: string): Promise<IAccountGame>
-```
-
-## Account Virtual Payment
-
-### `estimateAccountVirtualDeposit`
-```
-estimateAccountVirtualDeposit(
-  value: number | string | BN,
-  transactionSpeed: Eth.TransactionSpeeds = null,
-): Promise<AccountTransaction.IEstimatedProxyTransaction>
-```
-
-### `estimateAccountVirtualWithdrawal`
-```
-estimateAccountVirtualWithdrawal(
-  value: number | string | BN,
-  transactionSpeed: Eth.TransactionSpeeds = null,
-): Promise<AccountTransaction.IEstimatedProxyTransaction>
-```  
+(TODO)
 
 ## Apps 
 
