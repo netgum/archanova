@@ -9,11 +9,11 @@ $ npm i @archanova/cli -g
 ## Usage
 
 ```bash
-$ archanova-cli [options] [path]
+$ archanova-cli [options]
 ```
 
 **Options:**
-  * `-e --env <env>` - environment [local,kovan,rinkeby] (default: "kovan")
+  * `-e --env <env>` - environment [ropsten,rinkeby,kovan,local] (default: kovan)
   * `--local-env-host <host>` - local host (default: "localhost")
   * `--admin` - admin mode
   * `--no-storage` - don't use storage
