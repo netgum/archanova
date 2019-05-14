@@ -11,7 +11,6 @@ interface IState {
   initialized$: Subject<boolean>;
   connected$: Subject<boolean>;
   account$: Subject<sdkInterfaces.IAccount>;
-  accountBalance$: Subject<BN>;
   accountDevice$: Subject<sdkInterfaces.IAccountDevice>;
   device$: Subject<sdkInterfaces.IDevice>;
   ens$: Subject<sdkModules.State.IEns>;
@@ -22,12 +21,14 @@ interface IState {
   initialized: boolean;
   connected: boolean;
   account: sdkInterfaces.IAccount;
-  accountBalance: BN;
+  accountAddress: string;
   accountDevice: sdkInterfaces.IAccountDevice;
   device: sdkInterfaces.IDevice;
+  deviceAddress: string;
   ens: sdkModules.State.IEns;
   eth: sdkModules.State.IEth;
   session: sdkModules.State.ISession;
+  sessionToken: string;
   incomingAction: sdkModules.Action.IAction;
 }
 ```  
