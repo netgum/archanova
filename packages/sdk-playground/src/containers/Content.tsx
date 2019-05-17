@@ -29,7 +29,17 @@ import {
   WithdrawAccountPayment,
 } from './accountPayment';
 import {
+  GetApps,
+  GetApp,
+  GetAppOpenGames,
+} from './app';
+import {
+  GetConnectedAccountGames,
+  CreateAccountGame,
+} from './accountGame';
+import {
   CreateRequestAddAccountDeviceUrl,
+  CreateRequestSignSecureCodeUrl,
 } from './url';
 import {
   SignPersonalMessage,
@@ -132,9 +142,35 @@ class Content extends React.Component<IProps, IState> {
         Screen = WithdrawAccountPayment;
         break;
 
+      // app
+      case Screens.GetApps:
+        Screen = GetApps;
+        break;
+
+      case Screens.GetApp:
+        Screen = GetApp;
+        break;
+
+      case Screens.GetAppOpenGames:
+        Screen = GetAppOpenGames;
+        break;
+
+      // account games
+      case Screens.GetConnectedAccountGames:
+        Screen = GetConnectedAccountGames;
+        break;
+
+      case Screens.CreateAccountGame:
+        Screen = CreateAccountGame;
+        break;
+
       // url
       case Screens.CreateRequestAddAccountDeviceUrl:
         Screen = CreateRequestAddAccountDeviceUrl;
+        break;
+
+      case Screens.CreateRequestSignSecureCodeUrl:
+        Screen = CreateRequestSignSecureCodeUrl;
         break;
 
       // utils
@@ -203,9 +239,23 @@ class Content extends React.Component<IProps, IState> {
               Screens.WithdrawAccountPayment,
             ],
           }, {
+            header: 'App',
+            screens: [
+              Screens.GetApps,
+              Screens.GetApp,
+              Screens.GetAppOpenGames,
+            ],
+          }, {
+            header: 'Account Game',
+            screens: [
+              Screens.GetConnectedAccountGames,
+              Screens.CreateAccountGame,
+            ],
+          }, {
             header: 'Url',
             screens: [
               Screens.CreateRequestAddAccountDeviceUrl,
+              Screens.CreateRequestSignSecureCodeUrl,
             ],
           }, {
             header: 'Utils',
@@ -219,7 +269,7 @@ class Content extends React.Component<IProps, IState> {
         />
         <div className={styles.wrapper}>
           {screenNode}
-          <Footer/>
+          <Footer />
         </div>
       </div>
     );
@@ -235,6 +285,9 @@ class Content extends React.Component<IProps, IState> {
     const accountDeployed = accountConnected && !account.nextState && account.state === sdkConstants.AccountStates.Deployed;
     const accountDeviceDeployed = (
       accountConnected && accountDevice && !accountDevice.nextState && accountDevice.state === sdkConstants.AccountDeviceStates.Deployed
+    );
+    const accountDeviceOwner = (
+      accountConnected && accountDevice && accountDevice.type === sdkConstants.AccountDeviceTypes.Owner
     );
 
     return {
@@ -265,8 +318,18 @@ class Content extends React.Component<IProps, IState> {
       [Screens.DepositAccountPayment]: accountDeviceDeployed,
       [Screens.WithdrawAccountPayment]: accountDeviceDeployed,
 
+      // app
+      [Screens.GetApps]: initialized,
+      [Screens.GetApp]: initialized,
+      [Screens.GetAppOpenGames]: initialized,
+
+      // account game
+      [Screens.GetConnectedAccountGames]: accountConnected,
+      [Screens.CreateAccountGame]: accountDeviceOwner,
+
       // url
       [Screens.CreateRequestAddAccountDeviceUrl]: accountDisconnected,
+      [Screens.CreateRequestSignSecureCodeUrl]: accountDeviceOwner,
 
       // utils
       [Screens.SignPersonalMessage]: initialized,

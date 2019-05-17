@@ -1,9 +1,9 @@
 import React from 'react';
-import { Example, Screen, InputText } from '../../components';
+import { Example, Screen, InputText, Url } from '../../components';
 import { getCurrentEndpoint, getTargetEndpoint } from '../../shared';
 
 const code1 = () => `
-console.log('url', sdk.createRequestAddAccountDeviceUrl());
+console.log('mobileUrl', sdk.createRequestAddAccountDeviceUrl());
 `;
 const code2 = (endpoint: string, callbackEndpoint: string) => `
 const options = {
@@ -13,18 +13,23 @@ ${callbackEndpoint ? `  callbackEndpoint: "${callbackEndpoint}",` : ''}
   `.trim()}
 };
 
-console.log('url', sdk.createRequestAddAccountDeviceUrl(options));
+console.log('redirectUrl', sdk.createRequestAddAccountDeviceUrl(options));
+console.log('mobileUrl', sdk.createRequestAddAccountDeviceUrl());
 `;
 
 interface IState {
   endpoint: string;
   callbackEndpoint: string;
+  mobileUrl: string;
+  redirectUrl: string;
 }
 
 export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
   public state = {
     endpoint: getTargetEndpoint(),
     callbackEndpoint: getCurrentEndpoint(),
+    mobileUrl: '',
+    redirectUrl: '',
   };
 
   public componentWillMount(): void {
@@ -36,7 +41,7 @@ export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { endpoint, callbackEndpoint } = this.state;
+    const { endpoint, callbackEndpoint, mobileUrl, redirectUrl } = this.state;
     return (
       <div>
         <Example
@@ -61,6 +66,12 @@ export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
             onChange={this.callbackEndpointChanged}
           />
         </Example>
+        {enabled && mobileUrl && (
+          <Url
+            mobile={mobileUrl}
+            redirect={redirectUrl}
+          />
+        )}
       </div>
     );
   }
@@ -68,12 +79,14 @@ export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
   private endpointChanged(endpoint: string): void {
     this.setState({
       endpoint,
+      mobileUrl: null,
     });
   }
 
   private callbackEndpointChanged(callbackEndpoint: string): void {
     this.setState({
       callbackEndpoint,
+      mobileUrl: null,
     });
   }
 
@@ -82,10 +95,19 @@ export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
     this
       .logger
       .wrapSync('sdk.createRequestAddAccountDeviceUrl', async (console) => {
-        console.log('url', this.sdk.createRequestAddAccountDeviceUrl({
+        const redirectUrl = this.sdk.createRequestAddAccountDeviceUrl({
           endpoint: endpoint || null,
           callbackEndpoint: callbackEndpoint || null,
-        }));
+        });
+        const mobileUrl = this.sdk.createRequestAddAccountDeviceUrl();
+
+        console.log('redirectUrl', `${redirectUrl.slice(0, 100)}...`);
+        console.log('mobileUrl', `${mobileUrl.slice(0, 100)}...`);
+
+        this.setState({
+          mobileUrl,
+          redirectUrl: endpoint ? redirectUrl : null,
+        });
       });
   }
 }
