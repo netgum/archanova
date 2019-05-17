@@ -2,7 +2,11 @@
 
 ### `initialize`
 ```
-sdk.initialize(): Promise<void>
+initialize(options?: { 
+  device?: {
+    privateKey?: Buffer | string;
+  };
+}): Promise<void>;
 ```
 
 ### `reset`
@@ -50,6 +54,14 @@ estimateAccountDeployment(transactionSpeed: Eth.TransactionSpeeds = null): Promi
 ### `deployAccount`
 ```
 deployAccount(transactionSpeed: Eth.TransactionSpeeds = null): Promise<string>
+```
+
+### `estimateTopUpAccountVirtualBalance`
+```
+estimateTopUpAccountVirtualBalance(
+  value: number | string | BN,
+  transactionSpeed: Eth.TransactionSpeeds = null,
+): Promise<AccountTransaction.IEstimatedProxyTransaction>
 ```
 
 ## Account Device
@@ -188,11 +200,6 @@ createRequestSignSecureCodeUrl(): Promise<string>
 ```
 
 ## Utils
-
-### `createContractInstance`
-```
-createContractInstance<T = string>(abi: TAbi, address: string = null): Contract.ContractInstance<T>
-```
 
 ### `signPersonalMessage`
 ```

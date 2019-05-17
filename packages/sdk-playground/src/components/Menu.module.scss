@@ -1,0 +1,48 @@
+.content {
+  width: 250px;
+  background-color: #f2f2f2;
+
+  .wrapper {
+    padding: 15px;
+
+    h4 {
+      padding-bottom: 2px;
+      color: #454545;
+    }
+
+    & > div {
+      padding-bottom: 15px;
+
+      &:last-child {
+        padding-bottom: 0;
+      }
+
+      div {
+        button {
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 220px;
+          text-align: left;
+          padding: 0;
+          border-width: 0;
+          background-color: transparent;
+          cursor: pointer;
+          line-height: 22px;
+          position: relative;
+          color: black;
+
+          &.off {
+            opacity: 0.4;
+          }
+
+          &:hover,
+          &.active {
+            color: #4700FF;
+          }
+        }
+      }
+    }
+  }
+}

@@ -33,13 +33,13 @@ export function getSdkEnvironment(name: SdkEnvironmentNames): Environment {
 
 /**
  * creates local sdk environment
- * @param host
+ * @param options
  */
-export function createLocalSdkEnvironment(host = 'localhost'): Environment {
+export function createLocalSdkEnvironment(options: { host?: string, port?: number } = {}): Environment {
   return new Environment({
     apiOptions: {
-      host,
-      port: 8880,
+      host: options.host || 'localhost',
+      port: options.port || 8880,
       ssl: false,
       reconnectTimeout: 3000,
     },
