@@ -11,13 +11,13 @@ $ npm run compile
 
 ## Usage
 
-Starts first instance on `5100` port:
+Starts `first` instance on `5100` port:
 
 ```bash
 $ npm run start:sdk:playground:5100
 ```
 
-Starts first instance on `5200` port:
+Starts `second` instance on `5200` port:
 
 ```bash
 $ npm run start:sdk:playground:5200

@@ -1,17 +1,11 @@
-import { createLocalSdkEnvironment, SdkEnvironmentNames, getSdkEnvironment, Sdk, sdkModules, createSdk } from '@archanova/sdk';
+import { createLocalSdkEnvironment, SdkEnvironmentNames, getSdkEnvironment, sdkModules } from '@archanova/sdk';
 import Ws from 'ws';
 import { StorageAdapter } from './StorageAdapter';
+import { ISdkOptions } from './interface';
+import { Sdk } from './Sdk';
 
-export function configureSdk(options: {
-  env: string,
-  localEnv: {
-    host: string;
-  };
-  storage: boolean;
-}): Sdk {
-  let sdkEnv: sdkModules.Environment = createLocalSdkEnvironment({
-    host: options.localEnv.host,
-  });
+export async function configureSdk(options: ISdkOptions, workingPath: string): Promise<Sdk> {
+  let sdkEnv: sdkModules.Environment = createLocalSdkEnvironment(options.localEnv);
 
   switch (options.env) {
     case 'ropsten':
@@ -27,13 +21,17 @@ export function configureSdk(options: {
       break;
   }
 
-  const storageAdapter: sdkModules.Storage.IAdapter = options.storage
-    ? new StorageAdapter()
-    : null;
-
-  return createSdk(
+  const sdk = new Sdk(
     sdkEnv
-      .setConfig('storageAdapter', storageAdapter)
+      .setConfig('storageAdapter', new StorageAdapter(workingPath))
       .setConfig('apiWebSocketConstructor', Ws),
   );
+
+  await sdk.initialize({
+    device: {
+      privateKey: options.privateKey,
+    },
+  });
+
+  return sdk;
 }
