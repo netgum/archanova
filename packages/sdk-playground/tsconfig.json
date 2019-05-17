@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@netgum/types/react",
+      "./node_modules/@netgum/types/node"
+    ],
+    "allowJs": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": false
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}

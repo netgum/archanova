@@ -1,0 +1,41 @@
+.wrapper {
+  max-height: 250px;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  padding: 10px 0;
+  position: relative;
+}
+
+.tabs {
+  position: absolute;
+  top: -30px;
+  left: 15px;
+  height: 30px;
+  display: flex;
+  flex-direction: row;
+  button {
+    cursor: pointer;
+    margin-right: 2px;
+    border-width: 0;
+    padding: 0 20px;
+    background-color: #F4F4F4;
+    &.active {
+      background-color: white;
+    }
+  }
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  > div {
+    padding: 10px;
+    border-bottom: 1px solid #E8E8E8;
+    overflow: auto;
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}

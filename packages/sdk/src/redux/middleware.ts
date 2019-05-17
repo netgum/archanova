@@ -9,13 +9,13 @@ export function createReduxSdkMiddleware(sdk: Sdk): Middleware {
   const {
     initialized$,
     connected$,
+    authenticated$,
     account$,
     accountDevice$,
     device$,
     ens$,
     eth$,
     incomingAction$,
-    session$,
   } = sdk.state;
 
   return (store: Store) => {
@@ -30,10 +30,7 @@ export function createReduxSdkMiddleware(sdk: Sdk): Middleware {
           ens$.pipe(map(createActionCreator(ReduxSdkActionTypes.SetEns))),
           eth$.pipe(map(createActionCreator(ReduxSdkActionTypes.SetEth))),
           incomingAction$.pipe(map(createActionCreator(ReduxSdkActionTypes.SetIncomingAction))),
-          session$.pipe(
-            map(session => !!session),
-            map(createActionCreator(ReduxSdkActionTypes.SetAuthenticated)),
-          ),
+          authenticated$.pipe(map(createActionCreator(ReduxSdkActionTypes.SetAuthenticated))),
         )
           .subscribe(store.dispatch);
       },

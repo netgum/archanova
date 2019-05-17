@@ -1,0 +1,19 @@
+.content {
+  height: 50px;
+  font-size: 11px;
+  padding: 0 15px;
+  background-color: #6024FC;
+  color: white;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  > div {
+    flex-direction: column;
+    margin-right: 20px;
+    > div:first-child {
+      font-weight: bold;
+      color: #c0aafc;
+      padding-bottom: 2px;
+    }
+  }
+}

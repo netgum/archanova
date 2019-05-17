@@ -1,4 +1,4 @@
-import { generateRandomPrivateKey, privateKeyToAddress, signPersonalMessage } from '@netgum/utils';
+import { generateRandomPrivateKey, privateKeyToAddress, signPersonalMessage, anyToBuffer, verifyPrivateKey } from '@netgum/utils';
 import { State } from './State';
 import { Storage } from './Storage';
 
@@ -12,8 +12,19 @@ export class Device {
     //
   }
 
-  public async setup(): Promise<void> {
-    this.privateKey = await this.storage.getItem<Buffer>(Device.StorageKeys.PrivateKey);
+  public async setup(options: Device.ISetupOptions = {}): Promise<void> {
+    if (options.privateKey) {
+      const privateKey = anyToBuffer(options.privateKey, { defaults: null });
+      if (verifyPrivateKey(privateKey)) {
+        this.privateKey = privateKey;
+
+        await this.storage.setItem(Device.StorageKeys.PrivateKey, this.privateKey);
+      }
+    }
+
+    if (!this.privateKey) {
+      this.privateKey = await this.storage.getItem<Buffer>(Device.StorageKeys.PrivateKey);
+    }
 
     if (!this.privateKey) {
       await this.generatePrivateKey();
@@ -50,5 +61,9 @@ export class Device {
 export namespace Device {
   export enum StorageKeys {
     PrivateKey = 'private_key',
+  }
+
+  export interface ISetupOptions {
+    privateKey?: string | Buffer;
   }
 }

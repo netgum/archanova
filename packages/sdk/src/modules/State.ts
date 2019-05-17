@@ -1,7 +1,7 @@
 import BN from 'bn.js';
 import { UniqueBehaviorSubject, TUniqueBehaviorSubject } from 'rxjs-addons';
 import { from } from 'rxjs';
-import { skip, switchMap } from 'rxjs/operators';
+import { skip, switchMap, map } from 'rxjs/operators';
 import { Action } from './Action';
 import { Storage } from './Storage';
 import { IAccount, IAccountDevice, IDevice } from '../interfaces';
@@ -9,6 +9,7 @@ import { IAccount, IAccountDevice, IDevice } from '../interfaces';
 export class State {
   public initialized$ = new UniqueBehaviorSubject<boolean>();
   public connected$ = new UniqueBehaviorSubject<boolean>();
+  public authenticated$ = new UniqueBehaviorSubject<boolean>();
   public account$ = new UniqueBehaviorSubject<IAccount>(null, {
     prepare: (newValue, oldValue) => {
       if (
@@ -31,7 +32,12 @@ export class State {
   public incomingAction$: TUniqueBehaviorSubject<Action.IAction>;
 
   constructor(private storage: Storage) {
-    //
+    this
+      .session$
+      .pipe(
+        map(session => !!session),
+      )
+      .subscribe(this.authenticated$);
   }
 
   public get initialized(): boolean {
@@ -40,6 +46,10 @@ export class State {
 
   public get connected(): boolean {
     return this.connected$.value;
+  }
+
+  public get authenticated(): boolean {
+    return this.authenticated$.value;
   }
 
   public get account(): IAccount {
@@ -95,7 +105,6 @@ export class State {
     await Promise.all([
       this.attachToStorage(this.account$, State.StorageKeys.Account),
       this.attachToStorage(this.accountDevice$, State.StorageKeys.AccountDevice),
-      this.attachToStorage(this.session$, State.StorageKeys.Session),
     ]);
   }
 
@@ -120,7 +129,6 @@ export namespace State {
   export enum StorageKeys {
     Account = 'account',
     AccountDevice = 'account_device',
-    Session = 'session',
   }
 
   export interface IEns {

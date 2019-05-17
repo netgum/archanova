@@ -1,6 +1,7 @@
 export * from './Account';
 export * from './AccountDevice';
 export * from './AccountGame';
+export * from './AccountPayment';
 export * from './AccountTransaction';
 export * from './Action';
 export * from './Api';

@@ -9,7 +9,9 @@ export function configureSdk(options: {
   };
   storage: boolean;
 }): Sdk {
-  let sdkEnv: sdkModules.Environment = createLocalSdkEnvironment(options.localEnv.host);
+  let sdkEnv: sdkModules.Environment = createLocalSdkEnvironment({
+    host: options.localEnv.host,
+  });
 
   switch (options.env) {
     case 'ropsten':

@@ -31,27 +31,6 @@ export class AccountTransaction {
     });
   }
 
-  public async estimateAccountTransaction(
-    recipient: string,
-    value: number | string | BN,
-    data: string | Buffer,
-    gasPrice: BN,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
-    const { account } = this.contract;
-
-    const proxyData = account.encodeMethodInput(
-      'executeTransaction',
-      recipient,
-      anyToBN(value, { defaults: new BN(0) }),
-      anyToBuffer(data, { defaults: Buffer.alloc(0) }),
-    );
-
-    return this.estimateAccountProxyTransaction(
-      proxyData,
-      gasPrice,
-    );
-  }
-
   public async estimateAccountProxyTransaction(data: string, gasPrice: BN): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     const { accountAddress } = this.state;
     const result = await this.api.sendRequest<AccountTransaction.IEstimatedProxyTransaction>({

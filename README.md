@@ -6,6 +6,7 @@
 
 - [@archanova/cli](packages/cli)
 - [@archanova/sdk](packages/sdk)
+- [@archanova/sdk-playground](packages/sdk-playground)
 
 ## Docs
 

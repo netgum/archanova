@@ -4,13 +4,6 @@ import { encodeMethod, encodeSignature, IAbiItem, TAbi, decodeMethod, IResult } 
 import { Eth } from './Eth';
 
 export class Contract {
-  public static createContractInstance<T = string>(abi: TAbi, address: string = null, eth: EthJs = null): Contract.ContractInstance<T> {
-    return new Contract.ContractInstance(
-      address,
-      abi,
-      eth,
-    );
-  }
 
   public account: Contract.ContractInstance<'addDevice' | 'removeDevice' | 'executeTransaction'>;
   public accountProvider: Contract.ContractInstance;
@@ -20,35 +13,36 @@ export class Contract {
   public virtualPaymentManager: Contract.ContractInstance<'depositPayment' | 'withdrawPayment' | 'withdrawDeposit'>;
 
   constructor(private eth: Eth) {
-    this.account = Contract.createContractInstance(
+    this.account = this.createInstance(
       getContractAbi(ContractNames.Account),
-      null,
-      eth,
     );
-    this.accountProvider = Contract.createContractInstance(
+    this.accountProvider = this.createInstance(
       getContractAbi(ContractNames.AccountProvider),
       eth.getContractAddress(ContractNames.AccountProvider),
-      eth,
     );
-    this.accountProxy = Contract.createContractInstance(
+    this.accountProxy = this.createInstance(
       getContractAbi(ContractNames.AccountProxy),
       eth.getContractAddress(ContractNames.AccountProxy),
-      eth,
     );
-    this.ensRegistry = Contract.createContractInstance(
+    this.ensRegistry = this.createInstance(
       getContractAbi(ContractNames.ENSRegistry),
       eth.getContractAddress(ContractNames.ENSRegistry),
-      eth,
     );
-    this.ensResolver = Contract.createContractInstance(
+    this.ensResolver = this.createInstance(
       getContractAbi(ContractNames.ENSResolver),
       null,
-      eth,
     );
-    this.virtualPaymentManager = Contract.createContractInstance(
+    this.virtualPaymentManager = this.createInstance(
       getContractAbi(ContractNames.VirtualPaymentManager),
       eth.getContractAddress(ContractNames.VirtualPaymentManager),
-      eth,
+    );
+  }
+
+  public createInstance<T = string>(abi: TAbi, address: string = null): Contract.ContractInstance<T> {
+    return new Contract.ContractInstance(
+      address,
+      abi,
+      this.eth,
     );
   }
 }

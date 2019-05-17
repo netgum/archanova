@@ -10,6 +10,7 @@ import { sdkModules, sdkInterfaces } from '@archanova/sdk';
 interface IState {
   initialized$: Subject<boolean>;
   connected$: Subject<boolean>;
+  authenticated$: Subject<boolean>;
   account$: Subject<sdkInterfaces.IAccount>;
   accountDevice$: Subject<sdkInterfaces.IAccountDevice>;
   device$: Subject<sdkInterfaces.IDevice>;
@@ -20,6 +21,7 @@ interface IState {
   
   initialized: boolean;
   connected: boolean;
+  authenticated: boolean;
   account: sdkInterfaces.IAccount;
   accountAddress: string;
   accountDevice: sdkInterfaces.IAccountDevice;

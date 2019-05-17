@@ -1,0 +1,10 @@
+.content {
+  padding: 7px 20px;
+  border-width: 0;
+  background-color: #6024FC;
+  color: white;
+  font-weight: bold;
+  &:disabled {
+    opacity: 0.1;
+  }
+}
