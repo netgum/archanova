@@ -36,19 +36,19 @@ export class Sdk {
   public readonly error$ = new BehaviorSubject<any>(null);
   public readonly event$ = new BehaviorSubject<Sdk.IEvent>(null);
 
-  private readonly account: Account;
-  private readonly accountDevice: AccountDevice;
-  private readonly accountGame: AccountGame;
-  private readonly accountPayment: AccountPayment;
-  private readonly accountTransaction: AccountTransaction;
-  private readonly action: Action;
-  private readonly app: App;
-  private readonly device: Device;
-  private readonly ens: Ens;
-  private readonly eth: Eth & EthJs;
-  private readonly session: Session;
-  private readonly storage: Storage;
-  private readonly url: Url;
+  protected readonly account: Account;
+  protected readonly accountDevice: AccountDevice;
+  protected readonly accountGame: AccountGame;
+  protected readonly accountPayment: AccountPayment;
+  protected readonly accountTransaction: AccountTransaction;
+  protected readonly action: Action;
+  protected readonly app: App;
+  protected readonly device: Device;
+  protected readonly ens: Ens;
+  protected readonly eth: Eth & EthJs;
+  protected readonly session: Session;
+  protected readonly storage: Storage;
+  protected readonly url: Url;
 
   /**
    * constructor
@@ -788,9 +788,9 @@ export class Sdk {
     return this.device.signPersonalMessage(message);
   }
 
-// Private
+// Protected
 
-  private async verifyAccount(accountAddress: string = null): Promise<void> {
+  protected async verifyAccount(accountAddress: string = null): Promise<void> {
     if (!accountAddress) {
       ({ accountAddress } = this.state);
     }
@@ -814,7 +814,7 @@ export class Sdk {
     accountDevice$.next(accountDevice);
   }
 
-  private subscribeAccountBalance(): void {
+  protected subscribeAccountBalance(): void {
     const { account$ } = this.state;
 
     let subscription: Subscription = null;
@@ -854,7 +854,7 @@ export class Sdk {
       });
   }
 
-  private subscribeApiEvents(): void {
+  protected subscribeApiEvents(): void {
     this
       .api
       .event$
@@ -956,7 +956,7 @@ export class Sdk {
       .subscribe();
   }
 
-  private subscribeAcceptedActions(): void {
+  protected subscribeAcceptedActions(): void {
     const { account$ } = this.state;
     const { $accepted } = this.action;
 
@@ -1027,7 +1027,7 @@ export class Sdk {
       });
   }
 
-  private wrapAsync(wrapped: () => Promise<void>): Promise<void> {
+  protected wrapAsync(wrapped: () => Promise<void>): Promise<void> {
     return wrapped()
       .catch((err) => {
         this.catchError(err);
@@ -1035,18 +1035,18 @@ export class Sdk {
       });
   }
 
-  private catchError(err): void {
+  protected catchError(err): void {
     this.error$.next(err);
   }
 
-  private emitEvent<T = any>(name: Sdk.EventNames, payload: T): void {
+  protected emitEvent<T = any>(name: Sdk.EventNames, payload: T): void {
     this.event$.next({
       name,
       payload,
     });
   }
 
-  private require(options: Sdk.IRequireOptions = {}): void {
+  protected require(options: Sdk.IRequireOptions = {}): void {
     const {
       account,
       accountDevice,

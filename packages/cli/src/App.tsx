@@ -1,40 +1,26 @@
-import { ISdkReduxState } from '@archanova/sdk';
-import { weiToEth } from '@netgum/utils';
 import React from 'react';
+import { sdkInterfaces } from '@archanova/sdk';
 import { Box, Color } from 'ink';
-import { connect } from 'react-redux';
-import { QrCode } from './components';
 
-export interface IStateProps {
-  sdk: ISdkReduxState;
+interface IProps {
+  account: sdkInterfaces.IAccount;
+  appAlias: string;
+  url: string;
 }
 
-class App extends React.Component<IStateProps> {
-  public render(): any {
-    const {
-      connected,
-      initialized,
-      authenticated,
-      account,
-      device,
-    } = this.props.sdk;
+export class App extends React.Component<IProps> {
 
+  public render(): any {
+    const { account, url, appAlias } = this.props;
     return (
-      <Box flexDirection="column" justifyContent="flex-end" height="100%">
-        <QrCode url={device ? device.address : '-'} small={true} />
-        <Box>connected: <Color magenta={true}>{connected ? 'Y' : 'N'}</Color></Box>
-        <Box>initialized: <Color magenta={true}>{initialized ? 'Y' : 'N'}</Color></Box>
-        <Box>authenticated: <Color magenta={true}>{authenticated ? 'Y' : 'N'}</Color></Box>
-        <Box>account: <Color magenta={true}>{account ? account.address : '-'}</Color></Box>
-        <Box>accountBalance: <Color magenta={true}>{account && account.balance.real ? `${weiToEth(account.balance.real).toFixed(6)} ETH` : '-'}</Color></Box>
-        <Box>device: <Color magenta={true}>{device ? device.address : '-'}</Color></Box>
+      <Box flexDirection="column" padding={2}>
+        developer:
+        <Color magenta={true}>{account.address}</Color>
+        alias:
+        <Color magenta={true}>{appAlias}</Color>
+        callback url:
+        <Color magenta={true}>{url}</Color>
       </Box>
     );
   }
 }
-
-export default connect<any, any, any, any>(
-  ({ sdk }) => ({
-    sdk,
-  }),
-)(App);

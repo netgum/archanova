@@ -1,28 +1,22 @@
 #!/usr/bin/env node
 
-import { createReduxSdkMiddleware } from '@archanova/sdk';
+import { sdkConstants } from '@archanova/sdk';
 import { render } from 'ink';
+import { join } from 'path';
+import { copy } from 'fs-extra';
 import React from 'react';
-import { Provider } from 'react-redux';
-import { applyMiddleware, createStore } from 'redux';
-import { configureSdk } from './sdk';
-import App from './App';
-import reducers from './reducers';
+import { App } from './App';
 import config from './config';
-
-const sdk = configureSdk({
-  env: config.env,
-  localEnv: {
-    host: config.localEnvHost,
-  },
-  storage: config.storage,
-});
+import { configureSdk } from './sdk';
+import { configureServer } from './server';
 
 console.clear();
 console.log('Please wait ...');
 
 (async () => {
-  await sdk.initialize();
+  const sdk = await configureSdk(config.sdk, config.workingPath);
+  const server = configureServer();
+
   {
     const { accountAddress } = sdk.state;
     if (!accountAddress) {
@@ -37,20 +31,63 @@ console.log('Please wait ...');
     }
   }
 
-  const store = createStore(
-    reducers,
-    {},
-    applyMiddleware(
-      createReduxSdkMiddleware(sdk),
-    ),
-  );
+  const { account } = sdk.state;
+  if (
+    account.type !== sdkConstants.AccountTypes.Developer
+  ) {
+    if (
+      !config.invitationCode ||
+      !await sdk.becomeDeveloper(config.invitationCode).catch(() => null)
+    ) {
+      console.clear();
+      console.log('Account not in Archanova Developer program');
+      console.log('Please use --invitation-code');
+      process.exit();
+    }
+  }
+
+  let app = await sdk.getDeveloperApp();
+
+  if (config.appName) {
+    if (app) {
+      console.log('Application already created');
+      process.exit();
+    }
+
+    app = await sdk.createDeveloperApp(config.appName).catch(() => null);
+
+    if (app) {
+      await Promise.all([
+        'index.js',
+        'index.d.ts',
+      ].map(fileName => copy(
+        join(__dirname, '..', 'template', fileName),
+        join(config.workingPath, fileName),
+      )));
+    } else {
+      console.log(`Can not create app with name ${config.appName}`);
+      process.exit();
+    }
+  }
+
+  if (!app) {
+    console.log('App not created');
+    console.log('Please use --create-app');
+    process.exit();
+  }
+
+  const callbackUrl = await server.start(`${config.workingPath}/index.js`);
+
+  await sdk.updateDeveloperApp(app.alias, callbackUrl);
 
   console.clear();
 
   render(
-    <Provider store={store}>
-      <App />
-    </Provider>,
+    <App
+      account={sdk.state.account}
+      appAlias={app.alias}
+      url={callbackUrl}
+    />,
   );
 })()
   .catch(console.error);

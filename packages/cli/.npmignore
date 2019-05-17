@@ -1,4 +1,4 @@
-demo
+example
 .*
 !.npmignore
 src
