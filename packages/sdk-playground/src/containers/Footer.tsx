@@ -80,10 +80,11 @@ export default class Footer extends ContextComponent<{}, IState> {
               return (
                 <div key={`loggerEvent_${id}`}>
                   {args.map((arg, index) => (
-                    <ObjectInspector
-                      key={`${id}_${index}`}
-                      data={toRawObject(arg)}
-                    />
+                    <div key={`loggerEvent_${id}_${index}`}>
+                      <ObjectInspector
+                        data={toRawObject(arg)}
+                      />
+                    </div>
                   ))}
                 </div>
               );
