@@ -1,7 +1,7 @@
 import React from 'react';
-import { Subscription } from 'rxjs';
+import { Subscription, from } from 'rxjs';
 import { Sdk } from '@archanova/sdk';
-import { filter } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 import { ObjectInspector } from 'react-inspector';
 import { ContextComponent, ILoggerEvent, toRawObject } from '../shared';
 import styles from './Footer.module.scss';
@@ -29,17 +29,18 @@ export default class Footer extends ContextComponent<{}, IState> {
         .stream$
         .pipe(
           filter(event => !!event),
+          switchMap(loggerEvent => from(new Promise((resolve) => {
+            const { loggerEvents } = this.state;
+            id += 1;
+            this.setState({
+              loggerEvents: [
+                { ...loggerEvent, id },
+                ...loggerEvents,
+              ],
+            }, resolve);
+          }))),
         )
-        .subscribe((loggerEvent) => {
-          const { loggerEvents } = this.state;
-          id += 1;
-          this.setState({
-            loggerEvents: [
-              { ...loggerEvent, id },
-              ...loggerEvents,
-            ],
-          });
-        }),
+        .subscribe(),
 
       this
         .sdk
@@ -77,7 +78,7 @@ export default class Footer extends ContextComponent<{}, IState> {
           <div className={styles.content}>
             {loggerEvents.map(({ id, args }) => {
               return (
-                <div key={`${id}`}>
+                <div key={`loggerEvent_${id}`}>
                   {args.map((arg, index) => (
                     <ObjectInspector
                       key={`${id}_${index}`}
@@ -96,9 +97,8 @@ export default class Footer extends ContextComponent<{}, IState> {
           <div className={styles.content}>
             {sdkEvents.map(({ id, ...data }) => {
               return (
-                <div key={`${id}`}>
+                <div key={`sdkEvent_${id}`}>
                   <ObjectInspector
-                    key={`${id}`}
                     data={toRawObject(data)}
                   />
                 </div>

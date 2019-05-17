@@ -1,5 +1,5 @@
 import BN from 'bn.js';
-import { abiEncodePacked, anyToBuffer, anyToBN } from '@netgum/utils';
+import { abiEncodePacked } from '@netgum/utils';
 import { IAccountTransaction, IPaginated } from '../interfaces';
 import { Api } from './Api';
 import { Contract } from './Contract';

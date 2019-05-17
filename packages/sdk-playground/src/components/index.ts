@@ -6,3 +6,4 @@ export * from './InputText';
 export * from './InputTransactionSpeed';
 export * from './Menu';
 export * from './Screen';
+export * from './Url';
