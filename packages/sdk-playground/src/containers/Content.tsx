@@ -24,6 +24,7 @@ import {
   GetConnectedAccountPayments,
   GetConnectedAccountPayment,
   CreateAccountPayment,
+  SignAccountPayment,
   GrabAccountPayment,
   DepositAccountPayment,
   WithdrawAccountPayment,
@@ -134,6 +135,10 @@ class Content extends React.Component<IProps, IState> {
         Screen = GrabAccountPayment;
         break;
 
+      case Screens.SignAccountPayment:
+        Screen = SignAccountPayment;
+        break;
+
       case Screens.DepositAccountPayment:
         Screen = DepositAccountPayment;
         break;
@@ -234,6 +239,7 @@ class Content extends React.Component<IProps, IState> {
               Screens.GetConnectedAccountPayments,
               Screens.GetConnectedAccountPayment,
               Screens.CreateAccountPayment,
+              Screens.SignAccountPayment,
               Screens.GrabAccountPayment,
               Screens.DepositAccountPayment,
               Screens.WithdrawAccountPayment,
@@ -314,6 +320,7 @@ class Content extends React.Component<IProps, IState> {
       [Screens.GetConnectedAccountPayments]: accountConnected,
       [Screens.GetConnectedAccountPayment]: accountConnected,
       [Screens.CreateAccountPayment]: accountDeployed,
+      [Screens.SignAccountPayment]: accountDeployed,
       [Screens.GrabAccountPayment]: accountConnected,
       [Screens.DepositAccountPayment]: accountDeviceDeployed,
       [Screens.WithdrawAccountPayment]: accountDeviceDeployed,
