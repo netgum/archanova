@@ -79,11 +79,11 @@ export class GrabAccountPayment extends Screen<IState> {
   }
 
   private run(): void {
-    const { hash } = this.state;
+    const { hash, receiver } = this.state;
     this
       .logger
       .wrapSync('sdk.grabAccountPayment', async (console) => {
-        console.log('accountPayment', await this.sdk.grabAccountPayment(hash));
+        console.log('accountPayment', await this.sdk.grabAccountPayment(hash, receiver || null));
       });
   }
 }

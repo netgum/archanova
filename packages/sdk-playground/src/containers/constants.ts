@@ -22,6 +22,7 @@ export enum Screens {
   GetConnectedAccountPayments = 'getConnectedAccountPayments',
   GetConnectedAccountPayment = 'getConnectedAccountPayment',
   CreateAccountPayment = 'createAccountPayment',
+  SignAccountPayment = 'signAccountPayment',
   GrabAccountPayment = 'grabAccountPayment',
   DepositAccountPayment = 'depositAccountPayment',
   WithdrawAccountPayment = 'withdrawAccountPayment',

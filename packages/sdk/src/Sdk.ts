@@ -574,6 +574,21 @@ export class Sdk {
   }
 
   /**
+   * signs account payment
+   * @param hash
+   */
+  public async signAccountPayment(hash: string): Promise<IAccountPayment> {
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
+
+    const payment = await this.accountPayment.getConnectedAccountPayment(hash);
+
+    return this.accountPayment.signAccountPayment(payment);
+  }
+
+  /**
    * grab account payment
    * @param hash
    * @param receiver
