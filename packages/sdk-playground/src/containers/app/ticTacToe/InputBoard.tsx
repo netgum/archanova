@@ -30,9 +30,12 @@ export class InputBoard extends React.Component<IProps, IState> {
       }
     }
 
+    const countO = fields.filter(value => value === 1).length;
+    const countX = fields.filter(value => value === 2).length;
+
     return {
       fields,
-      player: 1,
+      player: countO === countX ? 1 : 2,
       move: null,
     };
   }

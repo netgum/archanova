@@ -10,12 +10,34 @@ interface IProps {
 
 class Header extends React.Component<IProps> {
   public render() {
-    const { sdk: { account, accountDevice, device } } = this.props;
+    const { sdk: { account, accountDevice, device, eth } } = this.props;
+
+    let network = 'Unknown';
+
+    if (eth && eth.networkId) {
+      switch (eth.networkId) {
+        case '3':
+          network = 'Ropsten';
+          break;
+
+        case '4':
+          network = 'Rinkeby';
+          break;
+
+        case '42':
+          network = 'Kovan';
+          break;
+
+        default:
+          network = 'Local';
+      }
+    }
+
     return (
       <div className={`${styles.content} ${getLocationPort() !== 5200 ? styles.invert : ''}`}>
         <div>
-          <div>Instance Port</div>
-          <div>{getLocationPort()}</div>
+          <div>Network</div>
+          <div>{network}</div>
         </div>
         {!account || !accountDevice ? null : (
           <React.Fragment>

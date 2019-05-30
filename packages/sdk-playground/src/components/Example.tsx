@@ -4,7 +4,7 @@ import { Code } from './Code';
 import styles from './Example.module.scss';
 
 interface IProps {
-  title: string;
+  title?: string;
   code: string;
   enabled: boolean;
   run: () => any;
@@ -16,7 +16,9 @@ export class Example extends React.Component<IProps> {
     const { title, code, run, enabled, children } = this.props;
     return (
       <div className={styles.content}>
-        <h3>{title}</h3>
+        {!title ? null : (
+          <h3>{title}</h3>
+        )}
         {children ? (
           <React.Fragment>
             <h5>PARAMETERS</h5>

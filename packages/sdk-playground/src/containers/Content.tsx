@@ -351,7 +351,7 @@ class Content extends React.Component<IProps, IState> {
               Screens.GetApps,
               Screens.GetApp,
               Screens.GetAppOpenGames,
-              // Screens.PlayTicTacToe,
+              Screens.PlayTicTacToe,
             ],
           }, {
             header: 'Actions',
