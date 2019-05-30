@@ -1,0 +1,31 @@
+.tabs {
+  button {
+    border-width: 0;
+    padding: 0;
+    background-color: transparent;
+    cursor: pointer;
+    margin-right: 15px;
+    font-weight: bolder;
+    color: rgba(0, 0, 0, 0.6);
+    text-transform: uppercase;
+    font-size: 13px;
+    &.active,
+    &.active:hover {
+      color: #6024FC;
+    }
+    &:hover {
+      color: #000000;
+    }
+    &:disabled {
+      color: rgba(0, 0, 0, 0.2) !important;
+    }
+
+    &:disabled,
+    &.active {
+      cursor: default;
+    }
+  }
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+}

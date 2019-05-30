@@ -12,7 +12,7 @@ class Header extends React.Component<IProps> {
   public render() {
     const { sdk: { account, accountDevice, device } } = this.props;
     return (
-      <div className={styles.content}>
+      <div className={`${styles.content} ${getLocationPort() !== 5200 ? styles.invert : ''}`}>
         <div>
           <div>Instance Port</div>
           <div>{getLocationPort()}</div>

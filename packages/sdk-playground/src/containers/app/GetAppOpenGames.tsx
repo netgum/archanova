@@ -20,7 +20,7 @@ interface IState {
 
 export class GetAppOpenGames extends Screen<IState> {
   public state = {
-    alias: '',
+    alias: 'tictactoe',
     page: '0',
     pageParsed: 0,
   };

@@ -16,6 +16,15 @@ import {
   WithdrawFromAccountVirtualBalance,
 } from './account';
 import {
+  GetConnectedAccountDevices,
+  GetConnectedAccountDevice,
+  GetAccountDevice,
+  CreateAccountDevice,
+  RemoveAccountDevice,
+  DeployAccountDevice,
+  UnDeployAccountDevice,
+} from './accountDevice';
+import {
   GetConnectedAccountTransactions,
   GetConnectedAccountTransaction,
   SendAccountTransaction,
@@ -30,22 +39,31 @@ import {
   WithdrawAccountPayment,
 } from './accountPayment';
 import {
+  GetConnectedAccountGames,
+  GetAccountGame,
+  CreateAccountGame,
+  JoinAccountGame,
+  StartAccountGame,
+  UpdateAccountGame,
+} from './accountGame';
+import {
   GetApps,
   GetApp,
   GetAppOpenGames,
+  PlayTicTacToe,
 } from './app';
 import {
-  GetConnectedAccountGames,
-  CreateAccountGame,
-} from './accountGame';
+  AcceptIncomingAction,
+  DismissIncomingAction,
+} from './action';
 import {
+  ProcessIncomingUrl,
   CreateRequestAddAccountDeviceUrl,
   CreateRequestSignSecureCodeUrl,
 } from './url';
 import {
   SignPersonalMessage,
 } from './utils';
-import Footer from './Footer';
 
 interface IProps {
   sdk: ISdkReduxState;
@@ -105,7 +123,36 @@ class Content extends React.Component<IProps, IState> {
         Screen = WithdrawFromAccountVirtualBalance;
         break;
 
-      // account transactions
+      // account device
+      case Screens.GetConnectedAccountDevices:
+        Screen = GetConnectedAccountDevices;
+        break;
+
+      case Screens.GetConnectedAccountDevice:
+        Screen = GetConnectedAccountDevice;
+        break;
+
+      case Screens.GetAccountDevice:
+        Screen = GetAccountDevice;
+        break;
+
+      case Screens.CreateAccountDevice:
+        Screen = CreateAccountDevice;
+        break;
+
+      case Screens.RemoveAccountDevice:
+        Screen = RemoveAccountDevice;
+        break;
+
+      case Screens.DeployAccountDevice:
+        Screen = DeployAccountDevice;
+        break;
+
+      case Screens.UnDeployAccountDevice:
+        Screen = UnDeployAccountDevice;
+        break;
+
+      // account transaction
       case Screens.GetConnectedAccountTransactions:
         Screen = GetConnectedAccountTransactions;
         break;
@@ -118,7 +165,7 @@ class Content extends React.Component<IProps, IState> {
         Screen = SendAccountTransaction;
         break;
 
-      // account payments
+      // account payment
       case Screens.GetConnectedAccountPayments:
         Screen = GetConnectedAccountPayments;
         break;
@@ -147,6 +194,31 @@ class Content extends React.Component<IProps, IState> {
         Screen = WithdrawAccountPayment;
         break;
 
+      // account games
+      case Screens.GetConnectedAccountGames:
+        Screen = GetConnectedAccountGames;
+        break;
+
+      case Screens.GetAccountGame:
+        Screen = GetAccountGame;
+        break;
+
+      case Screens.CreateAccountGame:
+        Screen = CreateAccountGame;
+        break;
+
+      case Screens.JoinAccountGame:
+        Screen = JoinAccountGame;
+        break;
+
+      case Screens.StartAccountGame:
+        Screen = StartAccountGame;
+        break;
+
+      case Screens.UpdateAccountGame:
+        Screen = UpdateAccountGame;
+        break;
+
       // app
       case Screens.GetApps:
         Screen = GetApps;
@@ -160,16 +232,24 @@ class Content extends React.Component<IProps, IState> {
         Screen = GetAppOpenGames;
         break;
 
-      // account games
-      case Screens.GetConnectedAccountGames:
-        Screen = GetConnectedAccountGames;
+      case Screens.PlayTicTacToe:
+        Screen = PlayTicTacToe;
         break;
 
-      case Screens.CreateAccountGame:
-        Screen = CreateAccountGame;
+      // action
+      case Screens.AcceptIncomingAction:
+        Screen = AcceptIncomingAction;
+        break;
+
+      case Screens.DismissIncomingAction:
+        Screen = DismissIncomingAction;
         break;
 
       // url
+      case Screens.ProcessIncomingUrl:
+        Screen = ProcessIncomingUrl;
+        break;
+
       case Screens.CreateRequestAddAccountDeviceUrl:
         Screen = CreateRequestAddAccountDeviceUrl;
         break;
@@ -227,14 +307,25 @@ class Content extends React.Component<IProps, IState> {
               Screens.WithdrawFromAccountVirtualBalance,
             ],
           }, {
-            header: 'Account Transaction',
+            header: 'Account Devices',
+            screens: [
+              Screens.GetConnectedAccountDevices,
+              Screens.GetConnectedAccountDevice,
+              Screens.GetAccountDevice,
+              Screens.CreateAccountDevice,
+              Screens.RemoveAccountDevice,
+              Screens.DeployAccountDevice,
+              Screens.UnDeployAccountDevice,
+            ],
+          }, {
+            header: 'Account Transactions',
             screens: [
               Screens.GetConnectedAccountTransactions,
               Screens.GetConnectedAccountTransaction,
               Screens.SendAccountTransaction,
             ],
           }, {
-            header: 'Account Payment',
+            header: 'Account Payments',
             screens: [
               Screens.GetConnectedAccountPayments,
               Screens.GetConnectedAccountPayment,
@@ -245,21 +336,33 @@ class Content extends React.Component<IProps, IState> {
               Screens.WithdrawAccountPayment,
             ],
           }, {
-            header: 'App',
+            header: 'Account Games',
+            screens: [
+              Screens.GetConnectedAccountGames,
+              Screens.GetAccountGame,
+              Screens.CreateAccountGame,
+              Screens.JoinAccountGame,
+              Screens.StartAccountGame,
+              Screens.UpdateAccountGame,
+            ],
+          }, {
+            header: 'Apps',
             screens: [
               Screens.GetApps,
               Screens.GetApp,
               Screens.GetAppOpenGames,
+              // Screens.PlayTicTacToe,
             ],
           }, {
-            header: 'Account Game',
+            header: 'Actions',
             screens: [
-              Screens.GetConnectedAccountGames,
-              Screens.CreateAccountGame,
+              Screens.AcceptIncomingAction,
+              Screens.DismissIncomingAction,
             ],
           }, {
-            header: 'Url',
+            header: 'Urls',
             screens: [
+              Screens.ProcessIncomingUrl,
               Screens.CreateRequestAddAccountDeviceUrl,
               Screens.CreateRequestSignSecureCodeUrl,
             ],
@@ -275,14 +378,13 @@ class Content extends React.Component<IProps, IState> {
         />
         <div className={styles.wrapper}>
           {screenNode}
-          <Footer />
         </div>
       </div>
     );
   }
 
   private getEnabledScreens(): { [key: string]: boolean } {
-    const { sdk: { account, accountDevice, initialized } } = this.props;
+    const { sdk: { account, accountDevice, initialized, incomingAction } } = this.props;
 
     const accountConnected = initialized && !!account;
     const accountDisconnected = initialized && !account;
@@ -302,7 +404,7 @@ class Content extends React.Component<IProps, IState> {
       [Screens.Reset]: initialized,
 
       // account
-      [Screens.SearchAccount]: initialized,
+      [Screens.SearchAccount]: true,
       [Screens.CreateAccount]: accountDisconnected,
       [Screens.UpdateAccount]: accountCreated,
       [Screens.ConnectAccount]: initialized,
@@ -310,6 +412,15 @@ class Content extends React.Component<IProps, IState> {
       [Screens.DeployAccount]: accountUpdated && accountCreated,
       [Screens.TopUpAccountVirtualBalance]: accountDeviceDeployed,
       [Screens.WithdrawFromAccountVirtualBalance]: accountDeviceDeployed,
+
+      // account device
+      [Screens.GetConnectedAccountDevices]: accountConnected,
+      [Screens.GetConnectedAccountDevice]: accountConnected,
+      [Screens.GetAccountDevice]: initialized,
+      [Screens.CreateAccountDevice]: accountDeviceOwner,
+      [Screens.RemoveAccountDevice]: accountDeviceOwner,
+      [Screens.DeployAccountDevice]: accountDeviceDeployed && accountDeviceOwner,
+      [Screens.UnDeployAccountDevice]: accountDeviceDeployed && accountDeviceOwner,
 
       // account transaction
       [Screens.GetConnectedAccountTransactions]: accountConnected,
@@ -325,16 +436,26 @@ class Content extends React.Component<IProps, IState> {
       [Screens.DepositAccountPayment]: accountDeviceDeployed,
       [Screens.WithdrawAccountPayment]: accountDeviceDeployed,
 
+      // account game
+      [Screens.GetConnectedAccountGames]: accountConnected,
+      [Screens.GetAccountGame]: accountConnected,
+      [Screens.CreateAccountGame]: accountDeviceOwner,
+      [Screens.JoinAccountGame]: accountDeviceDeployed && accountDeviceOwner,
+      [Screens.StartAccountGame]: accountDeviceDeployed && accountDeviceOwner,
+      [Screens.UpdateAccountGame]: accountDeployed && accountConnected,
+
       // app
       [Screens.GetApps]: initialized,
       [Screens.GetApp]: initialized,
       [Screens.GetAppOpenGames]: initialized,
+      [Screens.PlayTicTacToe]: accountDeployed,
 
-      // account game
-      [Screens.GetConnectedAccountGames]: accountConnected,
-      [Screens.CreateAccountGame]: accountDeviceOwner,
+      // action
+      [Screens.AcceptIncomingAction]: !!incomingAction,
+      [Screens.DismissIncomingAction]: !!incomingAction,
 
       // url
+      [Screens.ProcessIncomingUrl]: initialized,
       [Screens.CreateRequestAddAccountDeviceUrl]: accountDisconnected,
       [Screens.CreateRequestSignSecureCodeUrl]: accountDeviceOwner,
 

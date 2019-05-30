@@ -12,7 +12,7 @@ sdk
 `;
 
 const code2 = (accountAddress: string) => `
-const accountAddress = "${accountAddress || ''}";
+const accountAddress = ${accountAddress ? `"${accountAddress}"` : 'null'};
 
 sdk
   .connectAccount(accountAddress)

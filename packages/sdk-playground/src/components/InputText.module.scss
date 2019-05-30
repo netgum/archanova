@@ -8,7 +8,9 @@
     padding: 7px;
     border-width: 0;
   }
-  input[type="number"],
+  input[type="number"] {
+    width: 100px;
+  }
   input[type="text"] {
     width: 400px;
   }

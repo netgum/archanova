@@ -101,8 +101,8 @@ export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
         });
         const mobileUrl = this.sdk.createRequestAddAccountDeviceUrl();
 
-        console.log('redirectUrl', `${redirectUrl.slice(0, 100)}...`);
-        console.log('mobileUrl', `${mobileUrl.slice(0, 100)}...`);
+        console.log('redirectUrl', redirectUrl);
+        console.log('mobileUrl', mobileUrl);
 
         this.setState({
           mobileUrl,

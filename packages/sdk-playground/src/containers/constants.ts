@@ -4,42 +4,61 @@ export enum Screens {
   Reset = 'reset',
 
   // account
-  SearchAccount = 'searchAccount',
-  CreateAccount = 'createAccount',
-  UpdateAccount = 'updateAccount',
-  ConnectAccount = 'connectAccount',
-  DisconnectAccount = 'disconnectAccount',
-  DeployAccount = 'deployAccount',
-  TopUpAccountVirtualBalance = 'topUpAccountVirtualBalance',
-  WithdrawFromAccountVirtualBalance = 'withdrawFromAccountVirtualBalance',
+  SearchAccount = 'search account',
+  CreateAccount = 'create account',
+  UpdateAccount = 'update account',
+  ConnectAccount = 'connect account',
+  DisconnectAccount = 'disconnect account',
+  DeployAccount = 'deploy account',
+  TopUpAccountVirtualBalance = 'top-up account virtual balance',
+  WithdrawFromAccountVirtualBalance = 'withdraw from account virtual balance',
+
+  // account device
+  GetConnectedAccountDevices = 'get connected account devices',
+  GetConnectedAccountDevice = 'get connected account device',
+  GetAccountDevice = 'get account device',
+  CreateAccountDevice = 'create account device',
+  RemoveAccountDevice = 'remove account device',
+  DeployAccountDevice = 'deploy account device',
+  UnDeployAccountDevice = 'un-deploy account device',
 
   // account transaction
-  GetConnectedAccountTransactions = 'getConnectedAccountTransactions',
-  GetConnectedAccountTransaction = 'getConnectedAccountTransaction',
-  SendAccountTransaction = 'sendAccountTransaction',
+  GetConnectedAccountTransactions = 'get connected account transactions',
+  GetConnectedAccountTransaction = 'get connected account transaction',
+  SendAccountTransaction = 'send account transaction',
 
   // account payment
-  GetConnectedAccountPayments = 'getConnectedAccountPayments',
-  GetConnectedAccountPayment = 'getConnectedAccountPayment',
-  CreateAccountPayment = 'createAccountPayment',
-  SignAccountPayment = 'signAccountPayment',
-  GrabAccountPayment = 'grabAccountPayment',
-  DepositAccountPayment = 'depositAccountPayment',
-  WithdrawAccountPayment = 'withdrawAccountPayment',
-
-  // app
-  GetApps = 'getApps',
-  GetApp = 'getApp',
-  GetAppOpenGames = 'getAppOpenGames',
+  GetConnectedAccountPayments = 'get connected account payments',
+  GetConnectedAccountPayment = 'get connected account payment',
+  CreateAccountPayment = 'create account payment',
+  SignAccountPayment = 'sign account payment',
+  GrabAccountPayment = 'grab account payment',
+  DepositAccountPayment = 'deposit account payment',
+  WithdrawAccountPayment = 'withdraw account payment',
 
   // account games
-  GetConnectedAccountGames = 'getConnectedAccountGames',
-  CreateAccountGame = 'createAccountGame',
+  GetConnectedAccountGames = 'get connected account games',
+  GetAccountGame = 'get account game',
+  CreateAccountGame = 'create account game',
+  JoinAccountGame = 'join account game',
+  StartAccountGame = 'start account game',
+  UpdateAccountGame = 'update account game',
+
+  // app
+  GetApps = 'get apps',
+  GetApp = 'get app',
+  GetAppOpenGames = 'get app open games',
+  PlayTicTacToe = 'play Tic-Tac-Toe',
+
+  // action
+  AcceptIncomingAction = 'accept incoming action',
+  DismissIncomingAction = 'dismiss incoming action',
 
   // url
-  CreateRequestAddAccountDeviceUrl = 'createRequestAddAccountDeviceUrl',
-  CreateRequestSignSecureCodeUrl = 'createRequestSignSecureCodeUrl',
+  ProcessIncomingUrl = 'process incoming url',
+  CreateRequestAddAccountDeviceUrl = 'create request add account device url',
+  CreateRequestSignSecureCodeUrl = 'create request sign secure code url',
 
   // utils
-  SignPersonalMessage = 'signPersonalMessage',
+  SignPersonalMessage = 'sign personal message',
 }

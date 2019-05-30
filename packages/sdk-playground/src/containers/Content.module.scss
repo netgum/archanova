@@ -1,11 +1,8 @@
 .content {
-  display: flex;
-  flex: 1;
-  flex-direction: row;
-  overflow: auto;
-  .wrapper {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-  }
+  position: fixed;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-width: 1200px;
 }

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Subscription, from } from 'rxjs';
-import { Sdk } from '@archanova/sdk';
-import { filter, switchMap } from 'rxjs/operators';
+import { connect } from 'react-redux';
+import { Subscription, from, Subject } from 'rxjs';
+import { ISdkReduxState, Sdk } from '@archanova/sdk';
+import { filter, switchMap, map } from 'rxjs/operators';
 import { ObjectInspector } from 'react-inspector';
 import { ContextComponent, ILoggerEvent, toRawObject } from '../shared';
 import styles from './Footer.module.scss';
@@ -12,7 +13,11 @@ interface IState {
   sdkEvents: (Sdk.IEvent & { id: number })[];
 }
 
-export default class Footer extends ContextComponent<{}, IState> {
+interface IProps {
+  sdk: ISdkReduxState;
+}
+
+class Footer extends ContextComponent<IProps, IState> {
   public state = {
     tab: 0,
     loggerEvents: [],
@@ -23,41 +28,58 @@ export default class Footer extends ContextComponent<{}, IState> {
 
   public componentWillMount(): void {
     let id = 0;
+
+    const subject = new Subject<{
+      loggerEvent?: ILoggerEvent;
+      sdkEvent?: Sdk.IEvent;
+    }>();
+
     this.subscriptions.push(
+      subject
+        .pipe(
+          switchMap(({ loggerEvent, sdkEvent }) => from(new Promise((resolve) => {
+            const { loggerEvents, sdkEvents } = this.state;
+            id += 1;
+            if (loggerEvent) {
+              this.setState({
+                loggerEvents: [
+                  { ...loggerEvent, id },
+                  ...loggerEvents,
+                ],
+              }, resolve);
+            } else if (sdkEvent) {
+              this.setState({
+                sdkEvents: [
+                  { ...sdkEvent, id },
+                  ...sdkEvents,
+                ],
+              }, resolve);
+            }
+          }))),
+        )
+        .subscribe(),
+
       this
         .logger
         .stream$
         .pipe(
           filter(event => !!event),
-          switchMap(loggerEvent => from(new Promise((resolve) => {
-            const { loggerEvents } = this.state;
-            id += 1;
-            this.setState({
-              loggerEvents: [
-                { ...loggerEvent, id },
-                ...loggerEvents,
-              ],
-            }, resolve);
-          }))),
+          map(loggerEvent => ({
+            loggerEvent,
+          })),
         )
-        .subscribe(),
+        .subscribe(subject),
 
       this
         .sdk
         .event$
         .pipe(
           filter(event => !!event),
+          map(sdkEvent => ({
+            sdkEvent,
+          })),
         )
-        .subscribe((sdkEvent) => {
-          const { sdkEvents } = this.state;
-
-          this.setState({
-            sdkEvents: [
-              { ...sdkEvent, id },
-              ...sdkEvents,
-            ],
-          });
-        }),
+        .subscribe(subject),
     );
   }
 
@@ -68,6 +90,7 @@ export default class Footer extends ContextComponent<{}, IState> {
   }
 
   public render() {
+    const { sdk } = this.props;
     const { tab, loggerEvents, sdkEvents } = this.state;
 
     let content: any = null;
@@ -76,20 +99,42 @@ export default class Footer extends ContextComponent<{}, IState> {
       case 0:
         content = (
           <div className={styles.content}>
-            {loggerEvents.map(({ id, args }) => {
-              return (
-                <div key={`loggerEvent_${id}`}>
-                  {args.map((arg, index) => (
-                    <div key={`loggerEvent_${id}_${index}`}>
-                      <ObjectInspector
-                        data={toRawObject(arg)}
-                      />
+            {loggerEvents.map(({ id, type, args }) => {
+              let result: any = null;
+
+              switch (type) {
+                case 'info':
+                  result = (
+                    <div key={`loggerEvent_${id}`}>
+                      {args.map((arg, index) => (
+                        <div key={`loggerEvent_${id}_${index}`}>
+                          <ObjectInspector
+                            data={toRawObject(arg)}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              );
+                  );
+                  break;
+
+                case 'error':
+                  try {
+                    result = (
+                      <div key={`loggerEvent_${id}`}>
+                        <ObjectInspector
+                          data={toRawObject(args[0].toString())}
+                        />
+                      </div>
+                    );
+                  } catch (err) {
+                    result = null;
+                  }
+                  break;
+
+              }
+
+              return result;
             })}
-            {loggerEvents.length ? null : <div>Not found</div>}
           </div>
         );
         break;
@@ -105,7 +150,18 @@ export default class Footer extends ContextComponent<{}, IState> {
                 </div>
               );
             })}
-            {sdkEvents.length ? null : <div>Not found</div>}
+          </div>
+        );
+        break;
+      case 2:
+        content = (
+          <div className={styles.content}>
+            <div>
+              <ObjectInspector
+                data={toRawObject(sdk)}
+                expandLevel={1}
+              />
+            </div>
           </div>
         );
         break;
@@ -128,6 +184,12 @@ export default class Footer extends ContextComponent<{}, IState> {
             sdk.event$
             {sdkEvents.length ? ` (${sdkEvents.length})` : ''}
           </button>
+          <button
+            className={tab === 2 ? styles.active : ''}
+            onClick={this.createChangeTabHandler(2)}
+          >
+            sdk.state
+          </button>
         </div>
         {content}
       </div>
@@ -142,3 +204,7 @@ export default class Footer extends ContextComponent<{}, IState> {
     };
   }
 }
+
+export default connect<IProps, {}, {}, IProps>(
+  state => state,
+)(Footer);

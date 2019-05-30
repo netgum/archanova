@@ -45,7 +45,7 @@ export class CreateRequestSignSecureCodeUrl extends Screen<IState> {
       .wrapSync('sdk.createRequestSignSecureCodeUrl', async (console) => {
         const mobileUrl = await this.sdk.createRequestSignSecureCodeUrl();
 
-        console.log('mobileUrl', `${mobileUrl.slice(0, 100)}...`);
+        console.log('mobileUrl', mobileUrl);
 
         this.setState({
           mobileUrl,

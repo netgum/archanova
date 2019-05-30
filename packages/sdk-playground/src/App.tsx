@@ -1,5 +1,5 @@
 import React from 'react';
-import { Header, Content } from './containers';
+import { Header, Content, Footer } from './containers';
 
 export default class App extends React.Component {
   public render() {
@@ -7,6 +7,7 @@ export default class App extends React.Component {
       <React.Fragment>
         <Header />
         <Content />
+        <Footer />
       </React.Fragment>
     );
   }
