@@ -49,9 +49,12 @@ function jsonReplacer(key: string, value: any): any {
     Buffer.isBuffer(data) ||
     BN.isBN(data)
   ) {
-    value = anyToHex(data, {
+    const hash = anyToHex(data, {
       add0x: true,
     });
+    const label = Buffer.isBuffer(data) ? 'Buffer' : 'BN';
+
+    value = `${label}: ${hash}`;
   }
 
   return value;

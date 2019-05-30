@@ -1,0 +1,27 @@
+.content {
+  margin-bottom: 5px;
+
+  div:first-child {
+    padding-bottom: 2px;
+  }
+
+  div:last-child {
+    width: 57px * 3;
+
+    button {
+      width: 56px;
+      height: 56px;
+      margin-right: 1px;
+      margin-bottom: 1px;
+      border-width: 0;
+      background-color: white;
+      cursor: pointer;
+      font-size: 30px;
+      line-height: 50px;
+      &:disabled {
+        background-color: rgba(255, 255, 255, 0.5);
+        cursor: default;
+      }
+    }
+  }
+}

@@ -1,10 +1,11 @@
 import BN from 'bn.js';
 import { IAccount, IPaginated } from '../interfaces';
 import { Api } from './Api';
+import { Eth } from './Eth';
 import { State } from './State';
 
 export class Account {
-  constructor(private api: Api, private state: State) {
+  constructor(private api: Api, private eth: Eth, private state: State) {
     //
   }
 
@@ -15,21 +16,25 @@ export class Account {
     });
   }
 
-  public getAccount(address: string): Promise<IAccount> {
-    return this.api.sendRequest({
+  public async getAccount(address: string): Promise<IAccount> {
+    const account = await this.api.sendRequest({
       method: 'GET',
       path: `account/${address}`,
     });
+
+    return this.prepareAccount(account);
   }
 
-  public searchAccount(ensName: string): Promise<IAccount> {
-    return this.api.sendRequest({
+  public async searchAccount(ensName: string): Promise<IAccount> {
+    const account = await this.api.sendRequest({
       method: 'POST',
       path: 'account/search',
       body: {
         ensName,
       },
     });
+
+    return this.prepareAccount(account);
   }
 
   public async createAccount(ensName?: string): Promise<void> {
@@ -41,7 +46,7 @@ export class Account {
       },
     });
 
-    this.state.account$.next(account);
+    this.state.account$.next(await this.prepareAccount(account));
   }
 
   public async updateAccount(ensName: string): Promise<void> {
@@ -84,6 +89,20 @@ export class Account {
     });
 
     return hash;
+  }
+
+  private async prepareAccount(account: IAccount): Promise<IAccount> {
+    try {
+
+      const balance = await this.eth.getBalance(account.address, 'pending');
+      if (balance) {
+        account.balance.real = balance;
+      }
+    } catch (err) {
+      //
+    }
+
+    return account;
   }
 }
 

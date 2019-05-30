@@ -24,7 +24,7 @@ interface IState {
 
 export class CreateAccountGame extends Screen<IState> {
   public state = {
-    appAlias: '',
+    appAlias: 'tictactoe',
     deposit: '0',
     depositParsed: 0,
     data: '',

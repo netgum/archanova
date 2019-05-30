@@ -4,7 +4,7 @@
 
 body {
   color: black;
-  background-color: #eeeeee;
+  background-color: #F3CF48;
   font-size: 12px;
   font-family: Roboto, sans-serif;
   font-weight: 400;
@@ -16,9 +16,6 @@ h1, h2, h3, h4, h5 {
   padding: 0;
 }
 
-html, body {
-  height: 100%;
-}
 
 button,
 input[type="text"],
@@ -34,16 +31,7 @@ select:focus {
   outline: none;
 }
 
-body,
-#root {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-#root {
-  min-width: 1200px;
-}
+#root {}
 
 pre {
   margin: 0;

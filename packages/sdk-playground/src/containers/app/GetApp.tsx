@@ -16,7 +16,7 @@ interface IState {
 
 export class GetApp extends Screen<IState> {
   public state = {
-    alias: '',
+    alias: 'tictactoe',
   };
 
   public componentWillMount(): void {
