@@ -4,10 +4,11 @@ import EthJs from 'ethjs';
 import { BehaviorSubject, from, Subscription, timer } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { AccountDeviceStates, AccountDeviceTypes, AccountGamePlayers, AccountGameStates, AccountStates } from './constants';
-import { IAccount, IAccountDevice, IAccountGame, IAccountPayment, IAccountTransaction, IApp, IPaginated } from './interfaces';
+import { IAccount, IAccountDevice, IAccountFriendRecovery, IAccountGame, IAccountPayment, IAccountTransaction, IApp, IPaginated } from './interfaces';
 import {
   Account,
   AccountDevice,
+  AccountFriendRecovery,
   AccountGame,
   AccountPayment,
   AccountTransaction,
@@ -38,6 +39,7 @@ export class Sdk {
 
   protected readonly account: Account;
   protected readonly accountDevice: AccountDevice;
+  protected readonly accountFriendRecovery: AccountFriendRecovery;
   protected readonly accountGame: AccountGame;
   protected readonly accountPayment: AccountPayment;
   protected readonly accountTransaction: AccountTransaction;
@@ -106,6 +108,7 @@ export class Sdk {
     this.accountPayment = new AccountPayment(this.api, this.contract, this.device, this.state);
     this.accountDevice = new AccountDevice(this.accountTransaction, this.api, this.state);
     this.accountGame = new AccountGame(this.api, this.contract, this.device, this.state);
+    this.accountFriendRecovery = new AccountFriendRecovery(this.accountDevice, this.api, this.contract, this.device, this.state);
 
     this.state.incomingAction$ = this.action.$incoming;
 
@@ -284,9 +287,12 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
-    return this.account.deployAccount(
-      this.eth.getGasPrice(transactionSpeed),
-    );
+    return this
+      .account
+      .deployAccount(
+        this.eth.getGasPrice(transactionSpeed),
+      )
+      .catch(() => null);
   }
 
   /**
@@ -335,6 +341,180 @@ export class Sdk {
       hash,
       transactionSpeed,
     );
+  }
+
+// Account Friend Recovery
+
+  /**
+   * estimates add account friend recovery extension
+   * @param transactionSpeed
+   */
+  public async estimateAddAccountFriendRecoveryExtension(
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
+    const { account } = this.contract;
+    const { accountFriendRecovery } = this.contract;
+
+    await this.accountDevice.createAccountDevice(
+      accountFriendRecovery.address,
+      AccountDeviceTypes.Extension,
+    ).catch(() => null);
+
+    const data = account.encodeMethodInput(
+      'addDevice',
+      accountFriendRecovery.address,
+      true,
+    );
+
+    return this.accountTransaction.estimateAccountProxyTransaction(
+      data,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+  }
+
+  /**
+   * estimates setup account friend recovery extension
+   * @param requiredFriends
+   * @param friendAddresses
+   * @param transactionSpeed
+   */
+  public async estimateSetupAccountFriendRecoveryExtension(
+    requiredFriends: number,
+    friendAddresses: string[],
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<any> {
+    this.require({
+      accountDeviceOwner: true,
+      accountDeviceDeployed: true,
+    });
+
+    const { accountFriendRecovery } = this.contract;
+    const data = accountFriendRecovery.encodeMethodInput(
+      'setup',
+      requiredFriends,
+      friendAddresses,
+    );
+
+    return this.estimateAccountTransaction(
+      accountFriendRecovery.address,
+      0,
+      data,
+      transactionSpeed,
+    );
+  }
+
+  /**
+   * gets connect account friend recovery
+   */
+  public getConnectAccountFriendRecovery(): Promise<IAccountFriendRecovery> {
+    this.require();
+
+    const { accountAddress } = this.state;
+    return this.accountFriendRecovery.getAccountFriendRecovery(accountAddress);
+  }
+
+  /**
+   * gets account friend recovery
+   * @param accountAddress
+   */
+  public getAccountFriendRecovery(accountAddress: string): Promise<IAccountFriendRecovery> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.accountFriendRecovery.getAccountFriendRecovery(accountAddress);
+  }
+
+  /**
+   * starts account friend recovery
+   * @param accountAddress
+   * @param transactionSpeed
+   */
+  public async startAccountFriendRecovery(
+    accountAddress: string,
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<IAccountFriendRecovery> {
+    this.require({
+      accountConnected: null,
+    });
+
+    await this.accountFriendRecovery.startAccountFriendRecovery(
+      accountAddress,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+
+    return this.state.accountFriendRecovery;
+  }
+
+  /**
+   * collects account friend signature
+   * @param friendAddress
+   * @param friendSignature
+   */
+  public async collectAccountFriendSignature(
+    friendAddress: string,
+    friendSignature: string,
+  ): Promise<IAccountFriendRecovery> {
+    this.require({
+      accountConnected: null,
+    });
+
+    await this.accountFriendRecovery.collectAccountFriendSignature(
+      friendAddress,
+      friendSignature,
+    );
+
+    return this.state.accountFriendRecovery;
+  }
+
+  /**
+   * signs account friend recovery
+   * @param accountAddress
+   * @param deviceAddress
+   * @param transactionSpeed
+   */
+  public signAccountFriendRecovery(
+    accountAddress: string,
+    deviceAddress: string,
+    transactionSpeed: Eth.TransactionSpeeds = null,
+  ): Promise<string> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.accountFriendRecovery.signAccountFriendRecovery(
+      accountAddress,
+      deviceAddress,
+      this.eth.getGasPrice(transactionSpeed),
+    );
+  }
+
+  /**
+   * cancels account friend recovery
+   */
+  public async cancelAccountFriendRecovery(): Promise<void> {
+    this.require({
+      accountConnected: null,
+    });
+
+    await this.accountFriendRecovery.cancelAccountFriendRecovery();
+  }
+
+  /**
+   * submits account friend recovery
+   */
+  public async submitAccountFriendRecovery(): Promise<string> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.accountFriendRecovery
+      .submitAccountFriendRecovery()
+      .catch(() => null);
   }
 
 // Account Device
@@ -529,7 +709,10 @@ export class Sdk {
       accountDeviceDeployed: true,
     });
 
-    return this.accountTransaction.submitAccountProxyTransaction(estimated);
+    return this
+      .accountTransaction
+      .submitAccountProxyTransaction(estimated)
+      .catch(() => null);
   }
 
 // Account Payment
@@ -1004,6 +1187,16 @@ export class Sdk {
               }
               break;
             }
+
+            case Api.EventNames.AccountFriendRecoveryUpdated: {
+              const { account } = payload;
+              if (accountAddress === account) {
+                const accountFriendRecovery = await this.accountFriendRecovery.getAccountFriendRecovery(accountAddress);
+                this.emitEvent(Sdk.EventNames.AccountFriendRecoveryUpdated, accountFriendRecovery);
+              }
+              break;
+            }
+
             case Api.EventNames.AccountDeviceUpdated: {
               const { account, device } = payload;
               if (deviceAddress === device) {
@@ -1254,6 +1447,7 @@ export namespace Sdk {
     AccountUpdated = 'AccountUpdated',
     AccountDeviceUpdated = 'AccountDeviceUpdated',
     AccountDeviceRemoved = 'AccountDeviceRemoved',
+    AccountFriendRecoveryUpdated = 'AccountFriendRecoveryUpdated',
     AccountTransactionUpdated = 'AccountTransactionUpdated',
     AccountPaymentUpdated = 'AccountPaymentUpdated',
     AccountGameUpdated = 'AccountGameUpdated',

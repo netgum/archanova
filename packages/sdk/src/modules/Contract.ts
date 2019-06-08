@@ -6,6 +6,7 @@ import { Eth } from './Eth';
 export class Contract {
 
   public account: Contract.ContractInstance<'addDevice' | 'removeDevice' | 'executeTransaction'>;
+  public accountFriendRecovery: Contract.ContractInstance<'setup' | 'setRequiredFriends' | 'setFriends' | 'recoverAccount'>;
   public accountProvider: Contract.ContractInstance;
   public accountProxy: Contract.ContractInstance<'forwardAccountOwnerCall'>;
   public ensRegistry: Contract.ContractInstance;
@@ -15,6 +16,10 @@ export class Contract {
   constructor(private eth: Eth) {
     this.account = this.createInstance(
       getContractAbi(ContractNames.Account),
+    );
+    this.accountFriendRecovery = this.createInstance(
+      getContractAbi(ContractNames.AccountFriendRecovery),
+      eth.getContractAddress(ContractNames.AccountFriendRecovery),
     );
     this.accountProvider = this.createInstance(
       getContractAbi(ContractNames.AccountProvider),
