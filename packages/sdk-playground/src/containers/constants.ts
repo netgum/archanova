@@ -13,6 +13,16 @@ export enum Screens {
   TopUpAccountVirtualBalance = 'top-up account virtual balance',
   WithdrawFromAccountVirtualBalance = 'withdraw from account virtual balance',
 
+  // account friend recovery
+  AddAccountFriendRecoveryExtension = 'add account friend recovery extension',
+  SetupAccountFriendRecoveryExtension = 'setup account friend recovery extension',
+  GetAccountFriendRecovery = 'get account friend recovery',
+  StartAccountFriendRecovery = 'start account friend recovery',
+  CancelAccountFriendRecovery = 'cancel account friend recovery',
+  CollectAccountFriendSignature = 'collect account friend signature',
+  SubmitAccountFriendRecovery = 'submit account friend recovery',
+  SignAccountFriendRecovery = 'sign account friend recovery',
+
   // account device
   GetConnectedAccountDevices = 'get connected account devices',
   GetConnectedAccountDevice = 'get connected account device',

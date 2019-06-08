@@ -1,5 +1,6 @@
 export * from './Account';
 export * from './AccountDevice';
+export * from './AccountFriendRecovery';
 export * from './AccountGame';
 export * from './AccountPayment';
 export * from './AccountTransaction';

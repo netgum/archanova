@@ -4,7 +4,7 @@ import { from } from 'rxjs';
 import { skip, switchMap, map } from 'rxjs/operators';
 import { Action } from './Action';
 import { Storage } from './Storage';
-import { IAccount, IAccountDevice, IDevice } from '../interfaces';
+import { IAccount, IAccountDevice, IAccountFriendRecovery, IDevice } from '../interfaces';
 
 export class State {
   public initialized$ = new UniqueBehaviorSubject<boolean>();
@@ -25,6 +25,7 @@ export class State {
     },
   });
   public accountDevice$ = new UniqueBehaviorSubject<IAccountDevice>();
+  public accountFriendRecovery$ = new UniqueBehaviorSubject<IAccountFriendRecovery>();
   public device$ = new UniqueBehaviorSubject<IDevice>();
   public ens$ = new UniqueBehaviorSubject<State.IEns>();
   public eth$ = new UniqueBehaviorSubject<State.IEth>();
@@ -67,6 +68,10 @@ export class State {
     return this.accountDevice$.value;
   }
 
+  public get accountFriendRecovery(): IAccountFriendRecovery {
+    return this.accountFriendRecovery$.value;
+  }
+
   public get device(): IDevice {
     return this.device$.value;
   }
@@ -105,6 +110,7 @@ export class State {
     await Promise.all([
       this.attachToStorage(this.account$, State.StorageKeys.Account),
       this.attachToStorage(this.accountDevice$, State.StorageKeys.AccountDevice),
+      this.attachToStorage(this.accountFriendRecovery$, State.StorageKeys.AccountFriendRecovery),
     ]);
   }
 
@@ -129,6 +135,7 @@ export namespace State {
   export enum StorageKeys {
     Account = 'account',
     AccountDevice = 'account_device',
+    AccountFriendRecovery = 'account_friend_recovery',
   }
 
   export interface IEns {

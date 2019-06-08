@@ -33,6 +33,17 @@ export interface IAccountDevice {
   updatedAt: Date;
 }
 
+export interface IAccountFriendRecovery {
+  accountAddress: string;
+  gasFee: BN;
+  gasPrice: BN;
+  nonce: BN;
+  requiredFriends: BN;
+  friends: string[];
+  friendSignatures?: { [key: string]: string };
+  updatedAt: Date;
+}
+
 export interface IAccountGameHistory {
   player: AccountGamePlayers;
   data: string;

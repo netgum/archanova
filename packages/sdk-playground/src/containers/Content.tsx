@@ -16,6 +16,16 @@ import {
   WithdrawFromAccountVirtualBalance,
 } from './account';
 import {
+  AddAccountFriendRecoveryExtension,
+  SetupAccountFriendRecoveryExtension,
+  GetAccountFriendRecovery,
+  StartAccountFriendRecovery,
+  CancelAccountFriendRecovery,
+  CollectAccountFriendSignature,
+  SubmitAccountFriendRecovery,
+  SignAccountFriendRecovery,
+} from './accountFriendRecovery';
+import {
   GetConnectedAccountDevices,
   GetConnectedAccountDevice,
   GetAccountDevice,
@@ -121,6 +131,39 @@ class Content extends React.Component<IProps, IState> {
 
       case Screens.WithdrawFromAccountVirtualBalance:
         Screen = WithdrawFromAccountVirtualBalance;
+        break;
+
+      // account friend recovery
+      case Screens.AddAccountFriendRecoveryExtension:
+        Screen = AddAccountFriendRecoveryExtension;
+        break;
+
+      case Screens.SetupAccountFriendRecoveryExtension:
+        Screen = SetupAccountFriendRecoveryExtension;
+        break;
+
+      case Screens.GetAccountFriendRecovery:
+        Screen = GetAccountFriendRecovery;
+        break;
+
+      case Screens.StartAccountFriendRecovery:
+        Screen = StartAccountFriendRecovery;
+        break;
+
+      case Screens.CancelAccountFriendRecovery:
+        Screen = CancelAccountFriendRecovery;
+        break;
+
+      case Screens.CollectAccountFriendSignature:
+        Screen = CollectAccountFriendSignature;
+        break;
+
+      case Screens.SubmitAccountFriendRecovery:
+        Screen = SubmitAccountFriendRecovery;
+        break;
+
+      case Screens.SignAccountFriendRecovery:
+        Screen = SignAccountFriendRecovery;
         break;
 
       // account device
@@ -307,6 +350,18 @@ class Content extends React.Component<IProps, IState> {
               Screens.WithdrawFromAccountVirtualBalance,
             ],
           }, {
+            header: 'Account Friend Recovery',
+            screens: [
+              Screens.AddAccountFriendRecoveryExtension,
+              Screens.SetupAccountFriendRecoveryExtension,
+              Screens.GetAccountFriendRecovery,
+              Screens.StartAccountFriendRecovery,
+              Screens.CancelAccountFriendRecovery,
+              Screens.CollectAccountFriendSignature,
+              Screens.SubmitAccountFriendRecovery,
+              Screens.SignAccountFriendRecovery,
+            ],
+          }, {
             header: 'Account Devices',
             screens: [
               Screens.GetConnectedAccountDevices,
@@ -412,6 +467,16 @@ class Content extends React.Component<IProps, IState> {
       [Screens.DeployAccount]: accountUpdated && accountCreated,
       [Screens.TopUpAccountVirtualBalance]: accountDeviceDeployed,
       [Screens.WithdrawFromAccountVirtualBalance]: accountDeviceDeployed,
+
+      // account friend recovery
+      [Screens.AddAccountFriendRecoveryExtension]: accountDeviceDeployed && accountDeviceOwner,
+      [Screens.SetupAccountFriendRecoveryExtension]: accountDeviceDeployed && accountDeviceOwner,
+      [Screens.GetAccountFriendRecovery]: initialized,
+      [Screens.StartAccountFriendRecovery]: initialized && !accountConnected,
+      [Screens.CancelAccountFriendRecovery]: initialized && !accountConnected,
+      [Screens.CollectAccountFriendSignature]: initialized && !accountConnected,
+      [Screens.SubmitAccountFriendRecovery]: initialized && !accountConnected,
+      [Screens.SignAccountFriendRecovery]: accountDeviceDeployed && accountDeviceOwner,
 
       // account device
       [Screens.GetConnectedAccountDevices]: accountConnected,
