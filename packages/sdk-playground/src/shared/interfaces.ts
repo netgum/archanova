@@ -4,6 +4,15 @@ import { Subject } from 'rxjs';
 export interface IContextProps {
   sdk: Sdk;
   logger: ILogger;
+  help: IHelp;
+}
+
+export interface IHelp {
+  stream$: Subject<string>;
+
+  show(alias: any): void;
+
+  hide(): void;
 }
 
 export interface ILoggerConsole {
@@ -14,6 +23,7 @@ export interface ILoggerConsole {
 
 export interface ILogger {
   stream$: Subject<ILoggerEvent>;
+
   wrapSync<T = any>(label: string, fun: (console: ILoggerConsole) => Promise<T>): void;
 }
 

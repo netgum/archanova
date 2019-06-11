@@ -1,14 +1,15 @@
 import React from 'react';
 import { ISdkReduxState } from '@archanova/sdk';
 import { connect } from 'react-redux';
+import { HelpTrigger } from '../components';
 import { formatBalance } from '../shared';
-import styles from './Header.module.scss';
+import styles from './StatusBar.module.scss';
 
 interface IProps {
   sdk: ISdkReduxState;
 }
 
-class Header extends React.Component<IProps> {
+class StatusBar extends React.Component<IProps> {
   public render() {
     const { sdk: { account, accountDevice, device, eth } } = this.props;
 
@@ -35,42 +36,42 @@ class Header extends React.Component<IProps> {
 
     return (
       <div className={`${styles.content} ${!parseInt(process.env.REACT_APP_SECONDARY, 10) ? styles.invert : ''}`}>
-        <div>
+        <HelpTrigger alias="statusBar.network">
           <div>Network</div>
           <div>{network}</div>
-        </div>
+        </HelpTrigger>
         {!account || !accountDevice ? null : (
           <React.Fragment>
-            <div>
+            <HelpTrigger alias="statusBar.accountAddress">
               <div>Account Address</div>
               <div>{account ? account.address : 'None'}</div>
-            </div>
-            <div>
+            </HelpTrigger>
+            <HelpTrigger alias="statusBar.accountState">
               <div>Account State</div>
               <div>{account ? account.state : 'None'}</div>
-            </div>
-            <div>
+            </HelpTrigger>
+            <HelpTrigger alias="statusBar.accountRealBalance">
               <div>Account Balance (real)</div>
               <div>
                 {formatBalance(account && account.balance.real ? account.balance.real : null)}
               </div>
-            </div>
-            <div>
+            </HelpTrigger>
+            <HelpTrigger alias="statusBar.accountVirtualBalance">
               <div>Account Balance (virtual)</div>
               <div>
                 {formatBalance(account && account.balance.virtual ? account.balance.virtual : null)}
               </div>
-            </div>
-            <div>
+            </HelpTrigger>
+            <HelpTrigger alias="statusBar.accountDeviceState">
               <div>Account Device State</div>
               <div>{accountDevice ? accountDevice.state : 'None'}</div>
-            </div>
+            </HelpTrigger>
           </React.Fragment>
         )}
-        <div>
+        <HelpTrigger alias="statusBar.deviceAddress">
           <div>Device Address</div>
           <div>{device ? device.address : 'None'}</div>
-        </div>
+        </HelpTrigger>
       </div>
     );
   }
@@ -78,4 +79,4 @@ class Header extends React.Component<IProps> {
 
 export default connect<IProps, {}, {}, IProps>(
   state => state,
-)(Header);
+)(StatusBar);

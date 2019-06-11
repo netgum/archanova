@@ -1,5 +1,6 @@
 export * from './Button';
 export * from './Example';
+export * from './HelpTrigger';
 export * from './InputCheckBox';
 export * from './InputSelect';
 export * from './InputText';

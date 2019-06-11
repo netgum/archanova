@@ -19,5 +19,11 @@ export abstract class ContextComponent<P = any, S = any> extends React.Component
       : null;
   }
 
+  public get help(): IContextProps['help'] {
+    return this.context ?
+      this.context.help
+      : null;
+  }
+
   public abstract render(): any;
 }
