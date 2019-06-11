@@ -1,7 +1,7 @@
 import React from 'react';
 import { ISdkReduxState } from '@archanova/sdk';
 import { connect } from 'react-redux';
-import { formatBalance, getLocationPort } from '../shared';
+import { formatBalance } from '../shared';
 import styles from './Header.module.scss';
 
 interface IProps {
@@ -34,7 +34,7 @@ class Header extends React.Component<IProps> {
     }
 
     return (
-      <div className={`${styles.content} ${getLocationPort() !== 5200 ? styles.invert : ''}`}>
+      <div className={`${styles.content} ${!parseInt(process.env.REACT_APP_SECONDARY, 10) ? styles.invert : ''}`}>
         <div>
           <div>Network</div>
           <div>{network}</div>

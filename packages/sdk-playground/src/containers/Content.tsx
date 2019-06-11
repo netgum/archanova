@@ -316,7 +316,7 @@ class Content extends React.Component<IProps, IState> {
   }
 
   public state = {
-    screen: Screens.Initialize,
+    screen: Screens.CreateRequestAddAccountDeviceUrl,
   };
 
   public componentWillMount(): void {
