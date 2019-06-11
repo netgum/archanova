@@ -11,7 +11,7 @@ export function generateRandomEnsLabel() {
   const hash1 = Date.now().toString(32);
   const hash2 = Math.floor(Math.random() * 100000).toString(32);
   return (
-    `tutorial${hash1}${hash2}`
+    `playground${hash1}${hash2}`
   );
 }
 
