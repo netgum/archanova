@@ -35,7 +35,11 @@ export default class Help extends ContextComponent<{}, IState> {
   public render() {
     const { alias } = this.state;
 
-    if (!parseInt(process.env.REACT_APP_SHOW_HELP, 10) || !alias || !help[alias] ) {
+    if (
+      !this.config.showHelp ||
+      !alias ||
+      !help[alias]
+    ) {
       return null;
     }
 

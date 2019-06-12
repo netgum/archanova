@@ -15,15 +15,46 @@ export class HelpTrigger extends ContextComponent<IProps> {
 
   public render(): any {
     const { className, children } = this.props;
+    if (
+      !this.prefix ||
+      !this.config.showHelp
+    ) {
+      return children;
+    }
+
+    const classNames = [
+      styles.content,
+      className,
+    ];
+
+    switch (this.prefix) {
+      case 'menu':
+        classNames.push(styles.menu);
+        break;
+
+      case 'statusBar':
+        classNames.push(styles.statusBar);
+        break;
+    }
+
     return (
       <div
-        className={`${styles.content} ${className}`}
+        className={classNames.join(' ')}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
       >
+        <div className={styles.dot} />
         {children}
       </div>
     );
+  }
+
+  private get prefix(): string {
+    const { alias } = this.props;
+
+    return alias
+      ? alias.split('.')[0]
+      : null;
   }
 
   private onMouseEnter(): void {
