@@ -2,15 +2,20 @@ import { Sdk } from '@archanova/sdk';
 import { Subject } from 'rxjs';
 
 export interface IContextProps {
+  config: IConfig;
   sdk: Sdk;
   logger: ILogger;
   help: IHelp;
 }
 
+export interface IConfig {
+  showHelp: boolean;
+}
+
 export interface IHelp {
   stream$: Subject<string>;
 
-  show(alias: any): void;
+  show(alias: string): void;
 
   hide(): void;
 }
