@@ -27,7 +27,7 @@ esac
 done
 
 deploy_dist() {
-  aws s3 sync ./build-${ENV} s3://playground.${ENV}.archanova.run
+  aws s3 sync ./build-${ENV} s3://archanova-${ENV}-playground
 }
 
 case ${ACTION} in
