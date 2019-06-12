@@ -43,13 +43,34 @@ export default class Help extends ContextComponent<{}, IState> {
       return null;
     }
 
+    const classNames: string[] = [
+      styles.content,
+    ];
+
+    switch (this.prefix) {
+      case 'menu':
+        classNames.push(styles.menu);
+        break;
+      case 'statusBar':
+        classNames.push(styles.statusBar);
+        break;
+    }
+
     const html = this.markdownIt.render(help[alias].trim());
 
     return (
       <div
-        className={styles.content}
+        className={classNames.join(' ')}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     );
+  }
+
+  private get prefix(): string {
+    const { alias } = this.state;
+
+    return alias
+      ? alias.split('.')[0]
+      : null;
   }
 }

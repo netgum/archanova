@@ -35,6 +35,12 @@ $ npm run start:sdk:playground:5200
 | `REACT_APP_SDK_AUTO_INITIALIZE` 	| `1` 	| `0,1` |
 | `REACT_APP_SDK_AUTO_ACCEPT_ACTION` 	| `1` 	| `0,1` |
 
+### `.env` support
+
+```bash
+echo "REACT_APP_SHOW_HELP=1" > ./packages/sdk-playground/.env
+```
+
 ## License
 
 The MIT License

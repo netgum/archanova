@@ -1,12 +1,23 @@
 .content {
   position: fixed;
-  top: 15px;
-  right: 15px;
   background-color: white;
   padding: 15px;
   z-index: 10;
-  box-shadow: 10px 0 10px rgba(0, 0, 0, 0.2);
-  min-width: 250px;
+
+  &.statusBar {
+    left: 250px;
+    top: 50px;
+    right: 0;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  &.menu {
+    left: 250px;
+    top: 0;
+    bottom: 0;
+    min-width: 250px;
+    box-shadow: 10px 0 10px rgba(0, 0, 0, 0.2);
+  }
 
   h1 {
     font-size: 14px;
