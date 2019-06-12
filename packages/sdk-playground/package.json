@@ -39,7 +39,10 @@
     "webpack": "4.29.6"
   },
   "scripts": {
-    "start": "react-scripts start"
+    "start": "react-scripts start",
+    "build:kovan": "./scripts/build.sh kovan",
+    "build:rinkeby": "./scripts/build.sh rinkeby",
+    "build:ropsten": "./scripts/build.sh ropsten"
   },
   "browserslist": {
     "production": [
