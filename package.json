@@ -20,7 +20,8 @@
     "compile:watch": "lerna run compile:watch --parallel",
     "test": "npm run lint",
     "start:sdk:playground:5100": "cross-env PORT=5100 lerna run --stream --scope \"@archanova/sdk-playground\" start",
-    "start:sdk:playground:5200": "cross-env PORT=5200 lerna run --stream --scope \"@archanova/sdk-playground\" start"
+    "start:sdk:playground:5200": "cross-env PORT=5200 REACT_APP_SECONDARY=1 lerna run --stream --scope \"@archanova/sdk-playground\" start",
+    "deploy:sdk:playground": "lerna run --stream --scope \"@archanova/sdk-playground\" deploy:all"
   },
   "dependencies": {
     "cross-env": "^5.2.0",

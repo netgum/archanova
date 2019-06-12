@@ -1,0 +1,40 @@
+.content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 200;
+}
+
+.ring {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+}
+
+.ring:after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 1px;
+  margin-left: -25px;
+  content: " ";
+  display: block;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 5px solid #F3CF48;
+  border-color: #F3CF48 transparent #F3CF48 transparent;
+  animation: ringKF 1.2s linear infinite;
+}
+
+@keyframes ringKF {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

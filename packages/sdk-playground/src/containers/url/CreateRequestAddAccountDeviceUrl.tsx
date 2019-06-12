@@ -1,6 +1,6 @@
 import React from 'react';
 import { Example, Screen, InputText, Url } from '../../components';
-import { getCurrentEndpoint, getTargetEndpoint } from '../../shared';
+import { getCurrentEndpoint } from '../../shared';
 
 const code1 = () => `
 console.log('mobileUrl', sdk.createRequestAddAccountDeviceUrl());
@@ -26,7 +26,7 @@ interface IState {
 
 export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
   public state = {
-    endpoint: getTargetEndpoint(),
+    endpoint: '',
     callbackEndpoint: getCurrentEndpoint(),
     mobileUrl: '',
     redirectUrl: '',
@@ -63,6 +63,7 @@ export class CreateRequestAddAccountDeviceUrl extends Screen<IState> {
             value={callbackEndpoint}
             label="options.callbackEndpoint"
             type="text"
+            readOnly={true}
             onChange={this.callbackEndpointChanged}
           />
         </Example>

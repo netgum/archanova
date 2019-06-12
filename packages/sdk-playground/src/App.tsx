@@ -1,13 +1,16 @@
 import React from 'react';
-import { Header, Content, Footer } from './containers';
+import { Content, Console, StatusBar, Help, Preloader } from './containers';
 
 export default class App extends React.Component {
+
   public render() {
     return (
       <React.Fragment>
-        <Header />
         <Content />
-        <Footer />
+        <Console />
+        <StatusBar />
+        <Help />
+        <Preloader />
       </React.Fragment>
     );
   }

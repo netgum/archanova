@@ -7,6 +7,12 @@ export abstract class ContextComponent<P = any, S = any> extends React.Component
 
   public context: IContextProps;
 
+  public get config(): IContextProps['config'] {
+    return this.context ?
+      this.context.config
+      : null;
+  }
+
   public get logger(): IContextProps['logger'] {
     return this.context ?
       this.context.logger
@@ -16,6 +22,12 @@ export abstract class ContextComponent<P = any, S = any> extends React.Component
   public get sdk(): IContextProps['sdk'] {
     return this.context ?
       this.context.sdk
+      : null;
+  }
+
+  public get help(): IContextProps['help'] {
+    return this.context ?
+      this.context.help
       : null;
   }
 

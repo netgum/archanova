@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './Menu.module.scss';
+import { HelpTrigger } from './HelpTrigger';
 
 interface IProps {
   items: {
@@ -30,15 +31,23 @@ export class Menu extends React.Component<IProps> {
                   if (!enabledScreens[screen]) {
                     classNames.push(styles.off);
                   }
+
+                  const helpAlias = screen
+                    .replace(/([ -][a-z])/ig, found => found.replace('-', '').trim().toUpperCase());
+
                   return (
-                    <button
+                    <HelpTrigger
                       key={`${index}_${subIndex}`}
-                      onClick={this.createOnClickHandler(screen)}
-                      title={screen}
-                      className={classNames.join(' ')}
+                      alias={`menu.${helpAlias}`}
                     >
-                      {screen}
-                    </button>
+                      <button
+                        onClick={this.createOnClickHandler(screen)}
+                        title={screen}
+                        className={classNames.join(' ')}
+                      >
+                        {screen}
+                      </button>
+                    </HelpTrigger>
                   );
                 })}
               </div>

@@ -1,0 +1,31 @@
+.content {
+  position: fixed;
+  background-color: white;
+  padding: 15px;
+  z-index: 10;
+
+  &.statusBar {
+    left: 250px;
+    top: 50px;
+    right: 0;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  &.menu {
+    left: 250px;
+    top: 0;
+    bottom: 0;
+    min-width: 250px;
+    box-shadow: 10px 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  h1 {
+    font-size: 14px;
+    color: #6024FC;
+  }
+
+  h1, h2, h3, h4 {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eeeeee;
+  }
+}
