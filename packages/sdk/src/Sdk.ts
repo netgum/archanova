@@ -1394,10 +1394,10 @@ export class Sdk {
       ? accountDevice.type
       : null;
 
-    if (options.initialized && !initialized) {
+    if (options.initialized === true && !initialized) {
       throw new Sdk.Error('sdk not initialized');
     }
-    if (!options.initialized && initialized) {
+    if (options.initialized === false && initialized) {
       throw new Sdk.Error('sdk already initialized');
     }
     if (options.accountConnected === true && !account) {
