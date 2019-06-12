@@ -5,7 +5,7 @@ import { ISdkReduxState, Sdk } from '@archanova/sdk';
 import { filter, switchMap, map } from 'rxjs/operators';
 import { ObjectInspector } from 'react-inspector';
 import { ContextComponent, ILoggerEvent, toRawObject } from '../shared';
-import styles from './Footer.module.scss';
+import styles from './Console.module.scss';
 
 interface IState {
   tab: number;
@@ -17,7 +17,7 @@ interface IProps {
   sdk: ISdkReduxState;
 }
 
-class Footer extends ContextComponent<IProps, IState> {
+class Console extends ContextComponent<IProps, IState> {
   public state = {
     tab: 0,
     loggerEvents: [],
@@ -207,4 +207,4 @@ class Footer extends ContextComponent<IProps, IState> {
 
 export default connect<IProps, {}, {}, IProps>(
   state => state,
-)(Footer);
+)(Console);

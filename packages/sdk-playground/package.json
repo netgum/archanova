@@ -12,16 +12,18 @@
   },
   "description": "Archanova Tutorial",
   "dependencies": {
-    "@archanova/sdk": "1.0.0-alpha.12",
+    "@archanova/sdk": "1.0.0-alpha.13",
     "@netgum/types": "^0.1.7",
     "@netgum/utils": "^0.1.3",
     "@types/react": "^16.8.17",
     "@types/react-dom": "^16.8.4",
     "@types/react-redux": "^7.0.9",
+    "@types/markdown-it": "^0.0.7",
     "@types/node": "^12.0.0",
     "@types/webpack-env": "^1.13.9",
     "bn.js": "^4.11.8",
     "highlight.js": "^9.15.6",
+    "markdown-it": "^8.4.2",
     "qrcode.react": "^0.9.3",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -37,7 +39,16 @@
     "webpack": "4.29.6"
   },
   "scripts": {
-    "start": "react-scripts start"
+    "start": "react-scripts start",
+    "build:kovan": "./scripts/build.sh kovan",
+    "build:rinkeby": "./scripts/build.sh rinkeby",
+    "build:ropsten": "./scripts/build.sh ropsten",
+    "deploy:kovan": "./scripts/deploy.sh kovan",
+    "deploy:rinkeby": "./scripts/deploy.sh rinkeby",
+    "deploy:ropsten": "./scripts/deploy.sh ropsten",
+    "build:all": "npm run build:kovan && npm run build:rinkeby && npm run build:ropsten",
+    "predeploy:all": "npm run build:all",
+    "deploy:all": "npm run deploy:kovan && npm run deploy:rinkeby && npm run deploy:ropsten"
   },
   "browserslist": {
     "production": [

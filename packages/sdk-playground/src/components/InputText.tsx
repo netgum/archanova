@@ -5,6 +5,7 @@ import { Button } from './Button';
 interface IProps {
   label: string;
   value: string;
+  readOnly?: boolean;
   type?: 'text' | 'number';
   decimal?: boolean;
   onChange?: (value: string, valueParsed: any) => any;
@@ -21,7 +22,7 @@ export class InputText extends React.Component<IProps> {
   }
 
   public render(): any {
-    const { label, value, type, onRandomClick } = this.props;
+    const { label, value, type, readOnly, onRandomClick } = this.props;
 
     return (
       <div className={styles.content}>
@@ -29,6 +30,7 @@ export class InputText extends React.Component<IProps> {
         <input
           value={value}
           type={type}
+          readOnly={readOnly}
           onChange={this.onChangeHandler}
         />
         {!onRandomClick ? null : (

@@ -13,6 +13,14 @@
 - [CLI](docs/cli.md)
 - [SDK](docs/sdk/index.md)
 
+## SDK Playground
+
+| Network 	| Url 	|
+| --- | ---|
+| `kovan` 	| [https://playground.kovan.archanova.run](https://playground.kovan.archanova.run) 	|
+| `ropsten` 	| [https://playground.ropsten.archanova.run](https://playground.ropsten.archanova.run) 	|
+| `rinkeby` 	| [https://playground.rinkeby.archanova.run](https://playground.rinkeby.archanova.run) 	|
+
 ## License
 
 The MIT License

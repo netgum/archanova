@@ -14,4 +14,8 @@
   input[type="text"] {
     width: 400px;
   }
+  input[readonly] {
+    color: #6c6c6c !important;
+    background-color: #d9bc5e;
+  }
 }
