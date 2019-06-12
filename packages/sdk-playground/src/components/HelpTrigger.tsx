@@ -19,7 +19,11 @@ export class HelpTrigger extends ContextComponent<IProps> {
       !this.prefix ||
       !this.config.showHelp
     ) {
-      return children;
+      return (
+        <div>
+          {children}
+        </div>
+      );
     }
 
     const classNames = [
