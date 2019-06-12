@@ -42,7 +42,13 @@
     "start": "react-scripts start",
     "build:kovan": "./scripts/build.sh kovan",
     "build:rinkeby": "./scripts/build.sh rinkeby",
-    "build:ropsten": "./scripts/build.sh ropsten"
+    "build:ropsten": "./scripts/build.sh ropsten",
+    "deploy:kovan": "./scripts/deploy.sh kovan",
+    "deploy:rinkeby": "./scripts/deploy.sh rinkeby",
+    "deploy:ropsten": "./scripts/deploy.sh ropsten",
+    "build:all": "npm run build:kovan && npm run build:rinkeby && npm run build:ropsten",
+    "predeploy:all": "npm run build:all",
+    "deploy:all": "npm run deploy:kovan && npm run deploy:rinkeby && npm run deploy:ropsten"
   },
   "browserslist": {
     "production": [
