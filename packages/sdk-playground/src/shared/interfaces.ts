@@ -28,6 +28,7 @@ export interface ILoggerConsole {
 
 export interface ILogger {
   stream$: Subject<ILoggerEvent>;
+  pending$: Subject<boolean>;
 
   wrapSync<T = any>(label: string, fun: (console: ILoggerConsole) => Promise<T>): void;
 }

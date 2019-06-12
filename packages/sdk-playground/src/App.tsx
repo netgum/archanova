@@ -1,5 +1,5 @@
 import React from 'react';
-import { Content, Console, StatusBar, Help } from './containers';
+import { Content, Console, StatusBar, Help, Preloader } from './containers';
 
 export default class App extends React.Component {
 
@@ -10,6 +10,7 @@ export default class App extends React.Component {
         <Console />
         <StatusBar />
         <Help />
+        <Preloader />
       </React.Fragment>
     );
   }
