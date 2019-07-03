@@ -11,7 +11,7 @@
   },
   "scripts": {
     "lint": "tslint --project ./tsconfig.json --exclude ./packages/**/*.d.ts ./packages/**/*.ts",
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna bootstrap -- --no-package-lock",
     "clean": "lerna clean --yes && lerna run clean --stream",
     "prebuild": "npm run bootstrap",
     "build": "lerna run --stream build",

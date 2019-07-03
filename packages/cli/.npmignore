@@ -1,5 +1,5 @@
 example
 .*
 !.npmignore
-src
+/src
 tsconfig*
