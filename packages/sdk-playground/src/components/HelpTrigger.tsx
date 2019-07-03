@@ -15,10 +15,7 @@ export class HelpTrigger extends ContextComponent<IProps> {
 
   public render(): any {
     const { className, children } = this.props;
-    if (
-      !this.prefix ||
-      !this.config.showHelp
-    ) {
+    if (!this.prefix) {
       return (
         <div>
           {children}

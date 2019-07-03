@@ -36,7 +36,6 @@ export default class Help extends ContextComponent<{}, IState> {
     const { alias } = this.state;
 
     if (
-      !this.config.showHelp ||
       !alias ||
       !help[alias]
     ) {

@@ -5,7 +5,7 @@ import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import App from './App';
 import { configureSdk, configureStore } from './configure';
-import { logger, help, config, context } from './shared';
+import { logger, help, context } from './shared';
 
 const sdk = configureSdk(logger);
 const store = configureStore(sdk);
@@ -13,7 +13,6 @@ const store = configureStore(sdk);
 render(
   <Provider store={store}>
     <context.Provider value={{
-      config,
       sdk,
       logger,
       help,

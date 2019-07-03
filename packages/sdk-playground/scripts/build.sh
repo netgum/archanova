@@ -28,7 +28,6 @@ done
 
 build_dist() {
   export REACT_APP_SDK_ENV=${ENV}
-  export REACT_APP_SHOW_HELP=0
 
   rm -r -f ./build-${ENV}
   ./node_modules/.bin/react-scripts build
