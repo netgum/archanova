@@ -1,7 +1,7 @@
 import React from 'react';
 import { Subscription } from 'rxjs';
 import MarkdownIt from 'markdown-it';
-import { ContextComponent } from '../shared';
+import { ContextComponent, isFeatureActive } from '../shared';
 import styles from './Help.module.scss';
 import help from '../help';
 
@@ -36,7 +36,6 @@ export default class Help extends ContextComponent<{}, IState> {
     const { alias } = this.state;
 
     if (
-      !this.config.showHelp ||
       !alias ||
       !help[alias]
     ) {
@@ -58,7 +57,7 @@ export default class Help extends ContextComponent<{}, IState> {
 
     const html = this.markdownIt.render(help[alias].trim());
 
-    return (
+    return !isFeatureActive('help') ? null : (
       <div
         className={classNames.join(' ')}
         dangerouslySetInnerHTML={{ __html: html }}

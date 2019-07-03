@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContextComponent } from '../shared';
+import { ContextComponent, isFeatureActive } from '../shared';
 import styles from './HelpTrigger.module.scss';
 
 interface IProps {
@@ -15,10 +15,7 @@ export class HelpTrigger extends ContextComponent<IProps> {
 
   public render(): any {
     const { className, children } = this.props;
-    if (
-      !this.prefix ||
-      !this.config.showHelp
-    ) {
+    if (!this.prefix || !isFeatureActive('help')) {
       return (
         <div>
           {children}

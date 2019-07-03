@@ -1,93 +1,58 @@
 #!/usr/bin/env node
 
-import { sdkConstants } from '@archanova/sdk';
+import { createLocalSdkEnvironment, getSdkEnvironment, SdkEnvironmentNames, sdkModules } from '@archanova/sdk';
 import { render } from 'ink';
-import { join } from 'path';
-import { copy } from 'fs-extra';
 import React from 'react';
-import { App } from './App';
-import config from './config';
-import { configureSdk } from './sdk';
-import { configureServer } from './server';
+import Ws from 'ws';
+import { getCliConfig } from './cli';
+import context from './context';
+import { Main } from './Main';
+import { SdkService, ServerService, StorageService, TemplateService } from './services';
 
-console.clear();
-console.log('Please wait ...');
+const config = getCliConfig();
 
-(async () => {
-  const sdk = await configureSdk(config.sdk, config.workingPath);
-  const server = configureServer();
+let sdkEnv: sdkModules.Environment;
 
-  {
-    const { accountAddress } = sdk.state;
-    if (!accountAddress) {
-      const { items } = await sdk.getConnectedAccounts();
+const storageService = new StorageService({
+  scope: config.scope,
+  workingPath: config.workingPath,
+});
 
-      if (items.length) {
-        const [{ address }] = items;
-        await sdk.connectAccount(address);
-      } else {
-        await sdk.createAccount();
-      }
-    }
-  }
+switch (config.env) {
+  case SdkEnvironmentNames.Kovan:
+  case SdkEnvironmentNames.Rinkeby:
+  case SdkEnvironmentNames.Ropsten:
+    sdkEnv = getSdkEnvironment(config.env);
+    break;
 
-  const { account } = sdk.state;
-  if (
-    account.type !== sdkConstants.AccountTypes.Developer
-  ) {
-    if (
-      !config.invitationCode ||
-      !await sdk.becomeDeveloper(config.invitationCode).catch(() => null)
-    ) {
-      console.clear();
-      console.log('Account not in Archanova Developer program');
-      console.log('Please use --invitation-code');
-      process.exit();
-    }
-  }
+  case 'local':
+    sdkEnv = createLocalSdkEnvironment({
+      ...config.localEnv,
+    });
+    break;
+}
 
-  let app = await sdk.getDeveloperApp();
+storageService.setNamespace(sdkEnv.getConfig('storageOptions').namespace);
 
-  if (config.appName) {
-    if (app) {
-      console.log('Application already created');
-      process.exit();
-    }
+const sdkService = new SdkService(
+  sdkEnv
+    .setConfig('storageAdapter', storageService.toSdkAdapter())
+    .setConfig('apiWebSocketConstructor', Ws),
+);
 
-    app = await sdk.createDeveloperApp(config.appName).catch(() => null);
+const serverService = new ServerService(config.workingPath);
+const templateService = new TemplateService(config.workingPath);
 
-    if (app) {
-      await Promise.all([
-        'index.js',
-        'index.d.ts',
-      ].map(fileName => copy(
-        join(__dirname, '..', 'template', fileName),
-        join(config.workingPath, fileName),
-      )));
-    } else {
-      console.log(`Can not create app with name ${config.appName}`);
-      process.exit();
-    }
-  }
-
-  if (!app) {
-    console.log('App not created');
-    console.log('Please use --create-app');
-    process.exit();
-  }
-
-  const callbackUrl = await server.start(`${config.workingPath}/index.js`);
-
-  await sdk.updateDeveloperApp(app.alias, callbackUrl);
-
-  console.clear();
-
-  render(
-    <App
-      account={sdk.state.account}
-      appAlias={app.alias}
-      url={callbackUrl}
-    />,
-  );
-})()
-  .catch(console.error);
+render(
+  <context.Provider
+    value={{
+      config,
+      sdkService,
+      storageService,
+      serverService,
+      templateService,
+    }}
+  >
+    <Main />
+  </context.Provider>,
+);

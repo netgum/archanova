@@ -2,14 +2,9 @@ import { Sdk } from '@archanova/sdk';
 import { Subject } from 'rxjs';
 
 export interface IContextProps {
-  config: IConfig;
   sdk: Sdk;
   logger: ILogger;
   help: IHelp;
-}
-
-export interface IConfig {
-  showHelp: boolean;
 }
 
 export interface IHelp {

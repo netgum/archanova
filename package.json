@@ -11,7 +11,7 @@
   },
   "scripts": {
     "lint": "tslint --project ./tsconfig.json --exclude ./packages/**/*.d.ts ./packages/**/*.ts",
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna bootstrap -- --no-package-lock",
     "clean": "lerna clean --yes && lerna run clean --stream",
     "prebuild": "npm run bootstrap",
     "build": "lerna run --stream build",
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "cross-env": "^5.2.0",
-    "lerna": "^3.13.4",
+    "lerna": "^3.15.0",
     "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
     "tsutils": "^3.10.0",

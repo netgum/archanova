@@ -1,6 +1,25 @@
 import BN from 'bn.js';
 import { anyToHex, generateRandomPrivateKey, privateKeyToAddress, weiToEth } from '@netgum/utils';
 
+const { REACT_APP_SDK_ACTIVATE_FEATURES } = process.env;
+
+const activeFeatures: { [key: string]: boolean } = (REACT_APP_SDK_ACTIVATE_FEATURES || '')
+  .split(',')
+  .reduce((result: { [key: string]: boolean }, key: string) => {
+    if (key) {
+      result = {
+        ...result,
+        [key]: true,
+      };
+    }
+
+    return result;
+  }, {});
+
+export function isFeatureActive(name: 'help'): boolean {
+  return activeFeatures[name];
+}
+
 export function generateRandomAddress() {
   return privateKeyToAddress(
     generateRandomPrivateKey(),

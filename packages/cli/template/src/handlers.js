@@ -4,7 +4,9 @@
  */
 function get() {
   return {
-    version: '0.0.0',
+    name: '${app.name}',
+    alias: '${app.alias}',
+    version: '0.0.1',
   };
 }
 

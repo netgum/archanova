@@ -5,6 +5,7 @@
 ```bash
 $ git clone https://github.com/netgum/archanova.git
 $ cd ./archanova
+$ npm i
 $ npm run bootstrap
 $ npm run compile
 ```
@@ -14,12 +15,14 @@ $ npm run compile
 Starts `first` instance on `5100` port:
 
 ```bash
+$ export REACT_APP_SDK_ENV=kovan
 $ npm run start:sdk:playground:5100
 ```
 
 Starts `second` instance on `5200` port:
 
 ```bash
+$ export REACT_APP_SDK_ENV=kovan
 $ npm run start:sdk:playground:5200
 ```
 
@@ -27,19 +30,13 @@ $ npm run start:sdk:playground:5200
 
 | Name 	| Default Value 	| Options 	|
 | --- | ---| ---|
-| `REACT_APP_SHOW_HELP` 	| `0` 	| `1,0` 	|
 | `REACT_APP_SECONDARY` 	| `0` 	| `1,0` 	|
 | `REACT_APP_SDK_ENV` 	| `kovan` 	| `kovan,rinkeby,ropsten,local` 	|
 | `REACT_APP_SDK_LOCAL_ENV_HOST` 	| `localhost` 	| `-` |
 | `REACT_APP_SDK_LOCAL_ENV_PORT` 	| `8880` 	| `-` |
 | `REACT_APP_SDK_AUTO_INITIALIZE` 	| `1` 	| `0,1` |
 | `REACT_APP_SDK_AUTO_ACCEPT_ACTION` 	| `1` 	| `0,1` |
-
-### `.env` support
-
-```bash
-echo "REACT_APP_SHOW_HELP=1" > ./packages/sdk-playground/.env
-```
+| `REACT_APP_SDK_ACTIVATE_FEATURES` 	| `` 	| `help` |
 
 ## License
 
