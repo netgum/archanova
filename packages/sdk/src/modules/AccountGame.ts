@@ -1,5 +1,5 @@
 import BN from 'bn.js';
-import { abiEncodePacked } from '@netgum/utils';
+import { abiEncodePacked, ZERO_ADDRESS } from '@netgum/utils';
 import { IAccountGame, IPaginated } from '../interfaces';
 import { Api } from './Api';
 import { Contract } from './Contract';
@@ -32,7 +32,7 @@ export class AccountGame {
     });
   }
 
-  public createAccountGame(app: string, deposit: number | string | BN, data: string): Promise<IAccountGame> {
+  public createAccountGame(app: string, deposit: { value: number | string | BN, token?: string }, data: string): Promise<IAccountGame> {
     const { accountAddress } = this.state;
     return this.api.sendRequest({
       method: 'POST',
@@ -54,14 +54,16 @@ export class AccountGame {
       'address',
       'address',
       'address',
+      'address',
       'bytes',
       'uint256',
     )(
       address,
       accountAddress,
       account.address,
+      deposit.token ? deposit.token.address : ZERO_ADDRESS,
       payment.hash,
-      deposit,
+      deposit.value,
     );
 
     const signature = this.device.signPersonalMessage(message);
@@ -84,14 +86,16 @@ export class AccountGame {
       'address',
       'address',
       'address',
+      'address',
       'bytes',
       'uint256',
     )(
       address,
       accountAddress,
       account.address,
+      deposit.token ? deposit.token.address : ZERO_ADDRESS,
       payment.hash,
-      deposit,
+      deposit.value,
     );
 
     const signature = this.device.signPersonalMessage(message);
@@ -115,5 +119,16 @@ export class AccountGame {
         data,
       },
     });
+  }
+
+  public async cancelAccountGame(id: number): Promise<boolean> {
+    const { accountAddress } = this.state;
+
+    const { success } = await this.api.sendRequest<{ success: true }>({
+      method: 'DELETE',
+      path: `account/${accountAddress}/game/${id}`,
+    });
+
+    return success;
   }
 }

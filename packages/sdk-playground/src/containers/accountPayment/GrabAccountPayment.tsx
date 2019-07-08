@@ -2,43 +2,43 @@ import React from 'react';
 import { Example, Screen, InputText } from '../../components';
 import { generateRandomAddress, mergeMethodArgs } from '../../shared';
 
-const code = (hash: string, receiver: string) => `
+const code = (hash: string, recipient: string) => `
 const hash = ${hash ? `"${hash}"` : 'null'};
-${receiver ? `const receiver = "${receiver}";` : ''}
+${recipient ? `const recipient = "${recipient}";` : ''}
 
 sdk
-  .grabAccountPayment(${mergeMethodArgs('hash', receiver && 'receiver')})
+  .grabAccountPayment(${mergeMethodArgs('hash', recipient && 'recipient')})
   .then(accountPayment => console.log('accountPayment', accountPayment));
   .catch(console.error);
 `;
 
 interface IState {
   hash: string;
-  receiver: string;
+  recipient: string;
 }
 
 export class GrabAccountPayment extends Screen<IState> {
   public state = {
     hash: '',
-    receiver: '',
+    recipient: '',
   };
 
   public componentWillMount(): void {
     this.run = this.run.bind(this);
 
     this.hashChanged = this.hashChanged.bind(this);
-    this.receiverChanged = this.receiverChanged.bind(this);
-    this.generateReceiver = this.generateReceiver.bind(this);
+    this.recipientChanged = this.recipientChanged.bind(this);
+    this.generateRecipient = this.generateRecipient.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { hash, receiver } = this.state;
+    const { hash, recipient } = this.state;
     return (
       <div>
         <Example
           title="Grab Account Payment"
-          code={code(hash, receiver)}
+          code={code(hash, recipient)}
           enabled={hash && enabled}
           run={this.run}
         >
@@ -49,11 +49,11 @@ export class GrabAccountPayment extends Screen<IState> {
             onChange={this.hashChanged}
           />
           <InputText
-            value={receiver}
-            label="receiver"
+            value={recipient}
+            label="recipient"
             type="text"
-            onChange={this.receiverChanged}
-            onRandomClick={this.generateReceiver}
+            onChange={this.recipientChanged}
+            onRandomClick={this.generateRecipient}
           />
         </Example>
       </div>
@@ -66,24 +66,24 @@ export class GrabAccountPayment extends Screen<IState> {
     });
   }
 
-  private receiverChanged(receiver: string): void {
+  private recipientChanged(recipient: string): void {
     this.setState({
-      receiver,
+      recipient,
     });
   }
 
-  private generateReceiver(): void {
+  private generateRecipient(): void {
     this.setState({
-      receiver: generateRandomAddress(),
+      recipient: generateRandomAddress(),
     });
   }
 
   private run(): void {
-    const { hash, receiver } = this.state;
+    const { hash, recipient } = this.state;
     this
       .logger
       .wrapSync('sdk.grabAccountPayment', async (console) => {
-        console.log('accountPayment', await this.sdk.grabAccountPayment(hash, receiver || null));
+        console.log('accountPayment', await this.sdk.grabAccountPayment(hash, recipient || null));
       });
   }
 }

@@ -23,6 +23,10 @@ case ${i} in
     ACTION="deploy"
     ENV="ropsten"
     ;;
+    sokol)
+    ACTION="deploy"
+    ENV="sokol"
+    ;;
 esac
 done
 
@@ -35,6 +39,6 @@ case ${ACTION} in
     deploy_dist
     ;;
     help)
-    echo "usage: ./deploy.sh [kovan|rinkeby|ropsten]"
+    echo "usage: ./deploy.sh [kovan|rinkeby|ropsten|sokol]"
     ;;
 esac

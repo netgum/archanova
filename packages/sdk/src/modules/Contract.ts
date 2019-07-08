@@ -11,7 +11,8 @@ export class Contract {
   public accountProxy: Contract.ContractInstance<'forwardAccountOwnerCall'>;
   public ensRegistry: Contract.ContractInstance;
   public ensResolver: Contract.ContractInstance;
-  public virtualPaymentManager: Contract.ContractInstance<'depositPayment' | 'withdrawPayment' | 'withdrawDeposit'>;
+  public erc20Token: Contract.ContractInstance<'approve' | 'balanceOf'>;
+  public virtualPaymentManager: Contract.ContractInstance<'depositToken' | 'depositPayment' | 'withdrawPayment' | 'withdrawDeposit'>;
 
   constructor(private eth: Eth) {
     this.account = this.createInstance(
@@ -35,6 +36,10 @@ export class Contract {
     );
     this.ensResolver = this.createInstance(
       getContractAbi(ContractNames.ENSResolver),
+      null,
+    );
+    this.erc20Token = this.createInstance(
+      getContractAbi(ContractNames.ERC20Token),
       null,
     );
     this.virtualPaymentManager = this.createInstance(

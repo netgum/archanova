@@ -8,7 +8,7 @@ const HELP_OPTIONS = chalk`
 {magenta Options}
   {cyan --help, -h              } print help
   {cyan --global, -g            } use global scope
-  {cyan --env, -e <env>         } environment [ropsten,rinkeby,kovan,local] (default: kovan)
+  {cyan --env, -e <env>         } environment [ropsten,rinkeby,kovan,sokol,local] (default: kovan)
   {cyan --local-env-host <host> } local environment host
   {cyan --local-env-port <port> } local environment port
   {cyan --private-key <key>     } device private key`;

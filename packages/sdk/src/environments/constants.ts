@@ -5,6 +5,7 @@ export enum SdkEnvironmentNames {
   Ropsten = 'ropsten',
   Rinkeby = 'rinkeby',
   Kovan = 'kovan',
+  Sokol = 'sokol',
 }
 
 const mainConfig: Environment.IConfigs = {
@@ -69,4 +70,18 @@ export const kovan = (new Environment(Object.create(mainConfig)))
   })
   .extendConfig('storageOptions', {
     namespace: '@archanova:kovan',
+  });
+
+export const sokol = (new Environment(Object.create(mainConfig)))
+  .extendConfig('apiOptions', {
+    host: 'sokol.archanova.run',
+  })
+  .extendConfig('ensOptions', {
+    supportedRootNames: ['archanova.sokol'],
+  })
+  .extendConfig('ethOptions', {
+    networkId: '77',
+  })
+  .extendConfig('storageOptions', {
+    namespace: '@archanova:sokol',
   });

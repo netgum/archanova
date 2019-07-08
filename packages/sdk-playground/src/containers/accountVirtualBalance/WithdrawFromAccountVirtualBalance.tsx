@@ -3,18 +3,20 @@ import { ethToWei } from '@netgum/utils';
 import { Example, Screen, InputText, InputTransactionSpeed } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (value: number, transactionSpeed: string) => `
+const code1 = (value: number, tokenAddress: string, transactionSpeed: string) => `
 ${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
-import { ethToWei } from '@netgum/utils';
+${tokenAddress ? '' : 'import { ethToWei } from \'@netgum/utils\';'}
 
-const value = ethToWei(${value});
+const value = ${tokenAddress ? value : `ethToWei(${value})`};
+const tokenAddress = ${tokenAddress ? `'${tokenAddress}'` : 'null'};
 ${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
 
 sdk
-  .estimateTopUpAccountVirtualBalance(${mergeMethodArgs('value', transactionSpeed && 'transactionSpeed')})
+  .estimateWithdrawFromAccountVirtualBalance(${mergeMethodArgs('value', 'tokenAddress', transactionSpeed && 'transactionSpeed')})
   .then(estimated => console.log('estimated', estimated));
   .catch(console.error);
 `;
+
 
 const code2 = () => `
 const estimated; // estimated transaction
@@ -30,13 +32,15 @@ interface IState {
   estimated: any;
   value: string;
   valueParsed: number;
+  tokenAddress: string;
 }
 
-export class TopUpAccountVirtualBalance extends Screen<IState> {
+export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
   public state = {
     transactionSpeed: null,
     estimated: null,
     value: '0',
+    tokenAddress: '',
     valueParsed: 0,
   };
 
@@ -45,17 +49,18 @@ export class TopUpAccountVirtualBalance extends Screen<IState> {
     this.run2 = this.run2.bind(this);
 
     this.valueChanged = this.valueChanged.bind(this);
+    this.tokenAddressChanged = this.tokenAddressChanged.bind(this);
     this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { estimated, value, valueParsed, transactionSpeed } = this.state;
+    const { estimated, value, tokenAddress, valueParsed, transactionSpeed } = this.state;
     return (
       <div>
         <Example
-          title="Estimate Top-Up Account Virtual Balance"
-          code={code1(valueParsed, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          title="Estimate Withdraw From Account Virtual Balance"
+          code={code1(valueParsed, tokenAddress, InputTransactionSpeed.selectedToText(transactionSpeed))}
           enabled={enabled}
           run={this.run1}
         >
@@ -65,6 +70,11 @@ export class TopUpAccountVirtualBalance extends Screen<IState> {
             decimal={true}
             value={value}
             onChange={this.valueChanged}
+          />
+          <InputText
+            label="tokenAddress"
+            value={tokenAddress}
+            onChange={this.tokenAddressChanged}
           />
           <InputTransactionSpeed
             selected={transactionSpeed}
@@ -88,6 +98,12 @@ export class TopUpAccountVirtualBalance extends Screen<IState> {
     });
   }
 
+  private tokenAddressChanged(tokenAddress: string): void {
+    this.setState({
+      tokenAddress,
+    });
+  }
+
   private transactionSpeedChanged(transactionSpeed: any): void {
     this.setState({
       transactionSpeed,
@@ -95,12 +111,13 @@ export class TopUpAccountVirtualBalance extends Screen<IState> {
   }
 
   private run1(): void {
-    const { valueParsed, transactionSpeed } = this.state;
+    const { valueParsed, tokenAddress, transactionSpeed } = this.state;
     this
       .logger
       .wrapSync('sdk.estimateTopUpAccountVirtualBalance', async (console) => {
-        const estimated = console.log('estimated', await this.sdk.estimateTopUpAccountVirtualBalance(
-          ethToWei(valueParsed),
+        const estimated = console.log('estimated', await this.sdk.estimateWithdrawFromAccountVirtualBalance(
+          tokenAddress ? valueParsed : ethToWei(valueParsed),
+          tokenAddress,
           transactionSpeed,
         ));
 

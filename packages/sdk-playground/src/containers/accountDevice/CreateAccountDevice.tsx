@@ -7,7 +7,7 @@ const deviceAddress = ${address ? `"${address}"` : 'null'};
 
 sdk
   .createAccountDevice(deviceAddress)
-  .then(account => console.log('account', account)
+  .then(accountDevice => console.log('accountDevice', accountDevice))
   .catch(console.error);
 `;
 
@@ -66,7 +66,7 @@ export class CreateAccountDevice extends Screen<IState> {
     this
       .logger
       .wrapSync('sdk.createAccount', async (console) => {
-        console.log('account', await this.sdk.createAccountDevice(address));
+        console.log('accountDevice', await this.sdk.createAccountDevice(address));
       });
   }
 }

@@ -1,41 +1,56 @@
 import React from 'react';
 import { Subscription } from 'rxjs';
 import MarkdownIt from 'markdown-it';
-import { ContextComponent, isFeatureActive } from '../shared';
+import { ContextComponent } from '../shared';
 import styles from './Help.module.scss';
 import help from '../help';
 
 interface IState {
   alias: string;
+  visible: boolean;
 }
 
 export default class Help extends ContextComponent<{}, IState> {
   public state = {
     alias: null,
+    visible: false,
   };
 
   private markdownIt: MarkdownIt = null;
-  private subscription: Subscription = null;
+  private subscriptions: Subscription[] = [];
 
   public componentWillMount(): void {
     this.markdownIt = new MarkdownIt();
-    this.subscription = this
-      .help
-      .stream$
-      .subscribe(alias => this.setState({
-        alias,
-      }));
-
+    this.subscriptions = [
+      this
+        .help
+        .active$
+        .subscribe(visible => this.setState({
+          visible,
+        })),
+      this
+        .help
+        .stream$
+        .subscribe(alias => this.setState({
+          alias,
+        })),
+    ];
+    this.setState({
+      visible: this.context.help.active$.value,
+    });
   }
 
   public componentWillUnmount(): void {
-    this.subscription.unsubscribe();
+    for (const subscription of this.subscriptions) {
+      subscription.unsubscribe();
+    }
   }
 
   public render() {
-    const { alias } = this.state;
+    const { alias, visible } = this.state;
 
     if (
+      !visible ||
       !alias ||
       !help[alias]
     ) {
@@ -57,7 +72,7 @@ export default class Help extends ContextComponent<{}, IState> {
 
     const html = this.markdownIt.render(help[alias].trim());
 
-    return !isFeatureActive('help') ? null : (
+    return (
       <div
         className={classNames.join(' ')}
         dangerouslySetInnerHTML={{ __html: html }}

@@ -5,6 +5,7 @@ import {
   ropsten,
   rinkeby,
   kovan,
+  sokol,
 } from './constants';
 
 /**
@@ -25,6 +26,10 @@ export function getSdkEnvironment(name: SdkEnvironmentNames): Environment {
 
     case SdkEnvironmentNames.Kovan:
       result = kovan;
+      break;
+
+    case SdkEnvironmentNames.Sokol:
+      result = sokol;
       break;
   }
 

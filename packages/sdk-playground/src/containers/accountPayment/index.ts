@@ -5,3 +5,4 @@ export * from './SignAccountPayment';
 export * from './GrabAccountPayment';
 export * from './DepositAccountPayment';
 export * from './WithdrawAccountPayment';
+export * from './CancelAccountPayment';

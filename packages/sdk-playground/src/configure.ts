@@ -12,30 +12,21 @@ import { applyMiddleware, createStore, Store, combineReducers } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { filter } from 'rxjs/operators';
 import { ILogger } from './shared';
-
-const {
-  REACT_APP_SDK_ENV,
-  REACT_APP_SDK_LOCAL_ENV_HOST,
-  REACT_APP_SDK_LOCAL_ENV_PORT,
-  REACT_APP_SDK_AUTO_INITIALIZE,
-  REACT_APP_SDK_AUTO_ACCEPT_ACTION,
-} = process.env;
+import { config } from './config';
 
 export function configureSdk(logger: ILogger): Sdk {
   let sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Kovan); // kovan env by default
 
-  switch (REACT_APP_SDK_ENV) {
+  switch (config.sdk.env) {
     case SdkEnvironmentNames.Rinkeby:
     case SdkEnvironmentNames.Ropsten:
     case SdkEnvironmentNames.Kovan:
-      sdkEnv = getSdkEnvironment(REACT_APP_SDK_ENV as SdkEnvironmentNames);
+    case SdkEnvironmentNames.Sokol:
+      sdkEnv = getSdkEnvironment(config.sdk.env as SdkEnvironmentNames);
       break;
 
     case 'local':
-      sdkEnv = createLocalSdkEnvironment({
-        host: REACT_APP_SDK_LOCAL_ENV_HOST || null,
-        port: parseInt(REACT_APP_SDK_LOCAL_ENV_PORT, 10) || null,
-      });
+      sdkEnv = createLocalSdkEnvironment(config.sdk.localEnv);
       break;
   }
 
@@ -51,7 +42,7 @@ export function configureSdk(logger: ILogger): Sdk {
         },
       })
       .extendConfig('actionOptions', {
-        autoAccept: !!parseInt(REACT_APP_SDK_AUTO_ACCEPT_ACTION || '1', 10),
+        autoAccept: config.sdk.autoAcceptAction,
       }),
   );
 
@@ -64,7 +55,7 @@ export function configureSdk(logger: ILogger): Sdk {
     .pipe(filter(value => !!value))
     .subscribe(err => console.error('sdk.error$', err));
 
-  if (parseInt(REACT_APP_SDK_AUTO_INITIALIZE || '1', 10)) {
+  if (config.sdk.autoInitialize) {
     logger
       .wrapSync('sdk.initialize', async (console) => {
         await sdk.initialize();

@@ -10,6 +10,7 @@ import {
   AccountTransactionStates,
   AccountPaymentStates,
   AppStates,
+  TokenTypes,
 } from './constants';
 
 export interface IAccount {
@@ -65,7 +66,10 @@ export interface IAccountGame {
   data: string;
   whoseTurn: AccountGamePlayers;
   winner: AccountGamePlayers;
-  deposit: BN;
+  deposit: {
+    value: BN;
+    token: IToken;
+  };
   updatedAt: Date;
 }
 
@@ -95,7 +99,7 @@ export interface IAccountPayment {
     account: IAccount;
     signature: Buffer;
   };
-  receiver: {
+  recipient: {
     account: IAccount;
     address: string;
   };
@@ -104,6 +108,13 @@ export interface IAccountPayment {
   };
   hash: string;
   state: AccountPaymentStates;
+  value: BN;
+  token: IToken;
+  updatedAt: Date;
+}
+
+export interface IAccountVirtualBalance {
+  token: IToken;
   value: BN;
   updatedAt: Date;
 }
@@ -117,11 +128,19 @@ export interface IApp {
   name: string;
   description: string;
   imageUrl: string;
-  updatedAt: string;
+  updatedAt: Date;
 }
 
 export interface IDevice {
   address: string;
+}
+
+export interface IToken {
+  symbol: string;
+  name: string;
+  type: TokenTypes;
+  address: string;
+  createdAt: Date;
 }
 
 export interface IPaginated<T = any> {

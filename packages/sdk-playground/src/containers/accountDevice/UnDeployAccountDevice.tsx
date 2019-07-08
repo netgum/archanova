@@ -10,7 +10,7 @@ ${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
 
 sdk
   .estimateAccountDeviceUnDeployment(${mergeMethodArgs('deviceAddress', transactionSpeed && 'transactionSpeed')})
-  .then(success => console.log('success', success)
+  .then(success => console.log('success', success))
   .catch(console.error);
 `;
 

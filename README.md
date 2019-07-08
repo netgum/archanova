@@ -20,6 +20,7 @@
 | `kovan` 	| [https://playground.kovan.archanova.run](https://playground.kovan.archanova.run) 	|
 | `ropsten` 	| [https://playground.ropsten.archanova.run](https://playground.ropsten.archanova.run) 	|
 | `rinkeby` 	| [https://playground.rinkeby.archanova.run](https://playground.rinkeby.archanova.run) 	|
+| `sokol` 	| [https://playground.sokol.archanova.run](https://playground.sokol.archanova.run) 	|
 
 ## License
 

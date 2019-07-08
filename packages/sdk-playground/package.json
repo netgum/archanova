@@ -12,7 +12,8 @@
   },
   "description": "Archanova Tutorial",
   "dependencies": {
-    "@archanova/sdk": "1.0.0-alpha.13",
+    "@archanova/contracts": "^1.0.0-beta.11",
+    "@archanova/sdk": "1.0.0-alpha.14",
     "@netgum/types": "^0.1.7",
     "@netgum/utils": "^0.1.3",
     "@types/react": "^16.8.17",
@@ -43,12 +44,14 @@
     "build:kovan": "./scripts/build.sh kovan",
     "build:rinkeby": "./scripts/build.sh rinkeby",
     "build:ropsten": "./scripts/build.sh ropsten",
+    "build:sokol": "./scripts/build.sh sokol",
     "deploy:kovan": "./scripts/deploy.sh kovan",
     "deploy:rinkeby": "./scripts/deploy.sh rinkeby",
     "deploy:ropsten": "./scripts/deploy.sh ropsten",
-    "build:all": "npm run build:kovan && npm run build:rinkeby && npm run build:ropsten",
+    "deploy:sokol": "./scripts/deploy.sh sokol",
+    "build:all": "npm run build:kovan && npm run build:rinkeby && npm run build:ropsten && npm run build:sokol",
     "predeploy:all": "npm run build:all",
-    "deploy:all": "npm run deploy:kovan && npm run deploy:rinkeby && npm run deploy:ropsten"
+    "deploy:all": "npm run deploy:kovan && npm run deploy:rinkeby && npm run deploy:ropsten && npm run deploy:sokol"
   },
   "browserslist": {
     "production": [
