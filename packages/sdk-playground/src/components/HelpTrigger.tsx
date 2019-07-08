@@ -1,5 +1,7 @@
 import React from 'react';
-import { ContextComponent, isFeatureActive } from '../shared';
+import { Subscription } from 'rxjs';
+import { ContextComponent } from '../shared';
+import help from '../help';
 import styles from './HelpTrigger.module.scss';
 
 interface IProps {
@@ -7,15 +9,48 @@ interface IProps {
   className?: string;
 }
 
-export class HelpTrigger extends ContextComponent<IProps> {
+interface IState {
+  visible: boolean;
+}
+
+export class HelpTrigger extends ContextComponent<IProps, IState> {
+  public state: IState = {
+    visible: false,
+  };
+
+  private subscriptions: Subscription[] = [];
+
   public componentWillMount(): void {
     this.onMouseEnter = this.onMouseEnter.bind(this);
     this.onMouseLeave = this.onMouseLeave.bind(this);
+
+    this.subscriptions = [
+      this
+        .help
+        .active$
+        .subscribe(visible => this.setState({
+          visible,
+        })),
+    ];
+    this.setState({
+      visible: this.context.help.active$.value,
+    });
+  }
+
+  public componentWillUnmount(): void {
+    for (const subscription of this.subscriptions) {
+      subscription.unsubscribe();
+    }
   }
 
   public render(): any {
-    const { className, children } = this.props;
-    if (!this.prefix || !isFeatureActive('help')) {
+    const { alias, className, children } = this.props;
+    const { visible } = this.state;
+    if (
+      !visible ||
+      !this.prefix ||
+      !help[alias]
+    ) {
       return (
         <div>
           {children}

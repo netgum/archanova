@@ -1,327 +1,121 @@
 // SDK
 
-export const initialize = `
-# Initialize Sdk
+export const initialize = ''; // TODO
 
-(TODO)
-`;
-
-export const reset = `
-# Reset Sdk
-
-(TODO)
-`;
+export const reset = ''; // TODO
 
 // ACCOUNT
 
-export const searchAccount = `
-# Search Account
+export const searchAccount = ''; // TODO
 
-(TODO)
-`;
+export const createAccount = ''; // TODO
 
-export const createAccount = `
-# Create Account
+export const updateAccount = ''; // TODO
 
-(TODO)
-`;
+export const connectAccount = ''; // TODO
 
-export const updateAccount = `
-# Update Account
+export const disconnectAccount = ''; // TODO
 
-(TODO)
-`;
+export const deployAccount = ''; // TODO
 
-export const connectAccount = `
-# Connect Account
+export const topUpAccountVirtualBalance = ''; // TODO
 
-(TODO)
-`;
-
-export const disconnectAccount = `
-# Disconnect Account
-
-(TODO)
-`;
-
-export const deployAccount = `
-# Deploy Account
-
-(TODO)
-`;
-
-export const topUpAccountVirtualBalance = `
-# Top-Up Account Virtual Balance
-
-(TODO)
-`;
-
-export const withdrawFromAccountVirtualBalance = `
-# Withdraw From Account Virtual Balance
-
-(TODO)
-`;
+export const withdrawFromAccountVirtualBalance = ''; // TODO
 
 // ACCOUNT FRIEND RECOVERY
 
-export const addAccountFriendRecoveryExtension = `
-# Add Account Friend RecoveryExtension
+export const addAccountFriendRecoveryExtension = ''; // TODO
 
-(TODO)
-`;
+export const setupAccountFriendRecoveryExtension = ''; // TODO
 
-export const setupAccountFriendRecoveryExtension = `
-# Setup Account Friend Recovery Extension
+export const getAccountFriendRecovery = ''; // TODO
 
-(TODO)
-`;
+export const startAccountFriendRecovery = ''; // TODO
 
-export const getAccountFriendRecovery = `
-# Get Account Friend Recovery
+export const cancelAccountFriendRecovery = ''; // TODO
 
-(TODO)
-`;
+export const collectAccountFriendSignature = ''; // TODO
 
-export const startAccountFriendRecovery = `
-# Start Account Friend Recovery
+export const submitAccountFriendRecovery = ''; // TODO
 
-(TODO)
-`;
-
-export const cancelAccountFriendRecovery = `
-# Cancel Account Friend Recovery
-
-(TODO)
-`;
-
-export const collectAccountFriendSignature = `
-# Collect Account Friend Signature
-
-(TODO)
-`;
-
-export const submitAccountFriendRecovery = `
-# Submit Account Friend Recovery
-
-(TODO)
-`;
-
-export const signAccountFriendRecovery = `
-# Sign Account Friend Recovery
-
-(TODO)
-`;
+export const signAccountFriendRecovery = ''; // TODO
 
 // ACCOUNT DEVICES
 
-export const getConnectedAccountDevices = `
-# Get Connected Account Devices
+export const getConnectedAccountDevices = ''; // TODO
 
-(TODO)
-`;
+export const getConnectedAccountDevice = ''; // TODO
 
-export const getConnectedAccountDevice = `
-# Get Connected Account Device
+export const getAccountDevice = ''; // TODO
 
-(TODO)
-`;
+export const createAccountDevice = ''; // TODO
 
-export const getAccountDevice = `
-# Get Account Device
+export const removeAccountDevice = ''; // TODO
 
-(TODO)
-`;
+export const deployAccountDevice = ''; // TODO
 
-export const createAccountDevice = `
-# Create Account Device
-
-(TODO)
-`;
-
-export const removeAccountDevice = `
-# Remove Account Device
-
-(TODO)
-`;
-
-export const deployAccountDevice = `
-# Deploy Account Device
-
-(TODO)
-`;
-
-export const unDeployAccountDevice = `
-# Un-Deploy Account Device
-
-(TODO)
-`;
+export const unDeployAccountDevice = ''; // TODO
 
 // ACCOUNT TRANSACTIONS
 
-export const getConnectedAccountTransactions = `
-# Get Connected Account Transactions
+export const getConnectedAccountTransactions = ''; // TODO
 
-(TODO)
-`;
+export const getConnectedAccountTransaction = ''; // TODO
 
-export const getConnectedAccountTransaction = `
-# Get Connected Account Transaction
-
-(TODO)
-`;
-
-export const sendAccountTransaction = `
-# Send Account Transaction
-
-(TODO)
-`;
+export const sendAccountTransaction = ''; // TODO
 
 // ACCOUNT PAYMENTS
 
-export const getConnectedAccountPayments = `
-# Get Connected Account Payments
+export const getConnectedAccountPayments = ''; // TODO
 
-(TODO)
-`;
+export const getConnectedAccountPayment = ''; // TODO
 
-export const getConnectedAccountPayment = `
-# Get Connected Account Payment
+export const createAccountPayment = ''; // TODO
 
-(TODO)
-`;
+export const signAccountPayment = ''; // TODO
 
-export const createAccountPayment = `
-# Create Account Payment
+export const grabAccountPayment = ''; // TODO
 
-(TODO)
-`;
+export const depositAccountPayment = ''; // TODO
 
-export const signAccountPayment = `
-# Sign Account Payment
-
-(TODO)
-`;
-
-export const grabAccountPayment = `
-# Grab Account Payment
-
-(TODO)
-`;
-
-export const depositAccountPayment = `
-# Deposit Account Payment
-
-(TODO)
-`;
-
-export const withdrawAccountPayment = `
-# Withdraw Account Payment
-
-(TODO)
-`;
+export const withdrawAccountPayment = ''; // TODO
 
 // ACCOUNT GAMES
 
-export const getConnectedAccountGames = `
-# Get Connected Account Games
+export const getConnectedAccountGames = ''; // TODO
 
-(TODO)
-`;
+export const getAccountGame = ''; // TODO
 
-export const getAccountGame = `
-# Get Account Game
+export const createAccountGame = ''; // TODO
 
-(TODO)
-`;
+export const joinAccountGame = ''; // TODO
 
-export const createAccountGame = `
-# Create Account Game
+export const startAccountGame = ''; // TODO
 
-(TODO)
-`;
-
-export const joinAccountGame = `
-# Join Account Game
-
-(TODO)
-`;
-
-export const startAccountGame = `
-# Start Account Game
-
-(TODO)
-`;
-
-export const updateAccountGame = `
-# Update Account Game
-
-(TODO)
-`;
+export const updateAccountGame = ''; // TODO
 
 // APPS
 
-export const getApps = `
-# Get Apps
+export const getApps = ''; // TODO
 
-(TODO)
-`;
+export const getApp = ''; // TODO
 
-export const getApp = `
-# Get App
-
-(TODO)
-`;
-
-export const getAppOpenGames = `
-# Get App Open Games
-
-(TODO)
-`;
-
-export const playTicTacToe = `
-# Play Tic-Tac-Toe
-
-(TODO)
-`;
+export const getAppOpenGames = ''; // TODO
 
 // ACTIONS
 
-export const acceptIncomingAction = `
-# Accept Incoming Action
+export const acceptIncomingAction = ''; // TODO
 
-(TODO)
-`;
-
-export const dismissIncomingAction = `
-# Dismiss Incoming Action
-
-(TODO)
-`;
+export const dismissIncomingAction = ''; // TODO
 
 // URLS
 
-export const processIncomingUrl = `
-# Process Incoming Url
+export const processIncomingUrl = ''; // TODO
 
-(TODO)
-`;
+export const createRequestAddAccountDeviceUrl = ''; // TODO
 
-export const createRequestAddAccountDeviceUrl = `
-# Create Request Add Account Device Url
-
-(TODO)
-`;
-
-export const createRequestSignSecureCodeUrl = `
-# Create Request Sign Secure Code Url
-
-(TODO)
-`;
+export const createRequestSignSecureCodeUrl = ''; // TODO
 
 // UTILS
 
-export const signPersonalMessage = `
-# Sign Personal Message
-
-(TODO)
-`;
+export const signPersonalMessage = ''; // TODO

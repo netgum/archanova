@@ -1,41 +1,30 @@
-export const network = `
-# Network
-
-(TODO)
-`;
+export const network = ''; // TODO
 
 export const accountAddress = `
 # Account Address
 
-(TODO)
+Address of account smart contract.
 `;
 
 export const accountState = `
 # Account State
 
-(TODO)
+* \`Created\` - account address is reserved
+* \`Deployed\` - account smart contract is deployed
 `;
 
 export const accountRealBalance = `
 # Account Real Balance
 
-(TODO)
+Account \`on-chain\` balance - used in account transactions.
 `;
 
 export const accountVirtualBalance = `
 # Account Virtual Balance
 
-(TODO)
+Account \`off-chain\` balance - used in account payments.
 `;
 
-export const accountDeviceState = `
-# Account Device State
+export const accountDeviceState = ''; // TODO
 
-(TODO)
-`;
-
-export const deviceAddress = `
-# Device Address
-
-(TODO)
-`;
+export const deviceAddress = ''; // TODO

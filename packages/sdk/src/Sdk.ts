@@ -1,10 +1,22 @@
-import { anyToBN, anyToBuffer } from '@netgum/utils';
+import { anyToBN, anyToBuffer, ZERO_ADDRESS } from '@netgum/utils';
 import BN from 'bn.js';
 import EthJs from 'ethjs';
+import { TAbi } from 'ethjs-abi';
 import { BehaviorSubject, from, Subscription, timer } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { AccountDeviceStates, AccountDeviceTypes, AccountGamePlayers, AccountGameStates, AccountStates } from './constants';
-import { IAccount, IAccountDevice, IAccountFriendRecovery, IAccountGame, IAccountPayment, IAccountTransaction, IApp, IPaginated } from './interfaces';
+import {
+  IAccount,
+  IAccountDevice,
+  IAccountFriendRecovery,
+  IAccountGame,
+  IAccountPayment,
+  IAccountTransaction,
+  IAccountVirtualBalance,
+  IApp,
+  IPaginated,
+  IToken,
+} from './interfaces';
 import {
   Account,
   AccountDevice,
@@ -12,6 +24,7 @@ import {
   AccountGame,
   AccountPayment,
   AccountTransaction,
+  AccountVirtualBalance,
   Action,
   Api,
   App,
@@ -23,6 +36,7 @@ import {
   Session,
   State,
   Storage,
+  Token,
   Url,
 } from './modules';
 
@@ -31,7 +45,6 @@ import {
  */
 export class Sdk {
   public readonly api: Api;
-  public readonly contract: Contract;
   public readonly state: State;
 
   public readonly error$ = new BehaviorSubject<any>(null);
@@ -43,13 +56,16 @@ export class Sdk {
   protected readonly accountGame: AccountGame;
   protected readonly accountPayment: AccountPayment;
   protected readonly accountTransaction: AccountTransaction;
+  protected readonly accountVirtualBalance: AccountVirtualBalance;
   protected readonly action: Action;
   protected readonly app: App;
+  protected readonly contract: Contract;
   protected readonly device: Device;
   protected readonly ens: Ens;
   protected readonly eth: Eth & EthJs;
   protected readonly session: Session;
   protected readonly storage: Storage;
+  protected readonly token: Token;
   protected readonly url: Url;
 
   /**
@@ -109,6 +125,8 @@ export class Sdk {
     this.accountDevice = new AccountDevice(this.accountTransaction, this.api, this.state);
     this.accountGame = new AccountGame(this.api, this.contract, this.device, this.state);
     this.accountFriendRecovery = new AccountFriendRecovery(this.accountDevice, this.api, this.contract, this.device, this.state);
+    this.accountVirtualBalance = new AccountVirtualBalance(this.api, this.state);
+    this.token = new Token(this.api);
 
     this.state.incomingAction$ = this.action.$incoming;
 
@@ -295,13 +313,17 @@ export class Sdk {
       .catch(() => null);
   }
 
+// Account Virtual Balance
+
   /**
    * estimates top-up account virtual balance
    * @param value
+   * @param tokenAddress
    * @param transactionSpeed
    */
   public async estimateTopUpAccountVirtualBalance(
     value: number | string | BN,
+    tokenAddress: string = null,
     transactionSpeed: Eth.TransactionSpeeds = null,
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     this.require({
@@ -309,23 +331,66 @@ export class Sdk {
       accountDeviceDeployed: true,
     });
 
-    const { address } = this.contract.virtualPaymentManager;
+    const { account, virtualPaymentManager, erc20Token } = this.contract;
 
-    return this.estimateAccountTransaction(
-      address,
-      value,
-      Buffer.alloc(0),
-      transactionSpeed,
-    );
+    let result: AccountTransaction.IEstimatedProxyTransaction;
+
+    if (tokenAddress) {
+      const proxyData: string[] = [];
+
+      {
+        const data = erc20Token
+          .encodeMethodInput('approve', virtualPaymentManager.address, anyToBN(value, { defaults: new BN(0) }));
+
+        proxyData.push(
+          account.encodeMethodInput(
+            'executeTransaction',
+            tokenAddress,
+            new BN(0),
+            data,
+          ),
+        );
+      }
+
+      {
+        const data = virtualPaymentManager
+          .encodeMethodInput('depositToken', tokenAddress, anyToBN(value, { defaults: new BN(0) }));
+
+        proxyData.push(
+          account.encodeMethodInput(
+            'executeTransaction',
+            virtualPaymentManager.address,
+            new BN(0),
+            data,
+          ),
+        );
+      }
+
+      result = await this.accountTransaction.estimateAccountProxyTransaction(
+        proxyData,
+        this.eth.getGasPrice(transactionSpeed),
+      );
+    } else {
+      result = await this.estimateAccountTransaction(
+        virtualPaymentManager.address,
+        value,
+        Buffer.alloc(0),
+        transactionSpeed,
+      );
+    }
+
+    return result;
   }
 
   /**
    * estimates withdraw from account virtual balance
    * @param value
+   * @param tokenAddress
    * @param transactionSpeed
    */
   public async estimateWithdrawFromAccountVirtualBalance(
     value: number | string | BN,
+    tokenAddress: string = null,
     transactionSpeed: Eth.TransactionSpeeds = null,
   ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     this.require({
@@ -334,13 +399,33 @@ export class Sdk {
     });
 
     const { accountAddress } = this.state;
-    const payment = await this.createAccountPayment(accountAddress, value);
+    const payment = await this.createAccountPayment(accountAddress, tokenAddress, value);
     const { hash } = await this.accountPayment.signAccountPayment(payment);
 
     return this.estimateWithdrawAccountPayment(
       hash,
       transactionSpeed,
     );
+  }
+
+  /**
+   * gets connected account virtual balances
+   * @param page
+   */
+  public async getConnectedAccountVirtualBalances(page = 0): Promise<IPaginated<IAccountVirtualBalance>> {
+    this.require();
+
+    return this.accountVirtualBalance.getConnectedAccountVirtualBalances(page);
+  }
+
+  /**
+   * gets connected account virtual balance
+   * @param symbolOrAddress
+   */
+  public async getConnectedAccountVirtualBalance(symbolOrAddress: string): Promise<IAccountVirtualBalance> {
+    this.require();
+
+    return this.accountVirtualBalance.getConnectedAccountVirtualBalance(symbolOrAddress);
   }
 
 // Account Friend Recovery
@@ -634,37 +719,40 @@ export class Sdk {
 
   /**
    * gets connected account transactions
+   * @param hash
    * @param page
    */
-  public async getConnectedAccountTransactions(page = 0): Promise<IPaginated<IAccountTransaction>> {
+  public async getConnectedAccountTransactions(hash = '', page = 0): Promise<IPaginated<IAccountTransaction>> {
     this.require();
 
-    return this.accountTransaction.getConnectedAccountTransactions(page);
+    return this.accountTransaction.getConnectedAccountTransactions(page, hash);
   }
 
   /**
    * gets connected account transaction
    * @param hash
+   * @param index
    */
-  public async getConnectedAccountTransaction(hash: string): Promise<IAccountTransaction> {
+  public async getConnectedAccountTransaction(hash: string, index = 0): Promise<IAccountTransaction> {
     this.require({
       accountConnected: true,
     });
 
     const { accountAddress } = this.state;
-    return this.accountTransaction.getAccountTransaction(accountAddress, hash);
+    return this.accountTransaction.getAccountTransaction(accountAddress, hash, index);
   }
 
   /**
    * gets account transaction
    * @param accountAddress
    * @param hash
+   * @param index
    */
-  public async getAccountTransaction(accountAddress: string, hash: string): Promise<IAccountTransaction> {
+  public async getAccountTransaction(accountAddress: string, hash: string, index = 0): Promise<IAccountTransaction> {
     this.require({
       accountConnected: null,
     });
-    return this.accountTransaction.getAccountTransaction(accountAddress, hash);
+    return this.accountTransaction.getAccountTransaction(accountAddress, hash, index);
   }
 
   /**
@@ -739,20 +827,23 @@ export class Sdk {
 
   /**
    * creates account payment
-   * @param receiver
+   * @param recipient
+   * @param tokenAddress
    * @param value
    */
   public async createAccountPayment(
-    receiver: string,
+    recipient: string,
+    tokenAddress: string,
     value: number | string | BN,
   ): Promise<IAccountPayment> {
     this.require({
       accountDeviceOwner: true,
-      accountDeviceDeployed: !!receiver,
+      accountDeviceDeployed: !!recipient,
     });
 
     return this.accountPayment.createAccountPayment(
-      receiver,
+      recipient,
+      tokenAddress,
       value,
     );
   }
@@ -775,12 +866,24 @@ export class Sdk {
   /**
    * grab account payment
    * @param hash
-   * @param receiver
+   * @param recipient
    */
-  public async grabAccountPayment(hash: string, receiver: string = null): Promise<IAccountPayment> {
+  public async grabAccountPayment(hash: string, recipient: string = null): Promise<IAccountPayment> {
     this.require();
 
-    return this.accountPayment.grabAccountPayment(hash, receiver);
+    return this.accountPayment.grabAccountPayment(hash, recipient);
+  }
+
+  /**
+   * cancel account payment
+   * @param hash
+   */
+  public async cancelAccountPayment(hash: string): Promise<boolean> {
+    this.require({
+      accountDeviceOwner: true,
+    });
+
+    return this.accountPayment.cancelAccountPayment(hash);
   }
 
   /**
@@ -796,12 +899,13 @@ export class Sdk {
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
-    const { sender, receiver, guardian, value } = await this.accountPayment.getConnectedAccountPayment(hash);
+    const { sender, recipient, guardian, token, value } = await this.accountPayment.getConnectedAccountPayment(hash);
     const { virtualPaymentManager } = this.contract;
     const data = virtualPaymentManager.encodeMethodInput(
       'depositPayment',
       sender.account.address,
-      receiver.address || receiver.account.address,
+      recipient.address || recipient.account.address,
+      token && token.address ? token.address : ZERO_ADDRESS,
       hash,
       value,
       sender.signature,
@@ -830,12 +934,13 @@ export class Sdk {
       accountDeviceDeployed: true,
     });
 
-    const { sender, receiver, guardian, value } = await this.accountPayment.getConnectedAccountPayment(hash);
+    const { sender, recipient, guardian, value, token } = await this.accountPayment.getConnectedAccountPayment(hash);
     const { virtualPaymentManager } = this.contract;
     const data = virtualPaymentManager.encodeMethodInput(
       'withdrawPayment',
       sender.account.address,
-      receiver.address || receiver.account.address,
+      recipient.address || recipient.account.address,
+      token && token.address ? token.address : ZERO_ADDRESS,
       hash,
       value,
       sender.signature,
@@ -881,7 +986,10 @@ export class Sdk {
    */
   public async createAccountGame(
     appAlias: string,
-    deposit: number | string | BN,
+    deposit: {
+      value: number | string | BN;
+      token?: string;
+    },
     data: string,
   ): Promise<IAccountGame> {
     this.require({
@@ -913,6 +1021,18 @@ export class Sdk {
     }
 
     return this.accountGame.joinAccountGame(game);
+  }
+
+  /**
+   * cancel account game
+   * @param gameId
+   */
+  public cancelAccountGame(gameId: number): Promise<boolean> {
+    this.require({
+      accountDeviceOwner: true,
+    });
+
+    return this.accountGame.cancelAccountGame(gameId);
   }
 
   /**
@@ -998,6 +1118,32 @@ export class Sdk {
     });
 
     return this.app.getAppOpenGames(appAlias, page);
+  }
+
+// Token
+
+  /**
+   * gets tokens
+   * @param page
+   */
+  public async getTokens(page = 0): Promise<IPaginated<IToken>> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.token.getTokens(page);
+  }
+
+  /**
+   * gets token
+   * @param symbolOrAddress
+   */
+  public async getToken(symbolOrAddress: string): Promise<IToken> {
+    this.require({
+      accountConnected: null,
+    });
+
+    return this.token.getToken(symbolOrAddress);
   }
 
 // Action
@@ -1096,6 +1242,15 @@ export class Sdk {
     });
 
     return this.device.signPersonalMessage(message);
+  }
+
+  /**
+   * creates contract instance
+   * @param abi
+   * @param address
+   */
+  public createContractInstance(abi: TAbi, address: string = null): Contract.ContractInstance {
+    return this.contract.createInstance(abi, address);
   }
 
 // Protected
@@ -1231,10 +1386,18 @@ export class Sdk {
               }
               break;
             }
-            case Api.EventNames.AccountTransactionUpdated: {
-              const { account, hash } = payload;
+            case Api.EventNames.AccountVirtualBalanceUpdated: {
+              const { account, token } = payload;
               if (accountAddress === account) {
-                const accountTransaction = await this.accountTransaction.getAccountTransaction(account, hash);
+                const accountVirtualBalance = await this.accountVirtualBalance.getConnectedAccountVirtualBalance(token);
+                this.emitEvent(Sdk.EventNames.AccountVirtualBalanceUpdated, accountVirtualBalance);
+              }
+              break;
+            }
+            case Api.EventNames.AccountTransactionUpdated: {
+              const { account, hash, index } = payload;
+              if (accountAddress === account) {
+                const accountTransaction = await this.accountTransaction.getAccountTransaction(account, hash, index);
                 this.emitEvent(Sdk.EventNames.AccountTransactionUpdated, accountTransaction);
               }
               break;
@@ -1449,6 +1612,7 @@ export namespace Sdk {
     AccountDeviceRemoved = 'AccountDeviceRemoved',
     AccountFriendRecoveryUpdated = 'AccountFriendRecoveryUpdated',
     AccountTransactionUpdated = 'AccountTransactionUpdated',
+    AccountVirtualBalanceUpdated = 'AccountVirtualBalanceUpdated',
     AccountPaymentUpdated = 'AccountPaymentUpdated',
     AccountGameUpdated = 'AccountGameUpdated',
   }

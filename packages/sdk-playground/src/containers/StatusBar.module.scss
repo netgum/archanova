@@ -15,14 +15,14 @@
   background-color: #292929;
   &.invert {
     background-color: #6024FC;
-    > div > div:first-child {
+    .label {
       color: #cd9eff;
     }
   }
   > div {
     flex-direction: column;
     margin-right: 20px;
-    > div:first-child {
+    .label {
       font-weight: bold;
       color: #909090;
       padding-bottom: 2px;

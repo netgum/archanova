@@ -232,6 +232,7 @@ export namespace Api {
 
   export enum EventNames {
     AccountUpdated = 'AccountUpdated',
+    AccountVirtualBalanceUpdated = 'AccountVirtualBalanceUpdated',
     AccountDeviceUpdated = 'AccountDeviceUpdated',
     AccountDeviceRemoved = 'AccountDeviceRemoved',
     AccountFriendRecoveryUpdated = 'AccountFriendRecoveryUpdated',
@@ -248,6 +249,8 @@ export namespace Api {
       device: string;
       hash: string;
       game: number;
+      index: number;
+      token: string;
       code: string;
     }>;
   }

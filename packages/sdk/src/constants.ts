@@ -56,3 +56,7 @@ export enum AppStates {
   Accepted = 'Accepted',
   Rejected = 'Rejected',
 }
+
+export enum TokenTypes {
+  ERC20 = 'ERC20',
+}

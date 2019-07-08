@@ -28,4 +28,23 @@
     padding-bottom: 10px;
     border-bottom: 1px solid #eeeeee;
   }
+
+  ul, li {
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    padding: 5px;
+    margin-left: 15px;
+    list-style: disc;
+  }
+
+  code {
+    background-color: rgba(27,31,35,.05);
+    border-radius: 3px;
+    font-size: 85%;
+    margin: 0;
+    padding: .2em .4em;
+  }
 }

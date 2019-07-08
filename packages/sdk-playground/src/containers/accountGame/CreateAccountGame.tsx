@@ -2,11 +2,14 @@ import React from 'react';
 import { ethToWei } from '@netgum/utils';
 import { Example, Screen, InputText } from '../../components';
 
-const code = (appAlias: string, deposit: number, data: string) => `
-import { ethToWei } from '@netgum/utils';
+const code = (appAlias: string, depositValue: number, depositToken: string, data: string) => `
+${depositToken ? '' : 'import { ethToWei } from \'@netgum/utils\';'}
 
 const appAlias = ${appAlias ? `"${appAlias}"` : 'null'};
-const deposit = ethToWei(${deposit});
+const deposit = {
+  value: ${!depositToken ? `ethToWei(${depositValue})` : depositValue},
+  token: ${depositToken ? `'${depositToken}'` : 'null'},
+};
 const data = ${data ? `"${data}"` : 'null'};
 
 sdk
@@ -17,36 +20,39 @@ sdk
 
 interface IState {
   appAlias: string;
-  deposit: string;
-  depositParsed: number;
+  depositValue: string;
+  depositValueParsed: number;
+  depositToken: string;
   data: string;
 }
 
 export class CreateAccountGame extends Screen<IState> {
   public state = {
     appAlias: 'tictactoe',
-    deposit: '0',
-    depositParsed: 0,
-    data: '',
+    depositValue: '0',
+    depositValueParsed: 0,
+    depositToken: '',
+    data: '0x000000000000000000',
   };
 
   public componentWillMount(): void {
     this.run = this.run.bind(this);
 
     this.appAliasChanged = this.appAliasChanged.bind(this);
-    this.depositChanged = this.depositChanged.bind(this);
+    this.depositValueChanged = this.depositValueChanged.bind(this);
+    this.depositTokenChanged = this.depositTokenChanged.bind(this);
     this.dataChanged = this.dataChanged.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { appAlias, deposit, depositParsed, data } = this.state;
+    const { appAlias, depositValue, depositValueParsed, depositToken, data } = this.state;
     return (
       <div>
         <Example
           title="Create Account Game"
-          code={code(appAlias, depositParsed, data)}
-          enabled={appAlias && data && depositParsed && enabled}
+          code={code(appAlias, depositValueParsed, depositToken, data)}
+          enabled={appAlias && data && depositValueParsed && enabled}
           run={this.run}
         >
           <InputText
@@ -56,11 +62,16 @@ export class CreateAccountGame extends Screen<IState> {
             onChange={this.appAliasChanged}
           />
           <InputText
-            value={deposit}
-            label="deposit"
+            value={depositValue}
+            label="deposit.value"
             type="number"
             decimal={true}
-            onChange={this.depositChanged}
+            onChange={this.depositValueChanged}
+          />
+          <InputText
+            value={depositToken}
+            label="deposit.token"
+            onChange={this.depositTokenChanged}
           />
           <InputText
             value={data}
@@ -79,10 +90,16 @@ export class CreateAccountGame extends Screen<IState> {
     });
   }
 
-  private depositChanged(deposit: string, depositParsed: number): void {
+  private depositValueChanged(depositValue: string, depositValueParsed: number): void {
     this.setState({
-      deposit,
-      depositParsed,
+      depositValue,
+      depositValueParsed,
+    });
+  }
+
+  private depositTokenChanged(depositToken: string): void {
+    this.setState({
+      depositToken,
     });
   }
 
@@ -93,13 +110,15 @@ export class CreateAccountGame extends Screen<IState> {
   }
 
   private run(): void {
-    const { appAlias, depositParsed, data } = this.state;
+    const { appAlias, depositValueParsed, depositToken, data } = this.state;
     this
       .logger
       .wrapSync('sdk.createAccountGame', async (console) => {
         console.log('game', await this.sdk.createAccountGame(
-          appAlias,
-          ethToWei(depositParsed),
+          appAlias, {
+            value: depositToken ? depositValueParsed : ethToWei(depositValueParsed),
+            token: depositToken || null,
+          },
           data,
         ));
       });

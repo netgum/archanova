@@ -29,6 +29,10 @@ class StatusBar extends React.Component<IProps> {
           network = 'Kovan';
           break;
 
+        case '77':
+          network = 'Sokol';
+          break;
+
         default:
           network = 'Local';
       }
@@ -37,39 +41,39 @@ class StatusBar extends React.Component<IProps> {
     return (
       <div className={`${styles.content} ${!parseInt(process.env.REACT_APP_SECONDARY, 10) ? styles.invert : ''}`}>
         <HelpTrigger alias="statusBar.network">
-          <div>Network</div>
+          <div className={styles.label}>Network</div>
           <div>{network}</div>
         </HelpTrigger>
         {!account || !accountDevice ? null : (
           <React.Fragment>
             <HelpTrigger alias="statusBar.accountAddress">
-              <div>Account Address</div>
+              <div className={styles.label}>Account Address</div>
               <div>{account ? account.address : 'None'}</div>
             </HelpTrigger>
             <HelpTrigger alias="statusBar.accountState">
-              <div>Account State</div>
+              <div className={styles.label}>Account State</div>
               <div>{account ? account.state : 'None'}</div>
             </HelpTrigger>
             <HelpTrigger alias="statusBar.accountRealBalance">
-              <div>Account Balance (real)</div>
+              <div className={styles.label}>Account Balance (real)</div>
               <div>
                 {formatBalance(account && account.balance.real ? account.balance.real : null)}
               </div>
             </HelpTrigger>
             <HelpTrigger alias="statusBar.accountVirtualBalance">
-              <div>Account Balance (virtual)</div>
+              <div className={styles.label}>Account Balance (virtual)</div>
               <div>
                 {formatBalance(account && account.balance.virtual ? account.balance.virtual : null)}
               </div>
             </HelpTrigger>
             <HelpTrigger alias="statusBar.accountDeviceState">
-              <div>Account Device State</div>
+              <div className={styles.label}>Account Device State</div>
               <div>{accountDevice ? accountDevice.state : 'None'}</div>
             </HelpTrigger>
           </React.Fragment>
         )}
         <HelpTrigger alias="statusBar.deviceAddress">
-          <div>Device Address</div>
+          <div className={styles.label}>Device Address</div>
           <div>{device ? device.address : 'None'}</div>
         </HelpTrigger>
       </div>

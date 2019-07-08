@@ -9,12 +9,14 @@ import styles from './PlayTicTacToe.module.scss';
 import { InputBoard } from './ticTacToe';
 
 const APP_ALIAS = 'tictactoe';
-
-const code1 = (deposit: number, data: string) => `
-import { ethToWei } from '@netgum/utils';
+const code1 = (depositValue: number, depositToken: string, data: string) => `
+${depositToken ? '' : 'import { ethToWei } from \'@netgum/utils\';'}
 
 const appAlias = '${APP_ALIAS}';
-const deposit = ethToWei(${deposit});
+const deposit = {
+  value: ${!depositToken ? `ethToWei(${depositValue})` : depositValue},
+  token: ${depositToken ? `'${depositToken}'` : 'null'},
+};
 const data = ${data ? `'${data}'` : 'null'};
 
 sdk
@@ -72,8 +74,9 @@ interface IState {
   game: sdkInterfaces.IAccountGame;
   games: sdkInterfaces.IAccountGame[];
   gameId: string;
-  deposit: string;
-  depositParsed: number;
+  depositValue: string;
+  depositValueParsed: number;
+  depositToken: string;
   data: string;
   nextData: string;
   page: string;
@@ -87,8 +90,9 @@ export class PlayTicTacToe extends Screen<IState> {
       mode,
       games: [],
       gameId: null,
-      deposit: '0',
-      depositParsed: 0,
+      depositValue: '0',
+      depositValueParsed: 0,
+      depositToken: '',
       page: '0',
       pageParsed: 0,
     };
@@ -131,7 +135,8 @@ export class PlayTicTacToe extends Screen<IState> {
     this.run4 = this.run4.bind(this);
     this.run5 = this.run5.bind(this);
 
-    this.depositChanged = this.depositChanged.bind(this);
+    this.depositValueChanged = this.depositValueChanged.bind(this);
+    this.depositTokenChanged = this.depositTokenChanged.bind(this);
     this.dataChanged = this.dataChanged.bind(this);
     this.pageChanged = this.pageChanged.bind(this);
     this.gameIdChanged = this.gameIdChanged.bind(this);
@@ -190,19 +195,24 @@ export class PlayTicTacToe extends Screen<IState> {
 
     switch (mode) {
       case Modes.Create: {
-        const { deposit, depositParsed, data, nextData } = this.state;
+        const { depositValue, depositValueParsed, depositToken, data, nextData } = this.state;
         content = (
           <Example
-            code={code1(depositParsed, nextData)}
-            enabled={depositParsed && enabled}
+            code={code1(depositValueParsed, depositToken, nextData)}
+            enabled={depositValueParsed && enabled}
             run={this.run1}
           >
             <InputText
-              value={deposit}
-              label="deposit"
+              value={depositValue}
+              label="deposit.value"
               type="number"
               decimal={true}
-              onChange={this.depositChanged}
+              onChange={this.depositValueChanged}
+            />
+            <InputText
+              value={depositToken}
+              label="deposit.token"
+              onChange={this.depositTokenChanged}
             />
             <InputBoard
               value={data}
@@ -376,10 +386,16 @@ export class PlayTicTacToe extends Screen<IState> {
     };
   }
 
-  private depositChanged(deposit: string, depositParsed: number): void {
+  private depositValueChanged(depositValue: string, depositValueParsed: number): void {
     this.setState({
-      deposit,
-      depositParsed,
+      depositValue,
+      depositValueParsed,
+    });
+  }
+
+  private depositTokenChanged(depositToken: string): void {
+    this.setState({
+      depositToken,
     });
   }
 
@@ -403,13 +419,16 @@ export class PlayTicTacToe extends Screen<IState> {
   }
 
   private run1(): void {
-    const { depositParsed, nextData } = this.state;
+    const { depositValueParsed, depositToken, nextData } = this.state;
     this
       .logger
       .wrapSync('sdk.createAccountGame', async (console) => {
         const game = console.log('game', await this.sdk.createAccountGame(
           APP_ALIAS,
-          ethToWei(depositParsed),
+          {
+            value: depositToken ? depositValueParsed : ethToWei(depositValueParsed),
+            token: depositToken || null,
+          },
           nextData,
         ));
 

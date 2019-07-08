@@ -3,14 +3,15 @@ import { ethToWei } from '@netgum/utils';
 import { Example, Screen, InputText } from '../../components';
 import { generateRandomAddress } from '../../shared';
 
-const code = (receiver: string, value: number) => `
+const code = (recipient: string, token: string, value: number) => `
 import { ethToWei } from '@netgum/utils';
 
-const receiver = ${receiver ? `"${receiver}"` : 'null'};
-const value = ethToWei(${value});
+const recipient = ${recipient ? `"${recipient}"` : 'null'};
+const token = ${token ? `"${token}"` : 'null'};
+const value = ${token ? value : `ethToWei(${value})`};
 
 sdk
-  .createAccountPayment(receiver, value)
+  .createAccountPayment(recipient, token, value)
   .then(accountPayment => console.log('accountPayment', accountPayment));
   .catch(console.error);
 `;
@@ -18,12 +19,14 @@ sdk
 interface IState {
   value: string;
   valueParsed: number;
-  receiver: string;
+  recipient: string;
+  token: string;
 }
 
 export class CreateAccountPayment extends Screen<IState> {
   public state = {
-    receiver: '',
+    recipient: '',
+    token: '',
     value: '0',
     valueParsed: 0,
   };
@@ -32,27 +35,34 @@ export class CreateAccountPayment extends Screen<IState> {
     this.run = this.run.bind(this);
 
     this.valueChanged = this.valueChanged.bind(this);
-    this.receiverChanged = this.receiverChanged.bind(this);
-    this.generateReceiver = this.generateReceiver.bind(this);
+    this.recipientChanged = this.recipientChanged.bind(this);
+    this.tokenChanged = this.tokenChanged.bind(this);
+    this.generateRecipient = this.generateRecipient.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { value, valueParsed, receiver } = this.state;
+    const { value, valueParsed, token, recipient } = this.state;
     return (
       <div>
         <Example
           title="Create Account Payment"
-          code={code(receiver, valueParsed)}
+          code={code(recipient, token, valueParsed)}
           enabled={enabled}
           run={this.run}
         >
           <InputText
-            value={receiver}
-            label="receiver"
+            value={recipient}
+            label="recipient"
             type="text"
-            onChange={this.receiverChanged}
-            onRandomClick={this.generateReceiver}
+            onChange={this.recipientChanged}
+            onRandomClick={this.generateRecipient}
+          />
+          <InputText
+            value={token}
+            label="tokenAddress"
+            type="text"
+            onChange={this.tokenChanged}
           />
           <InputText
             value={value}
@@ -73,26 +83,33 @@ export class CreateAccountPayment extends Screen<IState> {
     });
   }
 
-  private receiverChanged(receiver: string): void {
+  private tokenChanged(token: string): void {
     this.setState({
-      receiver,
+      token,
     });
   }
 
-  private generateReceiver(): void {
+  private recipientChanged(recipient: string): void {
     this.setState({
-      receiver: generateRandomAddress(),
+      recipient,
+    });
+  }
+
+  private generateRecipient(): void {
+    this.setState({
+      recipient: generateRandomAddress(),
     });
   }
 
   private run(): void {
-    const { valueParsed, receiver } = this.state;
+    const { valueParsed, token, recipient } = this.state;
     this
       .logger
       .wrapSync('sdk.createAccountPayment', async (console) => {
         console.log('accountPayment', await this.sdk.createAccountPayment(
-          receiver || null,
-          ethToWei(valueParsed)),
+          recipient || null,
+          token || null,
+          token ? valueParsed : ethToWei(valueParsed)),
         );
       });
   }

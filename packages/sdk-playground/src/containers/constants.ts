@@ -10,8 +10,12 @@ export enum Screens {
   ConnectAccount = 'connect account',
   DisconnectAccount = 'disconnect account',
   DeployAccount = 'deploy account',
+
+  // account virtual balance
   TopUpAccountVirtualBalance = 'top-up account virtual balance',
   WithdrawFromAccountVirtualBalance = 'withdraw from account virtual balance',
+  GetConnectedAccountVirtualBalances = 'get connected account virtual balances',
+  GetConnectedAccountVirtualBalance = 'get connected account virtual balance',
 
   // account friend recovery
   AddAccountFriendRecoveryExtension = 'add account friend recovery extension',
@@ -45,6 +49,7 @@ export enum Screens {
   GrabAccountPayment = 'grab account payment',
   DepositAccountPayment = 'deposit account payment',
   WithdrawAccountPayment = 'withdraw account payment',
+  CancelAccountPayment = 'cancel account payment',
 
   // account games
   GetConnectedAccountGames = 'get connected account games',
@@ -53,12 +58,16 @@ export enum Screens {
   JoinAccountGame = 'join account game',
   StartAccountGame = 'start account game',
   UpdateAccountGame = 'update account game',
+  CancelAccountGame = 'cancel account game',
 
   // app
   GetApps = 'get apps',
   GetApp = 'get app',
   GetAppOpenGames = 'get app open games',
-  PlayTicTacToe = 'play Tic-Tac-Toe',
+
+  // token
+  GetTokens = 'get tokens',
+  GetToken = 'get token',
 
   // action
   AcceptIncomingAction = 'accept incoming action',
@@ -71,4 +80,8 @@ export enum Screens {
 
   // utils
   SignPersonalMessage = 'sign personal message',
+
+  // examples
+  PlayTicTacToe = 'play tic-tac-toe',
+  MintToken = 'mint token',
 }

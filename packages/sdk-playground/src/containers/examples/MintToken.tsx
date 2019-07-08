@@ -1,17 +1,21 @@
+import { ContractNames, getContractAbi } from '@archanova/contracts';
 import React from 'react';
-import { ethToWei } from '@netgum/utils';
-import { Example, Screen, InputText, InputTransactionSpeed } from '../../components';
+import { Example, InputText, InputTransactionSpeed, Screen } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (value: number, transactionSpeed: string) => `
+const code1 = (amount: number, transactionSpeed: string) => `
+import { ContractNames, getContractAbi } from '@archanova/contracts';
 ${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
-import { ethToWei } from '@netgum/utils';
 
-const value = ethToWei(${value});
+const abi = getContractAbi(ContractNames.ERC20Token);
+const contract = sdk.createContractInstance(abi);
+const amount = ${amount};
+const data = contract.encodeMethodInput('mint', amount);
 ${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
 
 sdk
-  .estimateWithdrawFromAccountVirtualBalance(${mergeMethodArgs('value', transactionSpeed && 'transactionSpeed')})
+  .getToken('ETK') // example token
+  .then(({ address }) => sdk.estimateAccountTransaction(address, 0, ${mergeMethodArgs('data', transactionSpeed && 'transactionSpeed')}))
   .then(estimated => console.log('estimated', estimated));
   .catch(console.error);
 `;
@@ -28,43 +32,43 @@ sdk
 interface IState {
   transactionSpeed: any;
   estimated: any;
-  value: string;
-  valueParsed: number;
+  amount: string;
+  amountParsed: number;
 }
 
-export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
+export class MintToken extends Screen<IState> {
   public state = {
     transactionSpeed: null,
     estimated: null,
-    value: '0',
-    valueParsed: 0,
+    amount: '0',
+    amountParsed: 0,
   };
 
   public componentWillMount(): void {
     this.run1 = this.run1.bind(this);
     this.run2 = this.run2.bind(this);
 
-    this.valueChanged = this.valueChanged.bind(this);
+    this.amountChanged = this.amountChanged.bind(this);
     this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { estimated, value, valueParsed, transactionSpeed } = this.state;
+    const { estimated, amount, amountParsed, transactionSpeed } = this.state;
     return (
       <div>
         <Example
-          title="Estimate Withdraw From Account Virtual Balance"
-          code={code1(valueParsed, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          title="Estimate Mint Token"
+          code={code1(amountParsed, InputTransactionSpeed.selectedToText(transactionSpeed))}
           enabled={enabled}
           run={this.run1}
         >
           <InputText
-            label="value"
+            label="amount"
             type="number"
             decimal={true}
-            value={value}
-            onChange={this.valueChanged}
+            value={amount}
+            onChange={this.amountChanged}
           />
           <InputTransactionSpeed
             selected={transactionSpeed}
@@ -81,10 +85,10 @@ export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
     );
   }
 
-  private valueChanged(value: string, valueParsed: number): void {
+  private amountChanged(amount: string, amountParsed: number): void {
     this.setState({
-      value,
-      valueParsed,
+      amount,
+      amountParsed,
     });
   }
 
@@ -95,12 +99,18 @@ export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
   }
 
   private run1(): void {
-    const { valueParsed, transactionSpeed } = this.state;
+    const { amountParsed, transactionSpeed } = this.state;
     this
       .logger
-      .wrapSync('sdk.estimateTopUpAccountVirtualBalance', async (console) => {
-        const estimated = console.log('estimated', await this.sdk.estimateWithdrawFromAccountVirtualBalance(
-          ethToWei(valueParsed),
+      .wrapSync('estimateMintToken', async (console) => {
+        const { address } = await this.sdk.getToken('ETK');
+        const abi = getContractAbi(ContractNames.ERC20Token);
+        const contract = this.sdk.createContractInstance(abi);
+        const data = contract.encodeMethodInput('mint', amountParsed);
+        const estimated = console.log('estimated', await this.sdk.estimateAccountTransaction(
+          address,
+          0,
+          data,
           transactionSpeed,
         ));
 

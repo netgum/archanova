@@ -6,7 +6,7 @@ const deviceAddress = ${address ? `"${address}"` : 'null'};
 
 sdk
   .removeAccountDevice(deviceAddress)
-  .then(success => console.log('success', success)
+  .then(success => console.log('success', success))
   .catch(console.error);
 `;
 

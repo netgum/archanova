@@ -23,7 +23,7 @@ $ archanova-cli [action] [options] [workingPath]
 **Options:**
 * `--help, -h` - print help
 * `--global, -g` - use global storage
-* `--env, -e <env>` - environment [ropsten,rinkeby,kovan,local] (default: kovan)
+* `--env, -e <env>` - environment [ropsten,rinkeby,kovan,sokol,local] (default: kovan)
 * `--local-env-host <host>` - local environment host
 * `--local-env-port <port>` - local environment port
 * `--private-key <key>` - device private key

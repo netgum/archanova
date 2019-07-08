@@ -16,23 +16,27 @@ export class AccountTransaction {
     //
   }
 
-  public getConnectedAccountTransactions(page = 0): Promise<IPaginated<IAccountTransaction>> {
+  public getConnectedAccountTransactions(page = 0, hash: string = ''): Promise<IPaginated<IAccountTransaction>> {
     const { accountAddress } = this.state;
     return this.api.sendRequest({
       method: 'GET',
-      path: `account/${accountAddress}/transaction?page=${page}`,
+      path: `account/${accountAddress}/transaction?page=${page}&hash=${hash}`,
     });
   }
 
-  public getAccountTransaction(accountAddress: string, hash: string): Promise<IAccountTransaction> {
+  public getAccountTransaction(accountAddress: string, hash: string, index = 0): Promise<IAccountTransaction> {
     return this.api.sendRequest({
       method: 'GET',
-      path: `account/${accountAddress}/transaction/${hash}`,
+      path: `account/${accountAddress}/transaction/${hash}?index=${index}`,
     });
   }
 
-  public async estimateAccountProxyTransaction(data: string, gasPrice: BN): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  public async estimateAccountProxyTransaction(data: string | string[], gasPrice: BN): Promise<AccountTransaction.IEstimatedProxyTransaction> {
     const { accountAddress } = this.state;
+    if (!Array.isArray(data)) {
+      data = [data];
+    }
+
     const result = await this.api.sendRequest<AccountTransaction.IEstimatedProxyTransaction>({
       method: 'POST',
       path: `account/${accountAddress}/transaction`,
@@ -52,6 +56,7 @@ export class AccountTransaction {
   public async submitAccountProxyTransaction({ nonce, data, fixedGas, gasPrice }: AccountTransaction.IEstimatedProxyTransaction): Promise<string> {
     const { accountAddress } = this.state;
     const { accountProxy } = this.contract;
+
     const message = abiEncodePacked(
       'address',
       'bytes',
@@ -65,7 +70,7 @@ export class AccountTransaction {
       accountProxy.getMethodSignature('forwardAccountOwnerCall'),
       accountAddress,
       nonce,
-      data,
+      data.map((value, index) => index ? value.substr(2) : value).join(''),
       fixedGas,
       gasPrice,
     );
@@ -90,7 +95,7 @@ export namespace AccountTransaction {
   export interface IEstimatedProxyTransaction {
     nonce: BN;
     gasPrice?: BN;
-    data?: string;
+    data?: string[];
     fixedGas: BN;
     totalGas: BN;
     totalCost: BN;
