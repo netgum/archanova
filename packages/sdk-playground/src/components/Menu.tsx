@@ -141,6 +141,11 @@ export class Menu extends ContextComponent<IProps, IState> {
             <MenuOption checked={autoInitializeSdk} onToggle={this.toggleAutoInitializeSdk}>auto initialize sdk</MenuOption>
             <MenuOption checked={autoAcceptSdkActions} onToggle={this.toggleAutoAcceptSdkActions}>auto accept sdk actions</MenuOption>
           </div>
+          <div className={styles.img}>
+            <a href="https://npmjs.org/package/@archanova/sdk">
+              <img src="https://badge.fury.io/js/%40archanova%2Fsdk.svg" width={178} height={20} alt="@archanova/sdk"/>
+            </a>
+          </div>
         </div>
         <footer>
           <a href="https://netgum.io"> Copyright © 2019 NetGum</a>
