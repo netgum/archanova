@@ -1,20 +1,20 @@
 import { Sdk } from '@archanova/sdk';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { config } from '../config';
 
 export interface IContextProps {
+  config: typeof config;
   sdk: Sdk;
   logger: ILogger;
   help: IHelp;
 }
 
 export interface IHelp {
-  active$: BehaviorSubject<boolean>;
   stream$: BehaviorSubject<string>;
 
   show(alias: string): void;
 
   hide(): void;
-  toggle(): void;
 }
 
 export interface ILoggerConsole {

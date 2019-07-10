@@ -7,7 +7,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getConnectedAccounts(${mergeMethodArgs(page && 'page')})
-  .then(accounts => console.log('accounts', accounts));
+  .then(accounts => console.log('accounts', accounts))
   .catch(console.error);
 `;
 
@@ -16,7 +16,7 @@ const accountAddress = ${accountAddress ? `"${accountAddress}"` : 'null'};
 
 sdk
   .connectAccount(accountAddress)
-  .then(account => console.log('account', account));
+  .then(account => console.log('account', account))
   .catch(console.error);
 `;
 

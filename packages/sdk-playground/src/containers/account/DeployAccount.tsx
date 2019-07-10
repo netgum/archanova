@@ -10,7 +10,7 @@ const transactionSpeed = ${transactionSpeed};
 `}
 sdk
   .estimateAccountDeployment(${mergeMethodArgs(transactionSpeed && 'transactionSpeed')})
-  .then(estimated => console.log('estimated', estimated));
+  .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
 const code2 = (transactionSpeed: string) => `
@@ -21,7 +21,7 @@ const transactionSpeed = ${transactionSpeed};
 `}
 sdk
   .deployAccount(${mergeMethodArgs(transactionSpeed && 'transactionSpeed')})
-  .then(hash => console.log('hash', hash));
+  .then(hash => console.log('hash', hash))
   .catch(console.error);
 `;
 

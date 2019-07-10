@@ -6,7 +6,7 @@ const alias = ${alias ? `"${alias}"` : 'null'};
 
 sdk
   .getApp(alias)
-  .then(app => console.log('app', alias));
+  .then(app => console.log('app', alias))
   .catch(console.error);
 `;
 

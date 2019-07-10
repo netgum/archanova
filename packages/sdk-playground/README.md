@@ -12,31 +12,21 @@ $ npm run compile
 
 ## Usage
 
-Starts `first` instance on `5100` port:
-
 ```bash
-$ export REACT_APP_SDK_ENV=kovan
-$ npm run start:sdk:playground:5100
-```
-
-Starts `second` instance on `5200` port:
-
-```bash
-$ export REACT_APP_SDK_ENV=kovan
-$ npm run start:sdk:playground:5200
+$ npm run start:sdk:playground
 ```
 
 ## Configuration via `env` variables
 
 | Name 	| Default Value 	| Options 	|
 | --- | ---| ---|
-| `REACT_APP_SECONDARY` 	| `0` 	| `1,0` 	|
-| `REACT_APP_SDK_ENV` 	| `kovan` 	| `kovan,rinkeby,ropsten,sokol,local` 	|
-| `REACT_APP_SDK_LOCAL_ENV_HOST` 	| `localhost` 	| `-` |
-| `REACT_APP_SDK_LOCAL_ENV_PORT` 	| `8880` 	| `-` |
-| `REACT_APP_SDK_AUTO_INITIALIZE` 	| `1` 	| `0,1` |
-| `REACT_APP_SDK_AUTO_ACCEPT_ACTION` 	| `1` 	| `0,1` |
-| `REACT_APP_SDK_ACTIVATE_FEATURES` 	|  	| `help` |
+| `REACT_APP_ACTIVATE_HELP` 	| `0` 	| `0,1` 	|
+| `REACT_APP_ACTIVATE_MAIN_SDK_ENV` 	| `0` 	| `0,1` |
+| `REACT_APP_ACTIVATE_LOCAL_SDK_ENV` 	| `0` 	| `0,1` |
+| `REACT_APP_ACTIVATE_XDAI_SDK_ENV` 	| `0` 	| `0,1` |
+| `REACT_APP_LOCAL_SDK_ENV_PORT` 	| `8880` 	| `-` |
+| `REACT_APP_AUTO_INITIALIZE_SDK` 	| `1` 	| `0,1` |
+| `REACT_APP_AUTO_ACCEPT_SDK_ACTIONS` 	| `1` 	| `0,1` |
 
 ## License
 

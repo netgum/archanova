@@ -7,7 +7,7 @@ const ensLabel = ${ensLabel ? `"${ensLabel}"` : 'null'};
 
 sdk
   .updateAccount(ensLabel)
-  .then(account => console.log('account', account)
+  .then(account => console.log('account', account))
   .catch(console.error);
 `;
 

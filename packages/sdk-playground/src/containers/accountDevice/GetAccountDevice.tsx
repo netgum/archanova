@@ -7,7 +7,7 @@ const deviceAddress = ${deviceAddress ? `"${deviceAddress}"` : 'null'};
 
 sdk
   .getAccountDevice(accountAddress, deviceAddress)
-  .then(accountDevice => console.log('accountDevice', accountDevice));
+  .then(accountDevice => console.log('accountDevice', accountDevice))
   .catch(console.error);
 `;
 

@@ -143,6 +143,21 @@ export interface IToken {
   createdAt: Date;
 }
 
+export interface IEstimatedAccountDeployment {
+  gasPrice?: BN;
+  totalGas: BN;
+  totalCost: BN;
+}
+
+export interface IEstimatedAccountProxyTransaction {
+  nonce: BN;
+  gasPrice?: BN;
+  data?: string[];
+  fixedGas: BN;
+  totalGas: BN;
+  totalCost: BN;
+}
+
 export interface IPaginated<T = any> {
   items: T[];
   currentPage: number;

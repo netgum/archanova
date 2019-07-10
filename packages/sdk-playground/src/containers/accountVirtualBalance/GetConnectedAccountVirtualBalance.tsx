@@ -6,7 +6,7 @@ const symbolOrAddress = ${symbolOrAddress ? `"${symbolOrAddress}"` : 'null'};
 
 sdk
   .getConnectedAccountVirtualBalance(symbolOrAddress)
-  .then(accountVirtualBalance => console.log('accountVirtualBalance', accountVirtualBalance));
+  .then(accountVirtualBalance => console.log('accountVirtualBalance', accountVirtualBalance))
   .catch(console.error);
 `;
 

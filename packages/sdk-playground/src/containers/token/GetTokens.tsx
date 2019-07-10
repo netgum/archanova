@@ -7,7 +7,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getTokens(${mergeMethodArgs(page && 'page')})
-  .then(tokens => console.log('tokens', tokens));
+  .then(tokens => console.log('tokens', tokens))
   .catch(console.error);
 `;
 

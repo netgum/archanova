@@ -8,7 +8,7 @@ const options = {
 
 sdk
   .searchAccount(options)
-  .then(account => console.log('account', account)
+  .then(account => console.log('account', account))
   .catch(console.error);
 `;
 

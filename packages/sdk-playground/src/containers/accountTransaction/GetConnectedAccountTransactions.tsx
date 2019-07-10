@@ -9,7 +9,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getConnectedAccountTransactions(${mergeMethodArgs('hash', page && 'page')})
-  .then(accountTransactions => console.log('accountTransactions', accountTransactions));
+  .then(accountTransactions => console.log('accountTransactions', accountTransactions))
   .catch(console.error);
 `;
 

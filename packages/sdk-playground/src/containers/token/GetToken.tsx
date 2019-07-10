@@ -6,7 +6,7 @@ const symbolOrAddress = ${symbolOrAddress ? `"${symbolOrAddress}"` : 'null'};
 
 sdk
   .getToken(symbolOrAddress)
-  .then(token => console.log('token', token));
+  .then(token => console.log('token', token))
   .catch(console.error);
 `;
 

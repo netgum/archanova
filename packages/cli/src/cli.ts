@@ -23,7 +23,7 @@ const { input: inputs, flags }: {
     env: {
       type: 'string',
       alias: 'e',
-      default: SdkEnvironmentNames.Kovan,
+      default: SdkEnvironmentNames.Main,
     },
     global: {
       type: 'boolean',

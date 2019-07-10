@@ -14,7 +14,7 @@ const data = ${data ? `"${data}"` : 'null'};
 
 sdk
   .createAccountGame(appAlias, deposit, data)
-  .then(game => console.log('game', game));
+  .then(game => console.log('game', game))
   .catch(console.error);
 `;
 

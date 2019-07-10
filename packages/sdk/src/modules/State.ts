@@ -1,6 +1,6 @@
 import BN from 'bn.js';
 import { UniqueBehaviorSubject, TUniqueBehaviorSubject } from 'rxjs-addons';
-import { from } from 'rxjs';
+import { from, Subscription } from 'rxjs';
 import { skip, switchMap, map } from 'rxjs/operators';
 import { Action } from './Action';
 import { Storage } from './Storage';
@@ -30,15 +30,10 @@ export class State {
   public ens$ = new UniqueBehaviorSubject<State.IEns>();
   public eth$ = new UniqueBehaviorSubject<State.IEth>();
   public session$ = new UniqueBehaviorSubject<State.ISession>();
-  public incomingAction$: TUniqueBehaviorSubject<Action.IAction>;
+  public incomingAction$ = new UniqueBehaviorSubject<Action.IAction>();
 
-  constructor(private storage: Storage) {
-    this
-      .session$
-      .pipe(
-        map(session => !!session),
-      )
-      .subscribe(this.authenticated$);
+  constructor() {
+    //
   }
 
   public get initialized(): boolean {
@@ -106,25 +101,47 @@ export class State {
     return this.incomingAction$.value;
   }
 
-  public async setup(): Promise<void> {
-    await Promise.all([
-      this.attachToStorage(this.account$, State.StorageKeys.Account),
-      this.attachToStorage(this.accountDevice$, State.StorageKeys.AccountDevice),
-      this.attachToStorage(this.accountFriendRecovery$, State.StorageKeys.AccountFriendRecovery),
+  public setup(storage: Storage): Promise<Subscription[]> {
+    return Promise.all([
+      Promise.resolve(
+        this
+          .session$
+          .pipe(
+            map(session => !!session),
+          )
+          .subscribe(this.authenticated$),
+      ),
+      this.attachToStorage(storage, this.account$, State.StorageKeys.Account),
+      this.attachToStorage(storage, this.accountDevice$, State.StorageKeys.AccountDevice),
+      this.attachToStorage(storage, this.accountFriendRecovery$, State.StorageKeys.AccountFriendRecovery),
     ]);
   }
 
-  private async attachToStorage(subject: TUniqueBehaviorSubject, key: State.StorageKeys): Promise<void> {
-    const value = await this.storage.getItem(key);
+  public reset(): void {
+    this.initialized$.next(null);
+    this.connected$.next(null);
+    this.authenticated$.next(null);
+    this.account$.next(null);
+    this.accountDevice$.next(null);
+    this.accountFriendRecovery$.next(null);
+    this.device$.next(null);
+    this.ens$.next(null);
+    this.eth$.next(null);
+    this.session$.next(null);
+    this.incomingAction$.next(null);
+  }
+
+  private async attachToStorage(storage: Storage, subject: TUniqueBehaviorSubject, key: State.StorageKeys): Promise<Subscription> {
+    const value = await storage.getItem(key);
     if (value) {
       subject.next(value);
     }
 
-    subject
+    return subject
       .pipe(
         skip(1),
         switchMap(value =>
-          from(this.storage.setItem(key, value).catch(() => null)),
+          from(storage.setItem(key, value).catch(() => null)),
         ),
       )
       .subscribe();
@@ -147,6 +164,7 @@ export namespace State {
 
   export interface IEth {
     networkId: string;
+    networkName: string;
     gasPrice: BN;
   }
 

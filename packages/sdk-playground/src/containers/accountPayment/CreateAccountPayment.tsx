@@ -12,7 +12,7 @@ const value = ${token ? value : `ethToWei(${value})`};
 
 sdk
   .createAccountPayment(recipient, token, value)
-  .then(accountPayment => console.log('accountPayment', accountPayment));
+  .then(accountPayment => console.log('accountPayment', accountPayment))
   .catch(console.error);
 `;
 

@@ -6,7 +6,7 @@ const hash = ${hash ? `"${hash}"` : 'null'};
 
 sdk
   .getConnectedAccountPayment(hash)
-  .then(accountPayment => console.log('accountPayment', accountPayment));
+  .then(accountPayment => console.log('accountPayment', accountPayment))
   .catch(console.error);
 `;
 

@@ -26,14 +26,14 @@ export class HelpTrigger extends ContextComponent<IProps, IState> {
 
     this.subscriptions = [
       this
-        .help
-        .active$
+        .config
+        .showHelp$
         .subscribe(visible => this.setState({
           visible,
         })),
     ];
     this.setState({
-      visible: this.context.help.active$.value,
+      visible: this.context.config.showHelp,
     });
   }
 
