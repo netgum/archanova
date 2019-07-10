@@ -6,7 +6,7 @@ const gameId = ${id ? id : 'null'};
 
 sdk
   .startAccountGame(gameId)
-  .then(game => console.log('game', game));
+  .then(game => console.log('game', game))
   .catch(console.error);
 `;
 

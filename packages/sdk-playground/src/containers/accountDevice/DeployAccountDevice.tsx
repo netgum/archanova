@@ -19,7 +19,7 @@ const estimated; // estimated transaction
 
 sdk
   .submitAccountTransaction(estimated)
-  .then(hash => console.log('hash', hash));
+  .then(hash => console.log('hash', hash))
   .catch(console.error);
 `;
 

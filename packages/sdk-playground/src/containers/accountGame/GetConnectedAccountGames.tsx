@@ -8,7 +8,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getConnectedAccountGames(${mergeMethodArgs('appAlias', page && 'page')})
-  .then(games => console.log('games', games));
+  .then(games => console.log('games', games))
   .catch(console.error);
 `;
 

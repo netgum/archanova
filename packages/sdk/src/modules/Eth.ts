@@ -55,9 +55,40 @@ export class Eth extends EthJs {
 
   private buildState(): State.IEth {
     const { networkId, gasPrice } = this.options;
+    let networkName: string = 'Unknown';
+
+    switch (networkId) {
+      case '1':
+        networkName = 'Main';
+        break;
+
+      case '3':
+        networkName = 'Ropsten';
+        break;
+
+      case '4':
+        networkName = 'Rinkeby';
+        break;
+
+      case '42':
+        networkName = 'Kovan';
+        break;
+
+      case '77':
+        networkName = 'Sokol';
+        break;
+
+      case '100':
+        networkName = 'xDai';
+        break;
+
+      default:
+        networkName = 'Local';
+    }
 
     return {
       networkId,
+      networkName,
       gasPrice: new BN(gasPrice),
     };
   }

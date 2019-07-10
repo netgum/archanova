@@ -6,7 +6,7 @@ const hash = ${hash ? `"${hash}"` : 'null'};
 
 sdk
   .cancelAccountPayment(hash)
-  .then(success => console.log('success', success));
+  .then(success => console.log('success', success))
   .catch(console.error);
 `;
 

@@ -1,17 +1,14 @@
 import { abiEncodePacked, anyToHex, recoverAddressFromPersonalMessage } from '@netgum/utils';
 import BN from 'bn.js';
 import { AccountDeviceStates, AccountDeviceTypes } from '../constants';
-import { IAccountFriendRecovery } from '../interfaces';
-import { AccountDevice } from './AccountDevice';
-import { Api } from './Api';
+import { ApiMethods } from './ApiMethods';
 import { Contract } from './Contract';
 import { Device } from './Device';
 import { State } from './State';
 
 export class AccountFriendRecovery {
   constructor(
-    private accountDevice: AccountDevice,
-    private api: Api,
+    private apiMethods: ApiMethods,
     private contract: Contract,
     private device: Device,
     private state: State,
@@ -19,18 +16,11 @@ export class AccountFriendRecovery {
     //
   }
 
-  public getAccountFriendRecovery(accountAddress: string): Promise<IAccountFriendRecovery> {
-    return this.api.sendRequest({
-      method: 'GET',
-      path: `account/${accountAddress}/friend-recovery`,
-    });
-  }
-
   public async signAccountFriendRecovery(accountAddress: string, deviceAddress: string, gasPrice: BN): Promise<string> {
     let result: string = null;
 
     const { accountAddress: friend } = this.state;
-    const { friends, nonce, gasFee } = await this.getAccountFriendRecovery(accountAddress);
+    const { friends, nonce, gasFee } = await this.apiMethods.getAccountFriendRecovery(accountAddress);
 
     if (friends.indexOf(friend) !== -1) {
       const { accountFriendRecovery } = this.contract;
@@ -87,7 +77,7 @@ export class AccountFriendRecovery {
 
       const friendDevice = recoverAddressFromPersonalMessage(message, friendSignature);
 
-      const { state, type } = await this.accountDevice.getAccountDevice(friendAddress, friendDevice);
+      const { state, type } = await this.apiMethods.getAccountDevice(friendAddress, friendDevice);
 
       result = (
         state === AccountDeviceStates.Deployed &&
@@ -110,7 +100,7 @@ export class AccountFriendRecovery {
   }
 
   public async startAccountFriendRecovery(accountAddress: string, gasPrice: BN): Promise<void> {
-    const accountFriendRecovery = await this.getAccountFriendRecovery(accountAddress);
+    const accountFriendRecovery = await this.apiMethods.getAccountFriendRecovery(accountAddress);
 
     this.state.accountFriendRecovery$.next({
       accountAddress,
@@ -137,17 +127,12 @@ export class AccountFriendRecovery {
         signatures.push(signature);
       });
 
-    const { hash } = await this.api.sendRequest<{
-      hash: string;
-    }>({
-      method: 'PUT',
-      path: `account/${accountAddress}/friend-recovery`,
-      body: {
-        friends,
-        signatures,
-        gasPrice,
-      },
-    });
+    const hash = await this.apiMethods.submitAccountFriendRecovery(
+      accountAddress,
+      friends,
+      signatures,
+      gasPrice,
+    );
 
     if (hash) {
       this.state.accountFriendRecovery$.next(null);

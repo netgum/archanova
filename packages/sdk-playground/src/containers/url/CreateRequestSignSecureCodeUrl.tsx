@@ -4,7 +4,7 @@ import { Example, Screen, Url } from '../../components';
 const code = () => `
 sdk
   .createRequestSignSecureCodeUrl()
-  .then(mobileUrl => console.log('mobileUrl', mobileUrl));
+  .then(mobileUrl => console.log('mobileUrl', mobileUrl))
   .catch(console.error);
 `;
 

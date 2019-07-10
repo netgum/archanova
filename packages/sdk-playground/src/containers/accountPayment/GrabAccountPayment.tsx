@@ -8,7 +8,7 @@ ${recipient ? `const recipient = "${recipient}";` : ''}
 
 sdk
   .grabAccountPayment(${mergeMethodArgs('hash', recipient && 'recipient')})
-  .then(accountPayment => console.log('accountPayment', accountPayment));
+  .then(accountPayment => console.log('accountPayment', accountPayment))
   .catch(console.error);
 `;
 

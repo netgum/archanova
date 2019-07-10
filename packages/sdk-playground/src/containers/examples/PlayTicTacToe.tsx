@@ -21,7 +21,7 @@ const data = ${data ? `'${data}'` : 'null'};
 
 sdk
   .createAccountGame(appAlias, deposit, data)
-  .then(game => console.log('game', game));
+  .then(game => console.log('game', game))
   .catch(console.error);
 `;
 
@@ -31,7 +31,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getAppOpenGames(${mergeMethodArgs('appAlias', page && 'page')})
-  .then(games => console.log('games', games));
+  .then(games => console.log('games', games))
   .catch(console.error);
 `;
 
@@ -40,7 +40,7 @@ const gameId = ${id};
 
 sdk
   .joinAccountGame(gameId)
-  .then(game => console.log('game', game));
+  .then(game => console.log('game', game))
   .catch(console.error);
 `;
 
@@ -49,7 +49,7 @@ const gameId = ${id};
 
 sdk
   .startAccountGame(gameId)
-  .then(game => console.log('game', game));
+  .then(game => console.log('game', game))
   .catch(console.error);
 `;
 
@@ -59,7 +59,7 @@ const data = '${data}';
 
 sdk
   .updateAccountGame(gameId, data)
-  .then(game => console.log('game', game));
+  .then(game => console.log('game', game))
   .catch(console.error);
 `;
 

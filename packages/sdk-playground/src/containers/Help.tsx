@@ -23,8 +23,8 @@ export default class Help extends ContextComponent<{}, IState> {
     this.markdownIt = new MarkdownIt();
     this.subscriptions = [
       this
-        .help
-        .active$
+        .config
+        .showHelp$
         .subscribe(visible => this.setState({
           visible,
         })),
@@ -36,7 +36,7 @@ export default class Help extends ContextComponent<{}, IState> {
         })),
     ];
     this.setState({
-      visible: this.context.help.active$.value,
+      visible: this.context.config.showHelp,
     });
   }
 

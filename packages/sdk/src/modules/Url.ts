@@ -1,5 +1,5 @@
 import { jsonReplacer, jsonReviver } from '@netgum/utils';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { filter, map, tap } from 'rxjs/operators';
 import { UniqueBehaviorSubject } from 'rxjs-addons';
 import { Action } from './Action';
@@ -15,33 +15,58 @@ export class Url {
 
   constructor(
     private options: Url.IOptions,
-    adapter: Url.IAdapter,
-    action: Action,
+    private adapter: Url.IAdapter,
+    private action: Action,
     private eth: Eth,
   ) {
-    this
-      .incoming$
-      .pipe(
-        map(url => this.urlToAction(url)),
-        filter(action => !!action),
-        tap(() => {
-          this.incoming$.next(null);
-        }),
-      )
-      .subscribe(action.$incoming);
+    //
+  }
 
-    if (adapter) {
-      adapter.addListener(
-        url => this.incoming$.next(url || null),
-      );
-
+  public setup(): Subscription[] {
+    const result: Subscription[] = [
       this
+        .incoming$
+        .pipe(
+          map(url => this.urlToAction(url)),
+          filter(action => !!action),
+          tap(() => {
+            this.incoming$.next(null);
+          }),
+        )
+        .subscribe(this.action.$incoming),
+    ];
+
+    if (this.adapter) {
+      let active = true;
+      const listener = (url) => {
+        if (active) {
+          this.incoming$.next(url || null);
+        }
+      };
+
+      this.adapter.addListener(listener);
+
+      const subscription: Subscription = this
         .outgoing$
         .pipe(
           filter(url => !!url),
         )
-        .subscribe(url => adapter.open(url));
+        .subscribe(url => this.adapter.open(url));
+
+      const unsubscribe = subscription.unsubscribe.bind(subscription);
+
+      subscription.unsubscribe = () => {
+        active = false;
+        if (this.adapter.removeListener) {
+          this.adapter.removeListener(listener);
+        }
+        unsubscribe();
+      };
+
+      result.push(subscription);
     }
+
+    return result;
   }
 
   public buildActionUrl(action: Action.IAction, endpoint: string = null): string {
@@ -123,6 +148,8 @@ export namespace Url {
     open(url: string): any;
 
     addListener(listener: (url: string) => any): void;
+
+    removeListener?(listener: (url: string) => any): void;
   }
 
   export interface IPayload {

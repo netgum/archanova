@@ -8,12 +8,13 @@
   background-color: black;
   color: white;
 
+  .spacer,
+  .options{
+    margin-top: 15px;
+  }
   .options {
-    margin-top: 20px;
-
     & > div {
-      margin-top: 8px;
-      margin-bottom: 15px;
+      margin: 5px 0;
     }
   }
 
@@ -70,11 +71,12 @@
     h4 {
       padding-bottom: 2px;
       color: #a673ff;
-      cursor: pointer;
 
-      &:hover {
-
-        color: #cf9eff;
+      &.link {
+        cursor: pointer;
+        &:hover {
+          color: #cf9eff;
+        }
       }
     }
 
@@ -90,7 +92,8 @@
           display: none;
         }
 
-        button {
+        a {
+          text-decoration: none;
           display: block;
           white-space: nowrap;
           overflow: hidden;
@@ -127,10 +130,11 @@
     text-align: center;
     line-height: 45px;
     background-color: rgba(0, 0, 0, 0.8);
-    font-size: 11px;
-    color: #a7a7a7;
+    font-size: 10px;
+    color: #696969;
+
     a {
-      color: #a7a7a7;
+      color: #696969;
       text-decoration: none;
     }
   }

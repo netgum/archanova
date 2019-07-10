@@ -7,7 +7,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getConnectedAccountVirtualBalances(${mergeMethodArgs(page && 'page')})
-  .then(accountVirtualBalances => console.log('accountVirtualBalances', accountVirtualBalances));
+  .then(accountVirtualBalances => console.log('accountVirtualBalances', accountVirtualBalances))
   .catch(console.error);
 `;
 

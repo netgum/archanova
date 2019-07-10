@@ -1,3 +1,4 @@
+import { Subscription } from 'rxjs';
 import { UniqueBehaviorSubject } from 'rxjs-addons';
 import { filter, tap } from 'rxjs/operators';
 
@@ -13,19 +14,20 @@ export class Action {
   public $incoming = new UniqueBehaviorSubject<Action.IAction>(null);
   public $accepted = new UniqueBehaviorSubject<Action.IAction>(null);
 
-  constructor(options: Action.IOptions) {
-    if (
-      options &&
-      options.autoAccept
-    ) {
-      this
+  constructor(private options: Action.IOptions) {
+    //
+  }
+
+  public setup(): Subscription {
+    return this.options && this.options.autoAccept
+      ? this
         .$incoming
         .pipe(
           filter(action => !!action),
           tap(() => this.acceptAction()),
         )
-        .subscribe();
-    }
+        .subscribe()
+      : null;
   }
 
   public acceptAction(action: Action.IAction = null): void {

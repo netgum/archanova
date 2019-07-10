@@ -7,7 +7,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getConnectedAccountDevices(${mergeMethodArgs(page && 'page')})
-  .then(accountDevices => console.log('accountDevices', accountDevices));
+  .then(accountDevices => console.log('accountDevices', accountDevices))
   .catch(console.error);
 `;
 

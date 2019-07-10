@@ -12,34 +12,10 @@ interface IProps {
 class StatusBar extends React.Component<IProps> {
   public render() {
     const { sdk: { account, accountDevice, device, eth } } = this.props;
-
-    let network = 'Unknown';
-
-    if (eth && eth.networkId) {
-      switch (eth.networkId) {
-        case '3':
-          network = 'Ropsten';
-          break;
-
-        case '4':
-          network = 'Rinkeby';
-          break;
-
-        case '42':
-          network = 'Kovan';
-          break;
-
-        case '77':
-          network = 'Sokol';
-          break;
-
-        default:
-          network = 'Local';
-      }
-    }
+    const network = eth && eth.networkName ? eth.networkName : 'Unknown';
 
     return (
-      <div className={`${styles.content} ${!parseInt(process.env.REACT_APP_SECONDARY, 10) ? styles.invert : ''}`}>
+      <div className={styles.content}>
         <HelpTrigger alias="statusBar.network">
           <div className={styles.label}>Network</div>
           <div>{network}</div>
@@ -48,11 +24,11 @@ class StatusBar extends React.Component<IProps> {
           <React.Fragment>
             <HelpTrigger alias="statusBar.accountAddress">
               <div className={styles.label}>Account Address</div>
-              <div>{account ? account.address : 'None'}</div>
+              <div>{account ? account.address : 'Unknown'}</div>
             </HelpTrigger>
             <HelpTrigger alias="statusBar.accountState">
               <div className={styles.label}>Account State</div>
-              <div>{account ? account.state : 'None'}</div>
+              <div>{account ? account.state : 'Unknown'}</div>
             </HelpTrigger>
             <HelpTrigger alias="statusBar.accountRealBalance">
               <div className={styles.label}>Account Balance (real)</div>
@@ -74,7 +50,7 @@ class StatusBar extends React.Component<IProps> {
         )}
         <HelpTrigger alias="statusBar.deviceAddress">
           <div className={styles.label}>Device Address</div>
-          <div>{device ? device.address : 'None'}</div>
+          <div>{device ? device.address : 'Unknown'}</div>
         </HelpTrigger>
       </div>
     );

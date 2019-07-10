@@ -97,6 +97,30 @@ interface IState {
 }
 
 class Content extends React.Component<IProps, IState> {
+  private static detectScreen(): Screens {
+    let result: Screens = null;
+
+    try {
+      let { hash } = window.location;
+      if (hash) {
+        hash = hash.substr(1).replace(/[_]+/ig, ' ');
+        if (Object.values(Screens).includes(hash)) {
+          result = hash as any;
+        }
+      }
+    } catch (err) {
+      result = null;
+    }
+
+    return result;
+  }
+
+  private static initState(): IState {
+    return {
+      screen: Content.detectScreen() || Screens.Initialize,
+    };
+  }
+
   private static getScreenNode(screen: string, enabledScreens: { [key: string]: boolean }): React.ReactNode {
     // tslint:disable-next-line:variable-name
     let Screen: React.JSXElementConstructor<{
@@ -358,9 +382,7 @@ class Content extends React.Component<IProps, IState> {
       ) : null;
   }
 
-  public state = {
-    screen: Screens.Initialize,
-  };
+  public state = Content.initState();
 
   public componentWillMount(): void {
     this.openScreen = this.openScreen.bind(this);
@@ -517,7 +539,7 @@ class Content extends React.Component<IProps, IState> {
 
     return {
       // global
-      [Screens.Initialize]: initialized === null,
+      [Screens.Initialize]: true,
       [Screens.Reset]: initialized,
 
       // demos

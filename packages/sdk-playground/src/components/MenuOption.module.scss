@@ -1,0 +1,47 @@
+.checkbox {
+  $color: #cf9eff;
+  height: 17px;
+  display: block;
+  position: relative;
+  padding-top: 4px;
+  padding-left: 27px;
+  cursor: pointer;
+  font-size: 11px;
+
+  input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 15px;
+    width: 15px;
+    background-color: transparent;
+    border-radius: 3px;
+    border: 2px solid $color;
+    transform: rotate(-90deg);
+    transition: all 0.3s;
+  }
+
+  .icon {
+    color: white;
+    display: none;
+  }
+
+  input:checked ~ .overlay {
+    background-color: $color;
+    border-radius: 3px;
+    transform: rotate(0deg);
+    opacity: 1;
+    border: 2px solid $color;
+  }
+
+  input:checked ~ .overlay .icon {
+    display: block;
+  }
+}

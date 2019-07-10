@@ -7,7 +7,7 @@ ${ensLabel ? `const ensLabel = "${ensLabel}";` : ''}
 
 sdk
   .createAccount(${mergeMethodArgs(ensLabel && 'ensLabel')})
-  .then(account => console.log('account', account)
+  .then(account => console.log('account', account))
   .catch(console.error);
 `;
 

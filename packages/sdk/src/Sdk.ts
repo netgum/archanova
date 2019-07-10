@@ -2,7 +2,7 @@ import { anyToBN, anyToBuffer, ZERO_ADDRESS } from '@netgum/utils';
 import BN from 'bn.js';
 import EthJs from 'ethjs';
 import { TAbi } from 'ethjs-abi';
-import { BehaviorSubject, from, Subscription, timer } from 'rxjs';
+import { BehaviorSubject, from, SubscriptionLike, timer } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { AccountDeviceStates, AccountDeviceTypes, AccountGamePlayers, AccountGameStates, AccountStates } from './constants';
 import {
@@ -14,20 +14,19 @@ import {
   IAccountTransaction,
   IAccountVirtualBalance,
   IApp,
+  IEstimatedAccountDeployment,
+  IEstimatedAccountProxyTransaction,
   IPaginated,
   IToken,
 } from './interfaces';
 import {
-  Account,
-  AccountDevice,
   AccountFriendRecovery,
   AccountGame,
   AccountPayment,
   AccountTransaction,
-  AccountVirtualBalance,
   Action,
   Api,
-  App,
+  ApiMethods,
   Contract,
   Device,
   Ens,
@@ -36,149 +35,145 @@ import {
   Session,
   State,
   Storage,
-  Token,
   Url,
 } from './modules';
+import { TAnyData, TAnyNumber } from './types';
 
 /**
  * Sdk
  */
 export class Sdk {
-  public readonly api: Api;
-  public readonly state: State;
+  public api: Api;
+  public readonly state = new State();
 
   public readonly error$ = new BehaviorSubject<any>(null);
   public readonly event$ = new BehaviorSubject<Sdk.IEvent>(null);
 
-  protected readonly account: Account;
-  protected readonly accountDevice: AccountDevice;
-  protected readonly accountFriendRecovery: AccountFriendRecovery;
-  protected readonly accountGame: AccountGame;
-  protected readonly accountPayment: AccountPayment;
-  protected readonly accountTransaction: AccountTransaction;
-  protected readonly accountVirtualBalance: AccountVirtualBalance;
-  protected readonly action: Action;
-  protected readonly app: App;
-  protected readonly contract: Contract;
-  protected readonly device: Device;
-  protected readonly ens: Ens;
-  protected readonly eth: Eth & EthJs;
-  protected readonly session: Session;
-  protected readonly storage: Storage;
-  protected readonly token: Token;
-  protected readonly url: Url;
+  protected accountFriendRecovery: AccountFriendRecovery;
+  protected accountGame: AccountGame;
+  protected accountPayment: AccountPayment;
+  protected accountTransaction: AccountTransaction;
+  protected action: Action;
+  protected apiMethods: ApiMethods;
+  protected contract: Contract;
+  protected device: Device;
+  protected ens: Ens;
+  protected eth: Eth & EthJs;
+  protected session: Session;
+  protected storage: Storage;
+  protected url: Url;
+
+  protected subscriptions: SubscriptionLike[] = null;
 
   /**
    * constructor
    * @param environment
    */
-  constructor(environment: Environment) {
-    if (!environment) {
-      throw new Sdk.Error('unknown sdk environment');
-    }
-
-    this.storage = new Storage(
-      environment.getConfig('storageOptions'),
-      environment.getConfig('storageAdapter'),
-    );
-
-    this.state = new State(this.storage);
-
-    this.api = new Api(
-      environment.getConfig('apiOptions'),
-      environment.getConfig('apiWebSocketConstructor'),
-      this.state,
-    );
-
-    this.device = new Device(
-      this.state,
-      this.storage.createChild(Sdk.StorageNamespaces.Device),
-    );
-
-    this.session = new Session(this.api, this.device, this.state);
-    this.eth = new Eth(
-      environment.getConfig('ethOptions'),
-      this.api,
-      this.state,
-    );
-    this.ens = new Ens(
-      environment.getConfig('ensOptions'),
-      this.eth,
-      this.state,
-    );
-
-    this.app = new App(this.api);
-    this.account = new Account(this.api, this.eth, this.state);
-    this.contract = new Contract(this.eth);
-    this.action = new Action(
-      environment.getConfig('actionOptions'),
-    );
-    this.url = new Url(
-      environment.getConfig('urlOptions'),
-      environment.getConfig('urlAdapter'),
-      this.action,
-      this.eth,
-    );
-
-    this.accountTransaction = new AccountTransaction(this.api, this.contract, this.device, this.state);
-    this.accountPayment = new AccountPayment(this.api, this.contract, this.device, this.state);
-    this.accountDevice = new AccountDevice(this.accountTransaction, this.api, this.state);
-    this.accountGame = new AccountGame(this.api, this.contract, this.device, this.state);
-    this.accountFriendRecovery = new AccountFriendRecovery(this.accountDevice, this.api, this.contract, this.device, this.state);
-    this.accountVirtualBalance = new AccountVirtualBalance(this.api, this.state);
-    this.token = new Token(this.api);
-
-    this.state.incomingAction$ = this.action.$incoming;
-
+  constructor(private environment: Environment) {
     this.catchError = this.catchError.bind(this);
+
+    this.setEnvironment(environment);
   }
 
   /**
    * initializes sdk
    * @param options
    */
-  public async initialize(options: { device?: Device.ISetupOptions } = {}): Promise<void> {
+  public async initialize(options: Sdk.IInitializeOptions = {}): Promise<void> {
     this.require({
-      initialized: false,
-      accountConnected: false,
+      initialized: null,
+      accountConnected: null,
     });
 
-    await this.device.setup(options.device || {});
-    await this.state.setup();
-    await this.session.setup();
-
-    if (this.state.account) {
-      await this.verifyAccount();
+    try {
+      options = {
+        device: options.device || {},
+        environment: options.environment || null,
+      };
+    } catch (err) {
+      options = {
+        device: {},
+        environment: null,
+      };
     }
 
-    this.state.initialized$.next(true);
+    const { initialized$, initialized } = this.state;
 
-    this.subscribeAccountBalance();
-    this.subscribeApiEvents();
-    this.subscribeAcceptedActions();
+    if (initialized !== null) {
+      this.clearSubscriptions();
+      this.state.reset();
+      initialized$.next(null);
+    }
+
+    try {
+      this.setEnvironment(options.environment || this.environment);
+
+      await this.device.setup(options.device || {});
+
+      this.addSubscriptions(
+        this.action.setup(),
+        ...this.url.setup(),
+        ...(await this.state.setup(this.storage)),
+        this.action.$incoming.subscribe(this.state.incomingAction$),
+      );
+
+      await this.session.setup();
+
+      if (this.state.account) {
+        await this.verifyAccount();
+      }
+
+      initialized$.next(true);
+
+      this.subscribeAccountBalance();
+      this.subscribeApiEvents();
+      this.subscribeAcceptedActions();
+
+    } catch (err) {
+      initialized$.next(false);
+      throw new Sdk.Error('not initialized');
+    }
   }
 
   /**
    * resets sdk
    * @param options
    */
-  public async reset(options: { device?: boolean, session?: boolean } = {}): Promise<void> {
+  public async reset(options: Sdk.IResetOptions = {}): Promise<void> {
     this.require({
       accountConnected: null,
     });
 
-    const { account$, accountDevice$ } = this.state;
+    try {
+      options = {
+        device: !!options.device,
+        session: !!options.session,
+      };
+    } catch (err) {
+      options = {
+        device: false,
+        session: false,
+      };
+    }
 
-    account$.next(null);
-    accountDevice$.next(null);
+    const { accountAddress, accountFriendRecovery$ } = this.state;
+
+    if (accountAddress) {
+      await this.disconnectAccount();
+    }
 
     if (options.device) {
+
+      accountFriendRecovery$.next(null);
+
       await this.device.reset();
     }
 
-    await this.session.reset({
-      token: options.device || options.session,
-    });
+    if (options.session) {
+      await this.session.reset({
+        token: true,
+      });
+    }
   }
 
 // Account
@@ -192,7 +187,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.account.getConnectedAccounts(page);
+    return this.apiMethods.getConnectedAccounts(page);
   }
 
   /**
@@ -211,15 +206,19 @@ export class Sdk {
     try {
       if (address) {
         result = await this
-          .account
+          .apiMethods
           .getAccount(address);
       } else if (ensName) {
         result = await this
-          .account
+          .apiMethods
           .searchAccount(ensName);
       }
     } catch (err) {
       result = null;
+    }
+
+    if (result) {
+      result = await this.prepareAccount(result);
     }
 
     return result;
@@ -235,9 +234,11 @@ export class Sdk {
       accountConnected: false,
     });
 
-    await this.account.createAccount(
+    const account = await this.apiMethods.createAccount(
       this.ens.buildName(ensLabel, ensRootName),
     );
+
+    this.state.account$.next(await this.prepareAccount(account));
 
     await this.verifyAccount();
 
@@ -259,7 +260,14 @@ export class Sdk {
    * disconnects account
    */
   public async disconnectAccount(): Promise<void> {
-    await this.reset();
+    this.require({
+      accountConnected: null,
+    });
+
+    const { account$, accountDevice$ } = this.state;
+
+    account$.next(null);
+    accountDevice$.next(null);
   }
 
   /**
@@ -273,9 +281,14 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
-    await this.account.updateAccount(
+    const { accountAddress } = this.state;
+
+    const account = await this.apiMethods.updateAccountEnsName(
+      accountAddress,
       this.ens.buildName(ensLabel, ensRootName),
     );
+
+    this.state.account$.next(account);
 
     return this.state.account;
   }
@@ -284,13 +297,16 @@ export class Sdk {
    * estimates account deployment
    * @param transactionSpeed
    */
-  public async estimateAccountDeployment(transactionSpeed: Eth.TransactionSpeeds = null): Promise<Account.IEstimatedDeployment> {
+  public async estimateAccountDeployment(transactionSpeed: Eth.TransactionSpeeds = null): Promise<IEstimatedAccountDeployment> {
     this.require({
       accountCreated: true,
       accountDeviceOwner: true,
     });
 
-    return this.account.estimateAccountDeployment(
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.estimateAccountDeployment(
+      accountAddress,
       this.eth.getGasPrice(transactionSpeed),
     );
   }
@@ -305,9 +321,12 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
+    const { accountAddress } = this.state;
+
     return this
-      .account
+      .apiMethods
       .deployAccount(
+        accountAddress,
         this.eth.getGasPrice(transactionSpeed),
       )
       .catch(() => null);
@@ -325,51 +344,33 @@ export class Sdk {
     value: number | string | BN,
     tokenAddress: string = null,
     transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
 
-    const { account, virtualPaymentManager, erc20Token } = this.contract;
+    const { virtualPaymentManager, erc20Token } = this.contract;
 
-    let result: AccountTransaction.IEstimatedProxyTransaction;
+    let result: IEstimatedAccountProxyTransaction;
 
     if (tokenAddress) {
-      const proxyData: string[] = [];
+      const data1 = erc20Token
+        .encodeMethodInput('approve', virtualPaymentManager.address, anyToBN(value, { defaults: new BN(0) }));
 
-      {
-        const data = erc20Token
-          .encodeMethodInput('approve', virtualPaymentManager.address, anyToBN(value, { defaults: new BN(0) }));
+      const data2 = virtualPaymentManager
+        .encodeMethodInput('depositToken', tokenAddress, anyToBN(value, { defaults: new BN(0) }));
 
-        proxyData.push(
-          account.encodeMethodInput(
-            'executeTransaction',
-            tokenAddress,
-            new BN(0),
-            data,
-          ),
-        );
-      }
-
-      {
-        const data = virtualPaymentManager
-          .encodeMethodInput('depositToken', tokenAddress, anyToBN(value, { defaults: new BN(0) }));
-
-        proxyData.push(
-          account.encodeMethodInput(
-            'executeTransaction',
-            virtualPaymentManager.address,
-            new BN(0),
-            data,
-          ),
-        );
-      }
-
-      result = await this.accountTransaction.estimateAccountProxyTransaction(
-        proxyData,
-        this.eth.getGasPrice(transactionSpeed),
+      result = await this.estimateAccountTransaction(
+        tokenAddress,
+        0,
+        data1,
+        virtualPaymentManager.address,
+        0,
+        data2,
+        transactionSpeed,
       );
+
     } else {
       result = await this.estimateAccountTransaction(
         virtualPaymentManager.address,
@@ -392,7 +393,7 @@ export class Sdk {
     value: number | string | BN,
     tokenAddress: string = null,
     transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
@@ -415,7 +416,9 @@ export class Sdk {
   public async getConnectedAccountVirtualBalances(page = 0): Promise<IPaginated<IAccountVirtualBalance>> {
     this.require();
 
-    return this.accountVirtualBalance.getConnectedAccountVirtualBalances(page);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountVirtualBalances(accountAddress, page);
   }
 
   /**
@@ -425,7 +428,9 @@ export class Sdk {
   public async getConnectedAccountVirtualBalance(symbolOrAddress: string): Promise<IAccountVirtualBalance> {
     this.require();
 
-    return this.accountVirtualBalance.getConnectedAccountVirtualBalance(symbolOrAddress);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountVirtualBalance(accountAddress, symbolOrAddress);
   }
 
 // Account Friend Recovery
@@ -436,15 +441,17 @@ export class Sdk {
    */
   public async estimateAddAccountFriendRecoveryExtension(
     transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
+    const { accountAddress } = this.state;
     const { account } = this.contract;
     const { accountFriendRecovery } = this.contract;
 
-    await this.accountDevice.createAccountDevice(
+    await this.apiMethods.createAccountDevice(
+      accountAddress,
       accountFriendRecovery.address,
       AccountDeviceTypes.Extension,
     ).catch(() => null);
@@ -455,7 +462,8 @@ export class Sdk {
       true,
     );
 
-    return this.accountTransaction.estimateAccountProxyTransaction(
+    return this.apiMethods.estimateAccountProxyTransaction(
+      accountAddress,
       data,
       this.eth.getGasPrice(transactionSpeed),
     );
@@ -499,7 +507,7 @@ export class Sdk {
     this.require();
 
     const { accountAddress } = this.state;
-    return this.accountFriendRecovery.getAccountFriendRecovery(accountAddress);
+    return this.apiMethods.getAccountFriendRecovery(accountAddress);
   }
 
   /**
@@ -511,7 +519,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.accountFriendRecovery.getAccountFriendRecovery(accountAddress);
+    return this.apiMethods.getAccountFriendRecovery(accountAddress);
   }
 
   /**
@@ -611,7 +619,9 @@ export class Sdk {
   public async getConnectedAccountDevices(page = 0): Promise<IPaginated<IAccountDevice>> {
     this.require();
 
-    return this.accountDevice.getConnectedAccountDevices(page);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountDevices(accountAddress, page);
   }
 
   /**
@@ -620,9 +630,10 @@ export class Sdk {
    */
   public async getConnectedAccountDevice(deviceAddress: string): Promise<IAccountDevice> {
     this.require();
+
     const { accountAddress } = this.state;
 
-    return this.accountDevice.getAccountDevice(accountAddress, deviceAddress);
+    return this.apiMethods.getAccountDevice(accountAddress, deviceAddress);
   }
 
   /**
@@ -635,7 +646,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.accountDevice.getAccountDevice(accountAddress, deviceAddress);
+    return this.apiMethods.getAccountDevice(accountAddress, deviceAddress);
   }
 
   /**
@@ -647,7 +658,9 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
-    return this.accountDevice.createAccountDevice(deviceAddress, AccountDeviceTypes.Owner);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.createAccountDevice(accountAddress, deviceAddress, AccountDeviceTypes.Owner);
   }
 
   /**
@@ -659,7 +672,9 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
-    return this.accountDevice.removeAccountDevice(deviceAddress);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.removeAccountDevice(accountAddress, deviceAddress);
   }
 
   /**
@@ -670,11 +685,13 @@ export class Sdk {
   public async estimateAccountDeviceDeployment(
     deviceAddress: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
+
+    const { accountAddress } = this.state;
     const { account } = this.contract;
 
     const data = account.encodeMethodInput(
@@ -683,7 +700,8 @@ export class Sdk {
       true,
     );
 
-    return this.accountTransaction.estimateAccountProxyTransaction(
+    return this.apiMethods.estimateAccountProxyTransaction(
+      accountAddress,
       data,
       this.eth.getGasPrice(transactionSpeed),
     );
@@ -697,11 +715,13 @@ export class Sdk {
   public async estimateAccountDeviceUnDeployment(
     deviceAddress: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
+
+    const { accountAddress } = this.state;
     const { account } = this.contract;
 
     const data = account.encodeMethodInput(
@@ -709,7 +729,8 @@ export class Sdk {
       deviceAddress,
     );
 
-    return this.accountTransaction.estimateAccountProxyTransaction(
+    return this.apiMethods.estimateAccountProxyTransaction(
+      accountAddress,
       data,
       this.eth.getGasPrice(transactionSpeed),
     );
@@ -725,7 +746,9 @@ export class Sdk {
   public async getConnectedAccountTransactions(hash = '', page = 0): Promise<IPaginated<IAccountTransaction>> {
     this.require();
 
-    return this.accountTransaction.getConnectedAccountTransactions(page, hash);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountTransactions(accountAddress, page, hash);
   }
 
   /**
@@ -739,7 +762,8 @@ export class Sdk {
     });
 
     const { accountAddress } = this.state;
-    return this.accountTransaction.getAccountTransaction(accountAddress, hash, index);
+
+    return this.apiMethods.getAccountTransaction(accountAddress, hash, index);
   }
 
   /**
@@ -752,36 +776,179 @@ export class Sdk {
     this.require({
       accountConnected: null,
     });
-    return this.accountTransaction.getAccountTransaction(accountAddress, hash, index);
+
+    return this.apiMethods.getAccountTransaction(accountAddress, hash, index);
   }
 
   /**
    * estimates account transaction
-   * @param recipient
-   * @param value
-   * @param data
+   * @param recipient1
+   * @param value1
+   * @param data1
    * @param transactionSpeed
    */
   public async estimateAccountTransaction(
-    recipient: string,
-    value: number | string | BN,
-    data: string | Buffer,
-    transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+    recipient1: string, value1: TAnyNumber, data1: TAnyData,
+    transactionSpeed?: Eth.TransactionSpeeds,
+  ): Promise<IEstimatedAccountProxyTransaction>;
+
+  /**
+   * estimates account transaction
+   * @param recipient1
+   * @param value1
+   * @param data1
+   * @param recipient2
+   * @param value2
+   * @param data2
+   * @param transactionSpeed
+   */
+  public async estimateAccountTransaction(
+    recipient1: string, value1: TAnyNumber, data1: TAnyData,
+    recipient2: string, value2: TAnyNumber, data2: TAnyData,
+    transactionSpeed?: Eth.TransactionSpeeds,
+  ): Promise<IEstimatedAccountProxyTransaction>;
+
+  /**
+   * estimates account transaction
+   * @param recipient1
+   * @param value1
+   * @param data1
+   * @param recipient2
+   * @param value2
+   * @param data2
+   * @param recipient3
+   * @param value3
+   * @param data3
+   * @param transactionSpeed
+   */
+  public async estimateAccountTransaction(
+    recipient1: string, value1: TAnyNumber, data1: TAnyData,
+    recipient2: string, value2: TAnyNumber, data2: TAnyData,
+    recipient3: string, value3: TAnyNumber, data3: TAnyData,
+    transactionSpeed?: Eth.TransactionSpeeds,
+  ): Promise<IEstimatedAccountProxyTransaction>;
+
+  /**
+   * estimates account transaction
+   * @param recipient1
+   * @param value1
+   * @param data1
+   * @param recipient2
+   * @param value2
+   * @param data2
+   * @param recipient3
+   * @param value3
+   * @param data3
+   * @param recipient4
+   * @param value4
+   * @param data4
+   * @param transactionSpeed
+   */
+  public async estimateAccountTransaction(
+    recipient1: string, value1: TAnyNumber, data1: TAnyData,
+    recipient2: string, value2: TAnyNumber, data2: TAnyData,
+    recipient3: string, value3: TAnyNumber, data3: TAnyData,
+    recipient4: string, value4: TAnyNumber, data4: TAnyData,
+    transactionSpeed?: Eth.TransactionSpeeds,
+  ): Promise<IEstimatedAccountProxyTransaction>;
+
+  /**
+   * estimates account transaction
+   * @param recipient1
+   * @param value1
+   * @param data1
+   * @param recipient2
+   * @param value2
+   * @param data2
+   * @param recipient3
+   * @param value3
+   * @param data3
+   * @param recipient4
+   * @param value4
+   * @param data4
+   * @param recipient5
+   * @param value5
+   * @param data5
+   * @param transactionSpeed
+   */
+  public async estimateAccountTransaction(
+    recipient1: string, value1: TAnyNumber, data1: TAnyData,
+    recipient2: string, value2: TAnyNumber, data2: TAnyData,
+    recipient3: string, value3: TAnyNumber, data3: TAnyData,
+    recipient4: string, value4: TAnyNumber, data4: TAnyData,
+    recipient5: string, value5: TAnyNumber, data5: TAnyData,
+    transactionSpeed?: Eth.TransactionSpeeds,
+  ): Promise<IEstimatedAccountProxyTransaction>;
+
+  public async estimateAccountTransaction(...args: any[]): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
 
+    const { accountAddress } = this.state;
     const { account } = this.contract;
-    const proxyData = account.encodeMethodInput(
-      'executeTransaction',
-      recipient,
-      anyToBN(value, { defaults: new BN(0) }),
-      anyToBuffer(data, { defaults: Buffer.alloc(0) }),
-    );
+    const proxyData: string[] = [];
+    let transactionSpeed: Eth.TransactionSpeeds = null;
 
-    return this.accountTransaction.estimateAccountProxyTransaction(
+    const addToProxyData = (index) => {
+      const recipient = args[index * 3];
+      const value = args[index * 3 + 1];
+      const data = args[index * 3 + 2];
+
+      proxyData.push(account.encodeMethodInput(
+        'executeTransaction',
+        recipient,
+        anyToBN(value, { defaults: new BN(0) }),
+        anyToBuffer(data, { defaults: Buffer.alloc(0) }),
+        ),
+      );
+    };
+
+    switch (args.length) {
+      case 3:
+      case 4:
+        addToProxyData(0);
+        transactionSpeed = args[3] || null;
+        break;
+      case 6:
+      case 7:
+        addToProxyData(0);
+        addToProxyData(1);
+        transactionSpeed = args[6] || null;
+        break;
+      case 9:
+      case 10:
+        addToProxyData(0);
+        addToProxyData(1);
+        addToProxyData(2);
+        transactionSpeed = args[9] || null;
+        break;
+      case 12:
+      case 13:
+        addToProxyData(0);
+        addToProxyData(1);
+        addToProxyData(2);
+        addToProxyData(3);
+        transactionSpeed = args[12] || null;
+        break;
+
+      case 15:
+      case 16:
+        addToProxyData(0);
+        addToProxyData(1);
+        addToProxyData(2);
+        addToProxyData(3);
+        addToProxyData(4);
+        transactionSpeed = args[15] || null;
+        break;
+
+      default:
+        throw new Sdk.Error('invalid number of args');
+    }
+
+    return this.apiMethods.estimateAccountProxyTransaction(
+      accountAddress,
       proxyData,
       this.eth.getGasPrice(transactionSpeed),
     );
@@ -791,7 +958,7 @@ export class Sdk {
    * submits account transaction
    * @param estimated
    */
-  public async submitAccountTransaction(estimated: AccountTransaction.IEstimatedProxyTransaction): Promise<string> {
+  public async submitAccountTransaction(estimated: IEstimatedAccountProxyTransaction): Promise<string> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
@@ -812,7 +979,9 @@ export class Sdk {
   public async getConnectedAccountPayments(page = 0): Promise<IPaginated<IAccountPayment>> {
     this.require();
 
-    return this.accountPayment.getConnectedAccountPayments(page);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountPayments(accountAddress, page);
   }
 
   /**
@@ -822,7 +991,9 @@ export class Sdk {
   public async getConnectedAccountPayment(hash: string): Promise<IAccountPayment> {
     this.require();
 
-    return this.accountPayment.getConnectedAccountPayment(hash);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountPayment(accountAddress, hash);
   }
 
   /**
@@ -858,7 +1029,9 @@ export class Sdk {
       accountDeviceDeployed: true,
     });
 
-    const payment = await this.accountPayment.getConnectedAccountPayment(hash);
+    const { accountAddress } = this.state;
+
+    const payment = await this.apiMethods.getAccountPayment(accountAddress, hash);
 
     return this.accountPayment.signAccountPayment(payment);
   }
@@ -871,7 +1044,9 @@ export class Sdk {
   public async grabAccountPayment(hash: string, recipient: string = null): Promise<IAccountPayment> {
     this.require();
 
-    return this.accountPayment.grabAccountPayment(hash, recipient);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.grabAccountPayment(accountAddress, hash, recipient);
   }
 
   /**
@@ -883,7 +1058,9 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
-    return this.accountPayment.cancelAccountPayment(hash);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.cancelAccountPayment(accountAddress, hash);
   }
 
   /**
@@ -894,12 +1071,14 @@ export class Sdk {
   public async estimateDepositAccountPayment(
     hash: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
-    const { sender, recipient, guardian, token, value } = await this.accountPayment.getConnectedAccountPayment(hash);
+
+    const { accountAddress } = this.state;
+    const { sender, recipient, guardian, token, value } = await this.apiMethods.getAccountPayment(accountAddress, hash);
     const { virtualPaymentManager } = this.contract;
     const data = virtualPaymentManager.encodeMethodInput(
       'depositPayment',
@@ -928,13 +1107,14 @@ export class Sdk {
   public async estimateWithdrawAccountPayment(
     hash: string,
     transactionSpeed: Eth.TransactionSpeeds = null,
-  ): Promise<AccountTransaction.IEstimatedProxyTransaction> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
 
-    const { sender, recipient, guardian, value, token } = await this.accountPayment.getConnectedAccountPayment(hash);
+    const { accountAddress } = this.state;
+    const { sender, recipient, guardian, value, token } = await this.apiMethods.getAccountPayment(accountAddress, hash);
     const { virtualPaymentManager } = this.contract;
     const data = virtualPaymentManager.encodeMethodInput(
       'withdrawPayment',
@@ -965,7 +1145,9 @@ export class Sdk {
   public async getConnectedAccountGames(appAlias: string, page = 0): Promise<IPaginated<IAccountGame>> {
     this.require();
 
-    return this.accountGame.getConnectedAccountGames(appAlias, page);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountGames(accountAddress, appAlias, page);
   }
 
   /**
@@ -975,7 +1157,9 @@ export class Sdk {
   public async getAccountGame(gameId: number): Promise<IAccountGame> {
     this.require();
 
-    return this.accountGame.getAccountGame(gameId);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountGame(accountAddress, gameId);
   }
 
   /**
@@ -996,7 +1180,9 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
-    return this.accountGame.createAccountGame(appAlias, deposit, data);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.createAccountGame(accountAddress, appAlias, deposit, data);
   }
 
   /**
@@ -1010,7 +1196,7 @@ export class Sdk {
     });
 
     const { accountAddress } = this.state;
-    const game = await this.accountGame.getAccountGame(gameId);
+    const game = await this.apiMethods.getAccountGame(accountAddress, gameId);
 
     if (game.creator.account.address === accountAddress) {
       throw new Sdk.Error('invalid game creator');
@@ -1032,7 +1218,9 @@ export class Sdk {
       accountDeviceOwner: true,
     });
 
-    return this.accountGame.cancelAccountGame(gameId);
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.cancelAccountGame(accountAddress, gameId);
   }
 
   /**
@@ -1046,7 +1234,7 @@ export class Sdk {
     });
 
     const { accountAddress } = this.state;
-    const game = await this.accountGame.getAccountGame(gameId);
+    const game = await this.apiMethods.getAccountGame(accountAddress, gameId);
 
     if (game.creator.account.address !== accountAddress) {
       throw new Sdk.Error('invalid game creator');
@@ -1068,7 +1256,7 @@ export class Sdk {
     this.require();
 
     const { accountAddress } = this.state;
-    const game = await this.accountGame.getAccountGame(gameId);
+    const game = await this.apiMethods.getAccountGame(accountAddress, gameId);
 
     if (
       game.state !== AccountGameStates.Started ||
@@ -1078,7 +1266,7 @@ export class Sdk {
       throw new Sdk.Error('invalid game state');
     }
 
-    return this.accountGame.updateAccountGame(game, data);
+    return this.apiMethods.updateAccountGame(accountAddress, game.id, data);
   }
 
 // App
@@ -1092,7 +1280,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.app.getApps(page);
+    return this.apiMethods.getApps(page);
   }
 
   /**
@@ -1104,7 +1292,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.app.getApp(appAlias);
+    return this.apiMethods.getApp(appAlias);
   }
 
   /**
@@ -1117,7 +1305,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.app.getAppOpenGames(appAlias, page);
+    return this.apiMethods.getAppOpenGames(appAlias, page);
   }
 
 // Token
@@ -1131,7 +1319,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.token.getTokens(page);
+    return this.apiMethods.getTokens(page);
   }
 
   /**
@@ -1143,7 +1331,7 @@ export class Sdk {
       accountConnected: null,
     });
 
-    return this.token.getToken(symbolOrAddress);
+    return this.apiMethods.getToken(symbolOrAddress);
   }
 
 // Action
@@ -1255,6 +1443,100 @@ export class Sdk {
 
 // Protected
 
+  protected setEnvironment(environment: Environment): void {
+    this.storage = new Storage(
+      environment.getConfig('storageOptions'),
+      environment.getConfig('storageAdapter'),
+    );
+
+    this.api = new Api(
+      environment.getConfig('apiOptions'),
+      environment.getConfig('apiWebSocketConstructor'),
+      this.state,
+    );
+
+    this.apiMethods = new ApiMethods(this.api);
+
+    this.device = new Device(
+      this.state,
+      this.storage.createChild(Sdk.StorageNamespaces.Device),
+    );
+
+    this.session = new Session(this.api, this.device, this.state);
+    this.eth = new Eth(
+      environment.getConfig('ethOptions'),
+      this.api,
+      this.state,
+    );
+    this.ens = new Ens(
+      environment.getConfig('ensOptions'),
+      this.eth,
+      this.state,
+    );
+
+    this.contract = new Contract(this.eth);
+    this.action = new Action(
+      environment.getConfig('actionOptions'),
+    );
+    this.url = new Url(
+      environment.getConfig('urlOptions'),
+      environment.getConfig('urlAdapter'),
+      this.action,
+      this.eth,
+    );
+
+    this.accountTransaction = new AccountTransaction(this.apiMethods, this.contract, this.device, this.state);
+    this.accountPayment = new AccountPayment(this.apiMethods, this.contract, this.device, this.state);
+    this.accountGame = new AccountGame(this.apiMethods, this.contract, this.device, this.state);
+    this.accountFriendRecovery = new AccountFriendRecovery(this.apiMethods, this.contract, this.device, this.state);
+  }
+
+  protected addSubscriptions(...subscriptions: SubscriptionLike[]): void {
+    this.subscriptions = [
+      ...(this.subscriptions || []),
+      ...subscriptions.filter(subscription => !!subscription),
+    ];
+  }
+
+  protected removeSubscriptions(subscription: SubscriptionLike): SubscriptionLike {
+    if (
+      subscription &&
+      this.subscriptions &&
+      this.subscriptions.includes(subscription)
+    ) {
+      subscription.unsubscribe();
+      this.subscriptions = this.subscriptions.filter(item => item !== subscription);
+      if (!this.subscriptions.length) {
+        this.subscriptions = null;
+      }
+    }
+
+    return null;
+  }
+
+  protected clearSubscriptions(): void {
+    if (this.subscriptions) {
+      for (const subscription of this.subscriptions) {
+        subscription.unsubscribe();
+      }
+      this.subscriptions = null;
+    }
+  }
+
+  protected async prepareAccount(account: IAccount): Promise<IAccount> {
+    try {
+
+      const balance = await this.eth.getBalance(account.address, 'pending');
+      if (balance) {
+        account.balance.real = balance;
+      }
+    } catch (err) {
+      //
+    }
+
+    return account;
+  }
+
   protected async verifyAccount(accountAddress: string = null): Promise<void> {
     if (!accountAddress) {
       ({ accountAddress } = this.state);
@@ -1270,9 +1552,10 @@ export class Sdk {
     let accountDevice: IAccountDevice = null;
 
     if (accountAddress) {
-      account = await this.account.getAccount(accountAddress).catch(() => null);
+      account = await this.apiMethods.getAccount(accountAddress).catch(() => null);
       if (account) {
-        accountDevice = await this.accountDevice.getAccountDevice(accountAddress, deviceAddress).catch(() => null);
+        account = await this.prepareAccount(account);
+        accountDevice = await this.apiMethods.getAccountDevice(accountAddress, deviceAddress).catch(() => null);
       }
     }
     account$.next(account && accountDevice ? account : null);
@@ -1282,7 +1565,7 @@ export class Sdk {
   protected subscribeAccountBalance(): void {
     const { account$ } = this.state;
 
-    let subscription: Subscription = null;
+    let subscription: SubscriptionLike = null;
 
     account$
       .subscribe((account) => {
@@ -1311,136 +1594,146 @@ export class Sdk {
                 filter(account => !!account),
               )
               .subscribe(account$);
+
+            this.addSubscriptions(subscription);
           }
         } else if (subscription) {
-          subscription.unsubscribe();
+          this.removeSubscriptions(subscription);
           subscription = null;
         }
       });
   }
 
   protected subscribeApiEvents(): void {
-    this
-      .api
-      .event$
-      .pipe(
-        filter(event => !!event),
-        switchMap(({ name, payload }) => from(this.wrapAsync(async () => {
-          const { account$, accountDevice$, deviceAddress, accountAddress } = this.state;
+    const { event$ } = this.api;
 
-          switch (name) {
-            case Api.EventNames.AccountUpdated: {
-              const { account } = payload;
-              if (accountAddress === account) {
-                const account = await this.account.getAccount(accountAddress);
-                if (account) {
-                  account$.next(account);
-                }
-              } else {
-                const account = await this.account.getAccount(accountAddress);
-                this.emitEvent(Sdk.EventNames.AccountUpdated, account);
-              }
-              break;
-            }
+    this.addSubscriptions(
+      {
+        closed: false,
+        unsubscribe(): void {
+          event$.complete();
+        },
+      },
+      event$
+        .pipe(
+          filter(event => !!event),
+          switchMap(({ name, payload }) => from(this.wrapAsync(async () => {
+            const { account$, accountDevice$, deviceAddress, accountAddress } = this.state;
 
-            case Api.EventNames.AccountFriendRecoveryUpdated: {
-              const { account } = payload;
-              if (accountAddress === account) {
-                const accountFriendRecovery = await this.accountFriendRecovery.getAccountFriendRecovery(accountAddress);
-                this.emitEvent(Sdk.EventNames.AccountFriendRecoveryUpdated, accountFriendRecovery);
-              }
-              break;
-            }
-
-            case Api.EventNames.AccountDeviceUpdated: {
-              const { account, device } = payload;
-              if (deviceAddress === device) {
-                switch (accountAddress) {
-                  case account:
-                    const accountDevice = await this.accountDevice.getAccountDevice(account, device);
-                    if (accountDevice) {
-                      accountDevice$.next(accountDevice);
-                    }
-                    break;
-
-                  case null:
-                    await this.verifyAccount(account);
-                    break;
-
-                  default:
-                }
-              } else if (account === accountAddress) {
-                const accountDevice = await this.accountDevice.getAccountDevice(account, device);
-                this.emitEvent(Sdk.EventNames.AccountDeviceUpdated, accountDevice);
-              }
-              break;
-            }
-            case Api.EventNames.AccountDeviceRemoved: {
-              const { account, device } = payload;
-              if (accountAddress === account) {
-                if (deviceAddress === device) {
-                  await this.reset();
+            switch (name) {
+              case Api.EventNames.AccountUpdated: {
+                const { account } = payload;
+                if (accountAddress === account) {
+                  const account = await this.apiMethods.getAccount(accountAddress);
+                  if (account) {
+                    account$.next(account);
+                  }
                 } else {
-                  this.emitEvent(Sdk.EventNames.AccountDeviceRemoved, device);
+                  const account = await this.apiMethods.getAccount(accountAddress);
+                  this.emitEvent(Sdk.EventNames.AccountUpdated, account);
                 }
+                break;
               }
-              break;
-            }
-            case Api.EventNames.AccountVirtualBalanceUpdated: {
-              const { account, token } = payload;
-              if (accountAddress === account) {
-                const accountVirtualBalance = await this.accountVirtualBalance.getConnectedAccountVirtualBalance(token);
-                this.emitEvent(Sdk.EventNames.AccountVirtualBalanceUpdated, accountVirtualBalance);
-              }
-              break;
-            }
-            case Api.EventNames.AccountTransactionUpdated: {
-              const { account, hash, index } = payload;
-              if (accountAddress === account) {
-                const accountTransaction = await this.accountTransaction.getAccountTransaction(account, hash, index);
-                this.emitEvent(Sdk.EventNames.AccountTransactionUpdated, accountTransaction);
-              }
-              break;
-            }
-            case Api.EventNames.AccountGameUpdated: {
-              const { account, game } = payload;
-              if (accountAddress === account) {
-                const accountGame = await this.accountGame.getAccountGame(game);
-                this.emitEvent(Sdk.EventNames.AccountGameUpdated, accountGame);
-              }
-              break;
-            }
-            case Api.EventNames.AccountPaymentUpdated: {
-              const { account, hash } = payload;
-              if (accountAddress === account) {
-                const accountPayment = await this.accountPayment.getConnectedAccountPayment(hash);
-                this.emitEvent(Sdk.EventNames.AccountPaymentUpdated, accountPayment);
-              }
-              break;
-            }
-            case Api.EventNames.SecureCodeSigned: {
-              const { device, code } = payload;
-              if (
-                deviceAddress &&
-                accountAddress &&
-                this.session.verifyCode(code)
-              ) {
-                const action = Action
-                  .createAction<Action.IRequestAddAccountDevicePayload>(
-                    Action.Types.RequestAddAccountDevice, {
-                      device,
-                      account: accountAddress,
-                    },
-                  );
 
-                this.action.$incoming.next(action);
+              case Api.EventNames.AccountFriendRecoveryUpdated: {
+                const { account } = payload;
+                if (accountAddress === account) {
+                  const accountFriendRecovery = await this.apiMethods.getAccountFriendRecovery(accountAddress);
+                  this.emitEvent(Sdk.EventNames.AccountFriendRecoveryUpdated, accountFriendRecovery);
+                }
+                break;
               }
-              break;
+
+              case Api.EventNames.AccountDeviceUpdated: {
+                const { account, device } = payload;
+                if (deviceAddress === device) {
+                  switch (accountAddress) {
+                    case account:
+                      const accountDevice = await this.apiMethods.getAccountDevice(account, device);
+                      if (accountDevice) {
+                        accountDevice$.next(accountDevice);
+                      }
+                      break;
+
+                    case null:
+                      await this.verifyAccount(account);
+                      break;
+
+                    default:
+                  }
+                } else if (account === accountAddress) {
+                  const accountDevice = await this.apiMethods.getAccountDevice(accountAddress, device);
+                  this.emitEvent(Sdk.EventNames.AccountDeviceUpdated, accountDevice);
+                }
+                break;
+              }
+              case Api.EventNames.AccountDeviceRemoved: {
+                const { account, device } = payload;
+                if (accountAddress === account) {
+                  if (deviceAddress === device) {
+                    await this.reset();
+                  } else {
+                    this.emitEvent(Sdk.EventNames.AccountDeviceRemoved, device);
+                  }
+                }
+                break;
+              }
+              case Api.EventNames.AccountVirtualBalanceUpdated: {
+                const { account, token } = payload;
+                if (accountAddress === account) {
+                  const accountVirtualBalance = await this.apiMethods.getAccountVirtualBalance(accountAddress, token);
+                  this.emitEvent(Sdk.EventNames.AccountVirtualBalanceUpdated, accountVirtualBalance);
+                }
+                break;
+              }
+              case Api.EventNames.AccountTransactionUpdated: {
+                const { account, hash, index } = payload;
+                if (accountAddress === account) {
+                  const accountTransaction = await this.apiMethods.getAccountTransaction(accountAddress, hash, index);
+                  this.emitEvent(Sdk.EventNames.AccountTransactionUpdated, accountTransaction);
+                }
+                break;
+              }
+              case Api.EventNames.AccountGameUpdated: {
+                const { account, game } = payload;
+                if (accountAddress === account) {
+                  const accountGame = await this.apiMethods.getAccountGame(accountAddress, game);
+                  this.emitEvent(Sdk.EventNames.AccountGameUpdated, accountGame);
+                }
+                break;
+              }
+              case Api.EventNames.AccountPaymentUpdated: {
+                const { account, hash } = payload;
+                if (accountAddress === account) {
+                  const accountPayment = await this.apiMethods.getAccountPayment(accountAddress, hash);
+                  this.emitEvent(Sdk.EventNames.AccountPaymentUpdated, accountPayment);
+                }
+                break;
+              }
+              case Api.EventNames.SecureCodeSigned: {
+                const { device, code } = payload;
+                if (
+                  deviceAddress &&
+                  accountAddress &&
+                  this.session.verifyCode(code)
+                ) {
+                  const action = Action
+                    .createAction<Action.IRequestAddAccountDevicePayload>(
+                      Action.Types.RequestAddAccountDevice, {
+                        device,
+                        account: accountAddress,
+                      },
+                    );
+
+                  this.action.$incoming.next(action);
+                }
+                break;
+              }
             }
-          }
-        }))),
-      )
-      .subscribe();
+          }))),
+        )
+        .subscribe(),
+    );
   }
 
   protected subscribeAcceptedActions(): void {
@@ -1448,7 +1741,7 @@ export class Sdk {
     const { $accepted } = this.action;
 
     let hasAccount = null;
-    let subscription: Subscription = null;
+    let subscription: SubscriptionLike = null;
 
     account$
       .subscribe((account) => {
@@ -1458,9 +1751,7 @@ export class Sdk {
 
         hasAccount = !!account;
 
-        if (subscription) {
-          subscription.unsubscribe();
-        }
+        this.removeSubscriptions(subscription);
 
         subscription = $accepted
           .pipe(
@@ -1511,6 +1802,8 @@ export class Sdk {
             map(() => null),
           )
           .subscribe($accepted);
+
+        this.addSubscriptions(subscription);
       });
   }
 
@@ -1594,6 +1887,16 @@ export namespace Sdk {
 
   export class Error extends global.Error {
     //
+  }
+
+  export interface IInitializeOptions {
+    device?: Device.ISetupOptions;
+    environment?: Environment;
+  }
+
+  export interface IResetOptions {
+    device?: boolean;
+    session?: boolean;
   }
 
   export interface IRequireOptions {

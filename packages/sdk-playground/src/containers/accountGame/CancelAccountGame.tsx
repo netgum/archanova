@@ -6,7 +6,7 @@ const gameId = ${id ? id : 'null'};
 
 sdk
   .cancelAccountGame(gameId)
-  .then(success => console.log('success', success));
+  .then(success => console.log('success', success))
   .catch(console.error);
 `;
 

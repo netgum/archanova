@@ -7,7 +7,7 @@ ${page ? `const page = ${page};` : ''}
 
 sdk
   .getApps(${mergeMethodArgs(page && 'page')})
-  .then(apps => console.log('apps', apps));
+  .then(apps => console.log('apps', apps))
   .catch(console.error);
 `;
 
