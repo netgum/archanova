@@ -240,7 +240,8 @@ export class SendAccountTransaction extends Screen<IState> {
 
         args.push(transactionSpeed);
 
-        const estimated = console.log('estimated', await (this.sdk.estimateAccountTransaction as any)(...args));
+        const estimateAccountTransaction: any = this.sdk.estimateAccountTransaction.bind(this.sdk);
+        const estimated = console.log('estimated', await estimateAccountTransaction(...args));
 
         this.setState({
           estimated,
