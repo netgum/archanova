@@ -297,7 +297,7 @@ export class Sdk {
    * estimates account deployment
    * @param transactionSpeed
    */
-  public async estimateAccountDeployment(transactionSpeed: Eth.TransactionSpeeds = null): Promise<IEstimatedAccountDeployment> {
+  public async estimateAccountDeployment(transactionSpeed: Eth.TTransactionSpeed = null): Promise<IEstimatedAccountDeployment> {
     this.require({
       accountCreated: true,
       accountDeviceOwner: true,
@@ -307,7 +307,7 @@ export class Sdk {
 
     return this.apiMethods.estimateAccountDeployment(
       accountAddress,
-      this.eth.getGasPrice(transactionSpeed),
+      await this.eth.getGasPrice(transactionSpeed),
     );
   }
 
@@ -315,7 +315,7 @@ export class Sdk {
    * deploys account
    * @param transactionSpeed
    */
-  public async deployAccount(transactionSpeed: Eth.TransactionSpeeds = null): Promise<string> {
+  public async deployAccount(transactionSpeed: Eth.TTransactionSpeed = null): Promise<string> {
     this.require({
       accountCreated: true,
       accountDeviceOwner: true,
@@ -327,7 +327,7 @@ export class Sdk {
       .apiMethods
       .deployAccount(
         accountAddress,
-        this.eth.getGasPrice(transactionSpeed),
+        await this.eth.getGasPrice(transactionSpeed),
       )
       .catch(() => null);
   }
@@ -343,7 +343,7 @@ export class Sdk {
   public async estimateTopUpAccountVirtualBalance(
     value: number | string | BN,
     tokenAddress: string = null,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
@@ -356,7 +356,11 @@ export class Sdk {
 
     if (tokenAddress) {
       const data1 = erc20Token
-        .encodeMethodInput('approve', virtualPaymentManager.address, anyToBN(value, { defaults: new BN(0) }));
+        .encodeMethodInput(
+          'approve',
+          virtualPaymentManager.address,
+          anyToBN(value, { defaults: new BN(0) }),
+        );
 
       const data2 = virtualPaymentManager
         .encodeMethodInput('depositToken', tokenAddress, anyToBN(value, { defaults: new BN(0) }));
@@ -392,7 +396,7 @@ export class Sdk {
   public async estimateWithdrawFromAccountVirtualBalance(
     value: number | string | BN,
     tokenAddress: string = null,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
@@ -440,7 +444,7 @@ export class Sdk {
    * @param transactionSpeed
    */
   public async estimateAddAccountFriendRecoveryExtension(
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
@@ -465,7 +469,7 @@ export class Sdk {
     return this.apiMethods.estimateAccountProxyTransaction(
       accountAddress,
       data,
-      this.eth.getGasPrice(transactionSpeed),
+      await this.eth.getGasPrice(transactionSpeed),
     );
   }
 
@@ -478,7 +482,7 @@ export class Sdk {
   public async estimateSetupAccountFriendRecoveryExtension(
     requiredFriends: number,
     friendAddresses: string[],
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<any> {
     this.require({
       accountDeviceOwner: true,
@@ -529,7 +533,7 @@ export class Sdk {
    */
   public async startAccountFriendRecovery(
     accountAddress: string,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IAccountFriendRecovery> {
     this.require({
       accountConnected: null,
@@ -537,7 +541,7 @@ export class Sdk {
 
     await this.accountFriendRecovery.startAccountFriendRecovery(
       accountAddress,
-      this.eth.getGasPrice(transactionSpeed),
+      await this.eth.getGasPrice(transactionSpeed),
     );
 
     return this.state.accountFriendRecovery;
@@ -570,10 +574,10 @@ export class Sdk {
    * @param deviceAddress
    * @param transactionSpeed
    */
-  public signAccountFriendRecovery(
+  public async signAccountFriendRecovery(
     accountAddress: string,
     deviceAddress: string,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<string> {
     this.require({
       accountConnected: null,
@@ -582,7 +586,7 @@ export class Sdk {
     return this.accountFriendRecovery.signAccountFriendRecovery(
       accountAddress,
       deviceAddress,
-      this.eth.getGasPrice(transactionSpeed),
+      await this.eth.getGasPrice(transactionSpeed),
     );
   }
 
@@ -684,7 +688,7 @@ export class Sdk {
    */
   public async estimateAccountDeviceDeployment(
     deviceAddress: string,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
@@ -703,7 +707,7 @@ export class Sdk {
     return this.apiMethods.estimateAccountProxyTransaction(
       accountAddress,
       data,
-      this.eth.getGasPrice(transactionSpeed),
+      await this.eth.getGasPrice(transactionSpeed),
     );
   }
 
@@ -714,7 +718,7 @@ export class Sdk {
    */
   public async estimateAccountDeviceUnDeployment(
     deviceAddress: string,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
@@ -732,7 +736,7 @@ export class Sdk {
     return this.apiMethods.estimateAccountProxyTransaction(
       accountAddress,
       data,
-      this.eth.getGasPrice(transactionSpeed),
+      await this.eth.getGasPrice(transactionSpeed),
     );
   }
 
@@ -789,7 +793,7 @@ export class Sdk {
    */
   public async estimateAccountTransaction(
     recipient1: string, value1: TAnyNumber, data1: TAnyData,
-    transactionSpeed?: Eth.TransactionSpeeds,
+    transactionSpeed?: Eth.TTransactionSpeed,
   ): Promise<IEstimatedAccountProxyTransaction>;
 
   /**
@@ -805,7 +809,7 @@ export class Sdk {
   public async estimateAccountTransaction(
     recipient1: string, value1: TAnyNumber, data1: TAnyData,
     recipient2: string, value2: TAnyNumber, data2: TAnyData,
-    transactionSpeed?: Eth.TransactionSpeeds,
+    transactionSpeed?: Eth.TTransactionSpeed,
   ): Promise<IEstimatedAccountProxyTransaction>;
 
   /**
@@ -825,7 +829,7 @@ export class Sdk {
     recipient1: string, value1: TAnyNumber, data1: TAnyData,
     recipient2: string, value2: TAnyNumber, data2: TAnyData,
     recipient3: string, value3: TAnyNumber, data3: TAnyData,
-    transactionSpeed?: Eth.TransactionSpeeds,
+    transactionSpeed?: Eth.TTransactionSpeed,
   ): Promise<IEstimatedAccountProxyTransaction>;
 
   /**
@@ -849,7 +853,7 @@ export class Sdk {
     recipient2: string, value2: TAnyNumber, data2: TAnyData,
     recipient3: string, value3: TAnyNumber, data3: TAnyData,
     recipient4: string, value4: TAnyNumber, data4: TAnyData,
-    transactionSpeed?: Eth.TransactionSpeeds,
+    transactionSpeed?: Eth.TTransactionSpeed,
   ): Promise<IEstimatedAccountProxyTransaction>;
 
   /**
@@ -877,7 +881,7 @@ export class Sdk {
     recipient3: string, value3: TAnyNumber, data3: TAnyData,
     recipient4: string, value4: TAnyNumber, data4: TAnyData,
     recipient5: string, value5: TAnyNumber, data5: TAnyData,
-    transactionSpeed?: Eth.TransactionSpeeds,
+    transactionSpeed?: Eth.TTransactionSpeed,
   ): Promise<IEstimatedAccountProxyTransaction>;
 
   public async estimateAccountTransaction(...args: any[]): Promise<IEstimatedAccountProxyTransaction> {
@@ -889,7 +893,7 @@ export class Sdk {
     const { accountAddress } = this.state;
     const { account } = this.contract;
     const proxyData: string[] = [];
-    let transactionSpeed: Eth.TransactionSpeeds = null;
+    let transactionSpeed: Eth.TTransactionSpeed = null;
 
     const addToProxyData = (index) => {
       const recipient = args[index * 3];
@@ -950,7 +954,7 @@ export class Sdk {
     return this.apiMethods.estimateAccountProxyTransaction(
       accountAddress,
       proxyData,
-      this.eth.getGasPrice(transactionSpeed),
+      await this.eth.getGasPrice(transactionSpeed),
     );
   }
 
@@ -1070,7 +1074,7 @@ export class Sdk {
    */
   public async estimateDepositAccountPayment(
     hash: string,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
@@ -1106,7 +1110,7 @@ export class Sdk {
    */
   public async estimateWithdrawAccountPayment(
     hash: string,
-    transactionSpeed: Eth.TransactionSpeeds = null,
+    transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,

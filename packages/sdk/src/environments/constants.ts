@@ -21,7 +21,6 @@ const mainConfig: Environment.IConfigs = {
   },
   ethOptions: {
     networkId: '1',
-    gasPrice: '0x77359400',
   },
   apiWebSocketConstructor: null,
   storageOptions: {

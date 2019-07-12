@@ -1,6 +1,7 @@
 import EthJs from 'ethjs';
 import BN from 'bn.js';
 import { ContractNames, getContractAddress } from '@archanova/contracts';
+import { anyToBN } from '@netgum/utils';
 import { Api } from './Api';
 import { State } from './State';
 
@@ -20,14 +21,23 @@ export class Eth extends EthJs {
     return networkId;
   }
 
-  public getGasPrice(transactionSpeed: Eth.TransactionSpeeds = Eth.TransactionSpeeds.Regular): BN {
-    const { gasPrice } = this.options;
-    let result = new BN(gasPrice);
+  public async getGasPrice(transactionSpeed: Eth.TTransactionSpeed = Eth.TransactionSpeeds.Regular): Promise<BN> {
+    let result: BN = await this.gasPrice().catch(() => null);
+
+    if (!result) {
+      const { gasPrice } = this.options;
+      result = anyToBN(gasPrice);
+    }
+
+    if (!result) {
+      result = anyToBN('0x2540be400'); // 10 GWEI
+    }
 
     switch (transactionSpeed) {
       case Eth.TransactionSpeeds.Fast:
         result = result.mul(new BN(2));
         break;
+
       case Eth.TransactionSpeeds.Slow:
         result = result.div(new BN(2));
         break;
@@ -54,7 +64,7 @@ export class Eth extends EthJs {
   }
 
   private buildState(): State.IEth {
-    const { networkId, gasPrice } = this.options;
+    const { networkId } = this.options;
     let networkName: string = 'Unknown';
 
     switch (networkId) {
@@ -89,7 +99,6 @@ export class Eth extends EthJs {
     return {
       networkId,
       networkName,
-      gasPrice: new BN(gasPrice),
     };
   }
 }
@@ -101,9 +110,11 @@ export namespace Eth {
     Fast = 'fast',
   }
 
+  export type TTransactionSpeed = TransactionSpeeds | string | BN;
+
   export interface IOptions {
     networkId: string;
-    gasPrice: string;
+    gasPrice?: string;
     contractAddresses?: { [key: string]: string };
   }
 

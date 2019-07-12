@@ -165,7 +165,6 @@ export namespace State {
   export interface IEth {
     networkId: string;
     networkName: string;
-    gasPrice: BN;
   }
 
   export interface ISession {
