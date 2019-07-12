@@ -119,6 +119,12 @@ export interface IAccountVirtualBalance {
   updatedAt: Date;
 }
 
+export interface IAccountVirtualPendingBalance {
+  token: IToken;
+  incoming: BN;
+  outgoing: BN;
+}
+
 export interface IApp {
   creator: {
     account: IAccount;

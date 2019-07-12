@@ -1,15 +1,17 @@
 import React from 'react';
-import { Example, Screen, InputText, InputTransactionSpeed } from '../../components';
+import { Example, Screen, InputText, InputTransactionSpeed, Button } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (hash: string, transactionSpeed: string) => `
+const code1 = (hashes: string[], transactionSpeed: string) => `
 ${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
 
-const hash = ${hash ? `"${hash}"` : 'null'};
+${hashes.length === 0 ? 'const hash = null;' : ''}
+${hashes.length === 1 ? `const hash = '${hashes[0]}';` : ''}
+${hashes.length > 1 ? `const hashes = ['${hashes.join('\', \'')}'];` : ''}
 ${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
 
 sdk
-  .estimateDepositAccountPayment(${mergeMethodArgs('hash', transactionSpeed && 'transactionSpeed')})
+  .estimateDepositAccountPayment(${mergeMethodArgs(hashes.length < 2 && 'hash', hashes.length > 1 && 'hashes', transactionSpeed && 'transactionSpeed')})
   .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
@@ -26,45 +28,56 @@ sdk
 interface IState {
   transactionSpeed: any;
   estimated: any;
-  hash: string;
+  hashes: string[];
+  hashesAmount: number;
 }
 
 export class DepositAccountPayment extends Screen<IState> {
   public state = {
     transactionSpeed: null,
     estimated: null,
-    hash: '',
+    hashes: [''],
+    hashesAmount: 1,
   };
 
   public componentWillMount(): void {
     this.run1 = this.run1.bind(this);
     this.run2 = this.run2.bind(this);
 
-    this.hashChanged = this.hashChanged.bind(this);
     this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
+    this.addHash = this.addHash.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { hash, estimated, transactionSpeed } = this.state;
+    const { hashes, hashesAmount, estimated, transactionSpeed } = this.state;
+    const normalizeHashes = hashes.filter(hash => !!hash);
+    const hashKeys = Array(hashesAmount).fill(0).map((_, index) => `${index}`);
+
     return (
       <div>
         <Example
           title="Estimate Deposit Account Payment"
-          code={code1(hash, InputTransactionSpeed.selectedToText(transactionSpeed))}
-          enabled={hash && enabled}
+          code={code1(normalizeHashes, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          enabled={normalizeHashes.length && enabled}
           run={this.run1}
         >
-          <InputText
-            value={hash}
-            label="hash"
-            type="text"
-            onChange={this.hashChanged}
-          />
+          {hashKeys.map((key, index) => (
+            <InputText
+              key={key}
+              value={hashes[index]}
+              label={`hash[${index}]`}
+              type="text"
+              onChange={this.createHashChanged(index)}
+            />
+          ))}
           <InputTransactionSpeed
             selected={transactionSpeed}
             onChange={this.transactionSpeedChanged}
           />
+          <div style={{ marginTop: 15 }}>
+            <Button onClick={hashesAmount < 5 ? this.addHash : null}>Add Payment</Button>
+          </div>
         </Example>
         <Example
           title="Submit Account Transaction"
@@ -76,10 +89,15 @@ export class DepositAccountPayment extends Screen<IState> {
     );
   }
 
-  private hashChanged(hash: string): void {
-    this.setState({
-      hash,
-    });
+  private createHashChanged(index: number): (hash: string) => void {
+    return (hash) => {
+      let { hashes } = this.state;
+      hashes = [...hashes];
+      hashes[index] = hash;
+      this.setState({
+        hashes,
+      });
+    };
   }
 
   private transactionSpeedChanged(transactionSpeed: any): void {
@@ -88,13 +106,24 @@ export class DepositAccountPayment extends Screen<IState> {
     });
   }
 
+  private addHash(): void {
+    let { hashes, hashesAmount } = this.state;
+    hashes = [...hashes, ''];
+    hashesAmount += 1;
+
+    this.setState({
+      hashes,
+      hashesAmount,
+    });
+  }
+
   private run1(): void {
-    const { hash, transactionSpeed } = this.state;
+    const { hashes, transactionSpeed } = this.state;
     this
       .logger
       .wrapSync('sdk.estimateDepositAccountPayment', async (console) => {
         const estimated = console.log('estimated', await this.sdk.estimateDepositAccountPayment(
-          hash,
+          hashes.filter(hash => !!hash),
           transactionSpeed,
         ));
 

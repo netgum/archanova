@@ -16,6 +16,8 @@ export enum Screens {
   WithdrawFromAccountVirtualBalance = 'withdraw from account virtual balance',
   GetConnectedAccountVirtualBalances = 'get connected account virtual balances',
   GetConnectedAccountVirtualBalance = 'get connected account virtual balance',
+  GetConnectedAccountVirtualPendingBalances = 'get connected account virtual pending balances',
+  GetConnectedAccountVirtualPendingBalance = 'get connected account virtual pending balance',
 
   // account friend recovery
   AddAccountFriendRecoveryExtension = 'add account friend recovery extension',

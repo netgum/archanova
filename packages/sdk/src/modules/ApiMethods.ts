@@ -10,7 +10,7 @@ import {
   IAccountGame,
   IAccountPayment,
   IAccountTransaction,
-  IEstimatedAccountProxyTransaction, IAccountVirtualBalance, IApp,
+  IEstimatedAccountProxyTransaction, IAccountVirtualBalance, IApp, IAccountVirtualPendingBalance,
 } from '../interfaces';
 import { Api } from './Api';
 
@@ -357,6 +357,20 @@ export class ApiMethods {
     return this.api.sendRequest({
       method: 'GET',
       path: `account/${accountAddress}/virtual-balance/${tokenAddressOrSymbol}`,
+    });
+  }
+
+  public getAccountVirtualPendingBalances(accountAddress: string): Promise<IAccountVirtualPendingBalance> {
+    return this.api.sendRequest({
+      method: 'GET',
+      path: `account/${accountAddress}/virtual-balance/pending`,
+    });
+  }
+
+  public getAccountVirtualPendingBalance(accountAddress: string, tokenAddressOrSymbol: string): Promise<IAccountVirtualPendingBalance> {
+    return this.api.sendRequest({
+      method: 'GET',
+      path: `account/${accountAddress}/virtual-balance/pending/${tokenAddressOrSymbol}`,
     });
   }
 

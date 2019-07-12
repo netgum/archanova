@@ -18,6 +18,8 @@ import {
   WithdrawFromAccountVirtualBalance,
   GetConnectedAccountVirtualBalances,
   GetConnectedAccountVirtualBalance,
+  GetConnectedAccountVirtualPendingBalances,
+  GetConnectedAccountVirtualPendingBalance,
 } from './accountVirtualBalance';
 import {
   AddAccountFriendRecoveryExtension,
@@ -186,6 +188,14 @@ class Content extends React.Component<IProps, IState> {
 
       case Screens.GetConnectedAccountVirtualBalance:
         Screen = GetConnectedAccountVirtualBalance;
+        break;
+
+      case Screens.GetConnectedAccountVirtualPendingBalances:
+        Screen = GetConnectedAccountVirtualPendingBalances;
+        break;
+
+      case Screens.GetConnectedAccountVirtualPendingBalance:
+        Screen = GetConnectedAccountVirtualPendingBalance;
         break;
 
       // account friend recovery
@@ -442,6 +452,8 @@ class Content extends React.Component<IProps, IState> {
               Screens.WithdrawFromAccountVirtualBalance,
               Screens.GetConnectedAccountVirtualBalances,
               Screens.GetConnectedAccountVirtualBalance,
+              Screens.GetConnectedAccountVirtualPendingBalances,
+              Screens.GetConnectedAccountVirtualPendingBalance,
             ],
           }, {
             header: 'Account Transactions',
@@ -559,6 +571,8 @@ class Content extends React.Component<IProps, IState> {
       [Screens.WithdrawFromAccountVirtualBalance]: accountDeviceDeployed,
       [Screens.GetConnectedAccountVirtualBalances]: accountConnected,
       [Screens.GetConnectedAccountVirtualBalance]: accountConnected,
+      [Screens.GetConnectedAccountVirtualPendingBalances]: accountConnected,
+      [Screens.GetConnectedAccountVirtualPendingBalance]: accountConnected,
 
       // account friend recovery
       [Screens.AddAccountFriendRecoveryExtension]: accountDeviceDeployed && accountDeviceOwner,

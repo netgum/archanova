@@ -12,7 +12,7 @@ import {
   IAccountGame,
   IAccountPayment,
   IAccountTransaction,
-  IAccountVirtualBalance,
+  IAccountVirtualBalance, IAccountVirtualPendingBalance,
   IApp,
   IEstimatedAccountDeployment,
   IEstimatedAccountProxyTransaction,
@@ -71,6 +71,7 @@ export class Sdk {
    */
   constructor(private environment: Environment) {
     this.catchError = this.catchError.bind(this);
+    this.estimateAccountTransaction = this.estimateAccountTransaction.bind(this);
 
     this.setEnvironment(environment);
   }
@@ -435,6 +436,29 @@ export class Sdk {
     const { accountAddress } = this.state;
 
     return this.apiMethods.getAccountVirtualBalance(accountAddress, symbolOrAddress);
+  }
+
+  /**
+   * gets connected account virtual pending balances
+   */
+  public async getConnectedAccountVirtualPendingBalances(): Promise<IAccountVirtualPendingBalance> {
+    this.require();
+
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountVirtualPendingBalances(accountAddress);
+  }
+
+  /**
+   * gets connected account virtual pending balance
+   * @param symbolOrAddress
+   */
+  public async getConnectedAccountVirtualPendingBalance(symbolOrAddress: string): Promise<IAccountVirtualPendingBalance> {
+    this.require();
+
+    const { accountAddress } = this.state;
+
+    return this.apiMethods.getAccountVirtualPendingBalance(accountAddress, symbolOrAddress);
   }
 
 // Account Friend Recovery
@@ -1073,7 +1097,7 @@ export class Sdk {
    * @param transactionSpeed
    */
   public async estimateDepositAccountPayment(
-    hash: string,
+    hash: string | string[],
     transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
@@ -1081,24 +1105,32 @@ export class Sdk {
       accountDeviceDeployed: true,
     });
 
-    const { accountAddress } = this.state;
-    const { sender, recipient, guardian, token, value } = await this.apiMethods.getAccountPayment(accountAddress, hash);
+    const hashes: string[] = Array.isArray(hash) ? hash : [hash];
+    const args: any[] = [];
     const { virtualPaymentManager } = this.contract;
-    const data = virtualPaymentManager.encodeMethodInput(
-      'depositPayment',
-      sender.account.address,
-      recipient.address || recipient.account.address,
-      token && token.address ? token.address : ZERO_ADDRESS,
-      hash,
-      value,
-      sender.signature,
-      guardian.signature,
-    );
 
-    return this.estimateAccountTransaction(
-      virtualPaymentManager.address,
-      null,
-      data,
+    for (const hash of hashes) {
+      const { accountAddress } = this.state;
+      const { sender, recipient, guardian, token, value } = await this.apiMethods.getAccountPayment(accountAddress, hash);
+
+      const data = virtualPaymentManager.encodeMethodInput(
+        'depositPayment',
+        sender.account.address,
+        recipient.address || recipient.account.address,
+        token && token.address ? token.address : ZERO_ADDRESS,
+        hash,
+        value,
+        sender.signature,
+        guardian.signature,
+      );
+
+      args.push(virtualPaymentManager.address);
+      args.push(null);
+      args.push(data);
+    }
+
+    return (this.estimateAccountTransaction as any)(
+      ...args,
       transactionSpeed,
     );
   }
@@ -1109,7 +1141,7 @@ export class Sdk {
    * @param transactionSpeed
    */
   public async estimateWithdrawAccountPayment(
-    hash: string,
+    hash: string | string[],
     transactionSpeed: Eth.TTransactionSpeed = null,
   ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
@@ -1117,24 +1149,33 @@ export class Sdk {
       accountDeviceDeployed: true,
     });
 
-    const { accountAddress } = this.state;
-    const { sender, recipient, guardian, value, token } = await this.apiMethods.getAccountPayment(accountAddress, hash);
-    const { virtualPaymentManager } = this.contract;
-    const data = virtualPaymentManager.encodeMethodInput(
-      'withdrawPayment',
-      sender.account.address,
-      recipient.address || recipient.account.address,
-      token && token.address ? token.address : ZERO_ADDRESS,
-      hash,
-      value,
-      sender.signature,
-      guardian.signature,
-    );
+    const hashes: string[] = Array.isArray(hash) ? hash : [hash];
 
-    return this.estimateAccountTransaction(
-      virtualPaymentManager.address,
-      null,
-      data,
+    const args: any[] = [];
+    const { virtualPaymentManager } = this.contract;
+
+    for (const hash of hashes) {
+      const { accountAddress } = this.state;
+      const { sender, recipient, guardian, token, value } = await this.apiMethods.getAccountPayment(accountAddress, hash);
+
+      const data = virtualPaymentManager.encodeMethodInput(
+        'withdrawPayment',
+        sender.account.address,
+        recipient.address || recipient.account.address,
+        token && token.address ? token.address : ZERO_ADDRESS,
+        hash,
+        value,
+        sender.signature,
+        guardian.signature,
+      );
+
+      args.push(virtualPaymentManager.address);
+      args.push(null);
+      args.push(data);
+    }
+
+    return (this.estimateAccountTransaction as any)(
+      ...args,
       transactionSpeed,
     );
   }
