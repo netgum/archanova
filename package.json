@@ -14,7 +14,7 @@
     "bootstrap": "lerna bootstrap -- --no-package-lock",
     "clean": "lerna clean --yes && lerna run clean --stream",
     "prebuild": "npm run bootstrap",
-    "build": "lerna run --stream build",
+    "build": "lerna run --stream build --ignore \"@archanova/sdk-playground\"",
     "compile": "lerna run compile --stream",
     "precompile:watch": "npm run compile",
     "compile:watch": "lerna run compile:watch --parallel",

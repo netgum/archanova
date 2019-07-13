@@ -12,8 +12,8 @@
   },
   "description": "Archanova Tutorial",
   "dependencies": {
-    "@archanova/contracts": "^1.0.0-beta.13",
-    "@archanova/sdk": "~1.0.0-alpha.17",
+    "@archanova/contracts": "^1.0.0",
+    "@archanova/sdk": "^1.0.0",
     "@netgum/types": "^0.1.7",
     "@netgum/utils": "^0.1.3",
     "@types/react": "^16.8.17",
