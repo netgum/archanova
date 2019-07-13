@@ -4,7 +4,7 @@ import { Example, Screen } from '../../components';
 const code = () => `
 sdk
   .getConnectedAccountVirtualPendingBalances()
-  .then(accountVirtualBalances => console.log('accountVirtualBalances', accountVirtualBalances))
+  .then(accountVirtualPendingBalances => console.log('accountVirtualPendingBalances', accountVirtualPendingBalances))
   .catch(console.error);
 `;
 
