@@ -13,24 +13,20 @@ const config = getCliConfig();
 
 let sdkEnv: sdkModules.Environment;
 
+if (config.env === 'local') {
+  sdkEnv = createLocalSdkEnvironment({
+    ...config.localEnv,
+  });
+}
+
+if (!sdkEnv) {
+  sdkEnv = getSdkEnvironment(config.env as any) || getSdkEnvironment(SdkEnvironmentNames.Main);
+}
+
 const storageService = new StorageService({
   scope: config.scope,
   workingPath: config.workingPath,
 });
-
-switch (config.env) {
-  case SdkEnvironmentNames.Kovan:
-  case SdkEnvironmentNames.Rinkeby:
-  case SdkEnvironmentNames.Ropsten:
-    sdkEnv = getSdkEnvironment(config.env);
-    break;
-
-  case 'local':
-    sdkEnv = createLocalSdkEnvironment({
-      ...config.localEnv,
-    });
-    break;
-}
 
 storageService.setNamespace(sdkEnv.getConfig('storageOptions').namespace);
 
