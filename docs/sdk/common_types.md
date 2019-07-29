@@ -64,6 +64,11 @@ export enum AppStates {
   Rejected = 'Rejected',
 }
 
+export enum TokenTypes {
+  ERC20 = 'ERC20',
+}
+
+
 ```
 
 ## Interfaces
@@ -94,6 +99,17 @@ export interface IAccountDevice {
   updatedAt: Date;
 }
 
+export interface IAccountFriendRecovery {
+  accountAddress: string;
+  gasFee: BN;
+  gasPrice: BN;
+  nonce: BN;
+  requiredFriends: BN;
+  friends: string[];
+  friendSignatures?: { [key: string]: string };
+  updatedAt: Date;
+}
+
 export interface IAccountGameHistory {
   player: AccountGamePlayers;
   data: string;
@@ -115,7 +131,10 @@ export interface IAccountGame {
   data: string;
   whoseTurn: AccountGamePlayers;
   winner: AccountGamePlayers;
-  deposit: BN;
+  deposit: {
+    value: BN;
+    token: IToken;
+  };
   updatedAt: Date;
 }
 
@@ -145,7 +164,7 @@ export interface IAccountPayment {
     account: IAccount;
     signature: Buffer;
   };
-  receiver: {
+  recipient: {
     account: IAccount;
     address: string;
   };
@@ -155,7 +174,20 @@ export interface IAccountPayment {
   hash: string;
   state: AccountPaymentStates;
   value: BN;
+  token: IToken;
   updatedAt: Date;
+}
+
+export interface IAccountVirtualBalance {
+  token: IToken;
+  value: BN;
+  updatedAt: Date;
+}
+
+export interface IAccountVirtualPendingBalance {
+  token: IToken;
+  incoming: BN;
+  outgoing: BN;
 }
 
 export interface IApp {
@@ -167,11 +199,34 @@ export interface IApp {
   name: string;
   description: string;
   imageUrl: string;
-  updatedAt: string;
+  updatedAt: Date;
 }
 
 export interface IDevice {
   address: string;
+}
+
+export interface IToken {
+  symbol: string;
+  name: string;
+  type: TokenTypes;
+  address: string;
+  createdAt: Date;
+}
+
+export interface IEstimatedAccountDeployment {
+  gasPrice?: BN;
+  totalGas: BN;
+  totalCost: BN;
+}
+
+export interface IEstimatedAccountProxyTransaction {
+  nonce: BN;
+  gasPrice?: BN;
+  data?: string[];
+  fixedGas: BN;
+  totalGas: BN;
+  totalCost: BN;
 }
 
 export interface IPaginated<T = any> {
@@ -179,5 +234,6 @@ export interface IPaginated<T = any> {
   currentPage: number;
   nextPage: number;
 }
+
 ```
 

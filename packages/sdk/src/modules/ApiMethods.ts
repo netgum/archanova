@@ -24,7 +24,7 @@ export class ApiMethods {
   public getConnectedAccounts(page = 0): Promise<IPaginated<IAccount>> {
     return this.api.sendRequest({
       method: 'GET',
-      path: `account?page=${page}`,
+      path: `account?page=${page || 0}`,
     });
   }
 
@@ -50,7 +50,7 @@ export class ApiMethods {
       method: 'POST',
       path: 'account',
       body: {
-        ensName,
+        ensName: ensName || null,
       },
     });
   }
@@ -113,7 +113,7 @@ export class ApiMethods {
       method: 'POST',
       path: `account/${accountAddress}/device`,
       body: {
-        type,
+        type: type || null,
         device: address,
       },
     });
@@ -259,8 +259,8 @@ export class ApiMethods {
       path: `account/${accountAddress}/payment`,
       body: {
         recipient,
-        token,
         value,
+        token: token || null,
       },
     });
   }

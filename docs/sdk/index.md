@@ -11,5 +11,5 @@ $ npm i @archanova/sdk -S
 - [Configuration](configuration.md)
 - [Common Types](common_types.md)
 - [State](state.md)
-- [Api](api.md)
 - [Redux Integration](redux_integration.md)
+- [Api](https://playground.archanova.run/)

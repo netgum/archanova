@@ -1,4 +1,3 @@
-import BN from 'bn.js';
 import { UniqueBehaviorSubject, TUniqueBehaviorSubject } from 'rxjs-addons';
 import { from, Subscription } from 'rxjs';
 import { skip, switchMap, map } from 'rxjs/operators';

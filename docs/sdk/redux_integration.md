@@ -28,7 +28,7 @@ import { createReduxSdkMiddleware, ISdkReduxState } from '@archanova/sdk';
 import { applyMiddleware, createStore } from 'redux';
 import reducers from './reducers';
 
-const sdk;
+const sdk; // ... sdk object
 const store = createStore<ISdkReduxState>(
   reducers,
   {},

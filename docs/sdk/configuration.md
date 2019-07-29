@@ -6,7 +6,7 @@
 ```typescript
 import { SdkEnvironmentNames, getSdkEnvironment } from '@archanova/sdk';
 
-const sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Kovan);
+const sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Main);
 ``` 
 
 ### Extending Environment
@@ -17,7 +17,7 @@ import Ws from 'ws';
 
 const sdkEnv = getSdkEnvironment(SdkEnvironmentNames.Rinkeby)
   .setConfig('storageAdapter', sessionStorage)
-  .setConfig('apiWebSocketConstructor', Ws)
+  .setConfig('apiWebSocketConstructor', Ws) // for nodejs env
   .extendConfig('ensOptions', {
     supportedRootNames: ['smartsafe.test'],
   });

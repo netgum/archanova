@@ -3,7 +3,6 @@
 Sdk `state` is available in `sdk.state`, it's a combination of `getters` and `rxjs` `Subjects`.
 
 ```typescript
-import BN from 'bn.js';
 import { Subject } from 'rxjs';
 import { sdkModules, sdkInterfaces } from '@archanova/sdk';
 
@@ -13,6 +12,7 @@ interface IState {
   authenticated$: Subject<boolean>;
   account$: Subject<sdkInterfaces.IAccount>;
   accountDevice$: Subject<sdkInterfaces.IAccountDevice>;
+  accountFriendRecovery$: Subject<sdkInterfaces.IAccountFriendRecovery>;
   device$: Subject<sdkInterfaces.IDevice>;
   ens$: Subject<sdkModules.State.IEns>;
   eth$: Subject<sdkModules.State.IEth>;
@@ -25,6 +25,7 @@ interface IState {
   account: sdkInterfaces.IAccount;
   accountAddress: string;
   accountDevice: sdkInterfaces.IAccountDevice;
+  accountFriendRecovery: sdkInterfaces.IAccountFriendRecovery;
   device: sdkInterfaces.IDevice;
   deviceAddress: string;
   ens: sdkModules.State.IEns;
