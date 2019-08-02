@@ -234,10 +234,10 @@ export class ApiMethods {
 
 // account payment
 
-  public getAccountPayments(accountAddress: string, page = 0): Promise<IPaginated<IAccountPayment>> {
+  public getAccountPayments(accountAddress: string, page: number, state: string): Promise<IPaginated<IAccountPayment>> {
     return this.api.sendRequest({
       method: 'GET',
-      path: `account/${accountAddress}/payment?page=${page}`,
+      path: `account/${accountAddress}/payment?page=${page}&state=${state}`,
     });
   }
 

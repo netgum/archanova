@@ -4,7 +4,7 @@ import EthJs from 'ethjs';
 import { TAbi } from 'ethjs-abi';
 import { BehaviorSubject, from, SubscriptionLike, timer } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
-import { AccountDeviceStates, AccountDeviceTypes, AccountGamePlayers, AccountGameStates, AccountStates } from './constants';
+import { AccountDeviceStates, AccountDeviceTypes, AccountGamePlayers, AccountGameStates, AccountPaymentStates, AccountStates } from './constants';
 import {
   IAccount,
   IAccountDevice,
@@ -1003,13 +1003,23 @@ export class Sdk {
   /**
    * gets connected account payments
    * @param page
+   * @param filters
    */
-  public async getConnectedAccountPayments(page = 0): Promise<IPaginated<IAccountPayment>> {
+  public async getConnectedAccountPayments(
+    page = 0,
+    filters: {
+      state?: AccountPaymentStates;
+    } = {},
+  ): Promise<IPaginated<IAccountPayment>> {
     this.require();
 
     const { accountAddress } = this.state;
 
-    return this.apiMethods.getAccountPayments(accountAddress, page);
+    return this.apiMethods.getAccountPayments(
+      accountAddress,
+      page,
+      filters.state || '',
+    );
   }
 
   /**
