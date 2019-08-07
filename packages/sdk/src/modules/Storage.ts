@@ -22,9 +22,7 @@ export class Storage {
     if (this.adapter) {
       try {
         const adapterKey = this.prepareKey(key);
-        const raw: string = await Promise.resolve(
-          this.adapter.getItem(adapterKey),
-        );
+        const raw: string = await Promise.resolve(this.adapter.getItem(adapterKey));
 
         if (raw) {
           result = JSON.parse(raw, jsonReviver);
@@ -46,9 +44,7 @@ export class Storage {
       try {
         const adapterKey = this.prepareKey(key);
         const raw = JSON.stringify(item, jsonReplacer);
-        await Promise.resolve(
-          this.adapter.setItem(adapterKey, raw),
-        );
+        await Promise.resolve(this.adapter.setItem(adapterKey, raw));
       } catch (err) {
         //
       }
@@ -59,9 +55,7 @@ export class Storage {
     if (this.adapter) {
       try {
         const adapterKey = this.prepareKey(key);
-        await Promise.resolve(
-          this.adapter.removeItem(adapterKey),
-        );
+        await Promise.resolve(this.adapter.removeItem(adapterKey));
       } catch (err) {
         //
       }

@@ -86,7 +86,7 @@ export namespace Contract {
       const output = await this.eth.call({
         data: input,
         to: this.address,
-      }, 'pending');
+      }, 'latest');
 
       return this.decodeMethodOutput(method, output) as any;
     }

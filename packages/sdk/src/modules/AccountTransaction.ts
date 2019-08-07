@@ -15,7 +15,7 @@ export class AccountTransaction {
     //
   }
 
-  public async submitAccountProxyTransaction({ nonce, data, fixedGas, gasPrice }: IEstimatedAccountProxyTransaction): Promise<string> {
+  public async submitAccountProxyTransaction({ nonce, data, fixedGas, gasPrice, guardianSignature }: IEstimatedAccountProxyTransaction): Promise<string> {
     const { accountAddress } = this.state;
     const { accountProxy } = this.contract;
 
@@ -39,6 +39,6 @@ export class AccountTransaction {
 
     const signature = this.device.signPersonalMessage(message);
 
-    return this.apiMethods.submitAccountProxyTransaction(accountAddress, data, signature, gasPrice);
+    return this.apiMethods.submitAccountProxyTransaction(accountAddress, data, signature, gasPrice, guardianSignature);
   }
 }

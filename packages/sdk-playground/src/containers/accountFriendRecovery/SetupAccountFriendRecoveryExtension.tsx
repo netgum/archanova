@@ -1,16 +1,16 @@
 import React from 'react';
-import { Example, Screen, InputText, InputTransactionSpeed } from '../../components';
+import { Example, Screen, InputText, InputGasPriceStrategy } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (requiredFriendsParsed: number, friendAddressesParsed: string[], transactionSpeed: string) => `
-${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
+const code1 = (requiredFriendsParsed: number, friendAddressesParsed: string[], gasPriceStrategy: string) => `
+${!gasPriceStrategy ? '' : 'import { sdkConstants } from \'@archanova/sdk\';'}
 
 const requiredFriends = ${requiredFriendsParsed};
 const friendAddresses = ${!friendAddressesParsed.length ? '[]' : `['${friendAddressesParsed.join('\', \'')}']`};
-${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
+${!gasPriceStrategy ? '' : `const gasPriceStrategy = ${gasPriceStrategy};`}
 
 sdk
-  .estimateSetupAccountFriendRecoveryExtension(${mergeMethodArgs('requiredFriends', 'friendAddresses', transactionSpeed && 'transactionSpeed')})
+  .estimateSetupAccountFriendRecoveryExtension(${mergeMethodArgs('requiredFriends', 'friendAddresses', gasPriceStrategy && 'gasPriceStrategy')})
   .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
@@ -29,7 +29,7 @@ interface IState {
   requiredFriendsParsed: number;
   friendAddresses: string;
   friendAddressesParsed: string[];
-  transactionSpeed: any;
+  gasPriceStrategy: any;
   estimated: any;
 }
 
@@ -39,7 +39,7 @@ export class SetupAccountFriendRecoveryExtension extends Screen<IState> {
     requiredFriendsParsed: 0,
     friendAddresses: '',
     friendAddressesParsed: [],
-    transactionSpeed: null,
+    gasPriceStrategy: null,
     estimated: null,
   };
 
@@ -49,18 +49,18 @@ export class SetupAccountFriendRecoveryExtension extends Screen<IState> {
 
     this.requiredFriendsChanged = this.requiredFriendsChanged.bind(this);
     this.friendAddressesChanged = this.friendAddressesChanged.bind(this);
-    this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
+    this.gasPriceStrategyChanged = this.gasPriceStrategyChanged.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { requiredFriends, requiredFriendsParsed, friendAddresses, friendAddressesParsed, transactionSpeed, estimated } = this.state;
+    const { requiredFriends, requiredFriendsParsed, friendAddresses, friendAddressesParsed, gasPriceStrategy, estimated } = this.state;
 
     return (
       <div>
         <Example
           title="Estimate Setup Account Friend Recovery Extension"
-          code={code1(requiredFriendsParsed, friendAddressesParsed, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code1(requiredFriendsParsed, friendAddressesParsed, InputGasPriceStrategy.selectedToText(gasPriceStrategy))}
           enabled={requiredFriends && friendAddressesParsed.length && enabled}
           run={this.run1}
         >
@@ -75,9 +75,9 @@ export class SetupAccountFriendRecoveryExtension extends Screen<IState> {
             value={friendAddresses}
             onChange={this.friendAddressesChanged}
           />
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedChanged}
+          <InputGasPriceStrategy
+            selected={gasPriceStrategy}
+            onChange={this.gasPriceStrategyChanged}
           />
         </Example>
         <Example
@@ -104,22 +104,23 @@ export class SetupAccountFriendRecoveryExtension extends Screen<IState> {
     });
   }
 
-  private transactionSpeedChanged(transactionSpeed: any): void {
+  private gasPriceStrategyChanged(gasPriceStrategy: any): void {
     this.setState({
-      transactionSpeed,
+      gasPriceStrategy,
     });
   }
 
   private run1(): void {
-    const { requiredFriendsParsed, friendAddressesParsed, transactionSpeed } = this.state;
+    const { requiredFriendsParsed, friendAddressesParsed, gasPriceStrategy } = this.state;
     this
       .logger
       .wrapSync('sdk.estimateSetupAccountFriendRecoveryExtension', async (console) => {
         const estimated = console.log('estimated', await this.sdk.estimateSetupAccountFriendRecoveryExtension(
           requiredFriendsParsed,
           friendAddressesParsed,
-          transactionSpeed,
+          gasPriceStrategy,
         ));
+
         this.setState({
           estimated,
         });

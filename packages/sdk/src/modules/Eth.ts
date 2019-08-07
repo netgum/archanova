@@ -1,7 +1,5 @@
 import EthJs from 'ethjs';
-import BN from 'bn.js';
 import { ContractNames, getContractAddress } from '@archanova/contracts';
-import { anyToBN } from '@netgum/utils';
 import { Api } from './Api';
 import { State } from './State';
 
@@ -19,31 +17,6 @@ export class Eth extends EthJs {
   public getNetworkId(): string {
     const { networkId } = this.options;
     return networkId;
-  }
-
-  public async getGasPrice(transactionSpeed: Eth.TTransactionSpeed = Eth.TransactionSpeeds.Regular): Promise<BN> {
-    let result: BN = await this.gasPrice().catch(() => null);
-
-    if (!result) {
-      const { gasPrice } = this.options;
-      result = anyToBN(gasPrice);
-    }
-
-    if (!result) {
-      result = anyToBN('0x2540be400'); // 10 GWEI
-    }
-
-    switch (transactionSpeed) {
-      case Eth.TransactionSpeeds.Fast:
-        result = result.mul(new BN(2));
-        break;
-
-      case Eth.TransactionSpeeds.Slow:
-        result = result.div(new BN(2));
-        break;
-    }
-
-    return result;
   }
 
   public getContractAddress(contractName: ContractNames): string {
@@ -104,14 +77,6 @@ export class Eth extends EthJs {
 }
 
 export namespace Eth {
-  export enum TransactionSpeeds {
-    Slow = 'slow',
-    Regular = 'regular',
-    Fast = 'fast',
-  }
-
-  export type TTransactionSpeed = TransactionSpeeds | string | BN;
-
   export interface IOptions {
     networkId: string;
     gasPrice?: string;

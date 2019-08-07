@@ -60,3 +60,8 @@ export enum AppStates {
 export enum TokenTypes {
   ERC20 = 'ERC20',
 }
+
+export enum GasPriceStrategies {
+  Avg = 'Avg',
+  Fast = 'Fast',
+}

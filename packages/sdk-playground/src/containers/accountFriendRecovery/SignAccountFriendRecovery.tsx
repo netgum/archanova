@@ -1,16 +1,16 @@
 import React from 'react';
-import { Example, Screen, InputText, InputTransactionSpeed } from '../../components';
-import { mergeMethodArgs } from '../../shared';
+import { anyToBN } from '@netgum/utils';
+import { Example, Screen, InputText } from '../../components';
 
-const code = (accountAddress: string, deviceAddress: string, transactionSpeed: string) => `
-${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
+const code = (accountAddress: string, deviceAddress: string, gasPrice: string) => `
+import { anyToBN } from '@netgum/utils';
 
 const accountAddress = ${accountAddress ? `"${accountAddress}"` : 'null'};
 const deviceAddress = ${deviceAddress ? `"${deviceAddress}"` : 'null'};
-${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
+const gasPrice = anyToBN(${gasPrice ? `"${gasPrice}"` : 'null'});
 
 sdk
-  .signAccountFriendRecovery(${mergeMethodArgs('accountAddress', 'deviceAddress', transactionSpeed && 'transactionSpeed')})
+  .signAccountFriendRecovery(accountAddress, deviceAddress, gasPrice)
   .then(signature => console.log('signature', signature))
   .catch(console.error);
 `;
@@ -18,14 +18,14 @@ sdk
 interface IState {
   accountAddress: string;
   deviceAddress: string;
-  transactionSpeed: any;
+  gasPrice: string;
 }
 
 export class SignAccountFriendRecovery extends Screen<IState> {
   public state = {
     accountAddress: '',
     deviceAddress: '',
-    transactionSpeed: null,
+    gasPrice: null,
   };
 
   public componentWillMount(): void {
@@ -33,17 +33,17 @@ export class SignAccountFriendRecovery extends Screen<IState> {
 
     this.accountAddressChanged = this.accountAddressChanged.bind(this);
     this.deviceAddressChanged = this.deviceAddressChanged.bind(this);
-    this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
+    this.gasPriceChanged = this.gasPriceChanged.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { accountAddress, deviceAddress, transactionSpeed } = this.state;
+    const { accountAddress, deviceAddress, gasPrice } = this.state;
     return (
       <div>
         <Example
           title="Sign Account Friend Recovery"
-          code={code(accountAddress, deviceAddress, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code(accountAddress, deviceAddress, gasPrice)}
           enabled={accountAddress && deviceAddress && enabled}
           run={this.run}
         >
@@ -57,9 +57,10 @@ export class SignAccountFriendRecovery extends Screen<IState> {
             value={deviceAddress}
             onChange={this.deviceAddressChanged}
           />
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedChanged}
+          <InputText
+            label="gasPrice"
+            value={gasPrice}
+            onChange={this.gasPriceChanged}
           />
         </Example>
       </div>
@@ -78,21 +79,21 @@ export class SignAccountFriendRecovery extends Screen<IState> {
     });
   }
 
-  private transactionSpeedChanged(transactionSpeed: any): void {
+  private gasPriceChanged(gasPrice: any): void {
     this.setState({
-      transactionSpeed,
+      gasPrice,
     });
   }
 
   private run(): void {
-    const { accountAddress, deviceAddress, transactionSpeed } = this.state;
+    const { accountAddress, deviceAddress, gasPrice } = this.state;
     this
       .logger
       .wrapSync('sdk.signAccountFriendRecovery', async (console) => {
         console.log('signature', await this.sdk.signAccountFriendRecovery(
           accountAddress,
           deviceAddress,
-          transactionSpeed,
+          anyToBN(gasPrice),
         ));
       });
   }

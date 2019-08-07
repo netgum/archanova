@@ -70,6 +70,7 @@ export enum Screens {
   // token
   GetTokens = 'get tokens',
   GetToken = 'get token',
+  GetTokenBalance = 'get token balance',
 
   // action
   AcceptIncomingAction = 'accept incoming action',

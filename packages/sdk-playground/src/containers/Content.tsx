@@ -72,6 +72,7 @@ import {
 import {
   GetTokens,
   GetToken,
+  GetTokenBalance,
 } from './token';
 import {
   AcceptIncomingAction,
@@ -356,6 +357,10 @@ class Content extends React.Component<IProps, IState> {
         Screen = GetToken;
         break;
 
+      case Screens.GetTokenBalance:
+        Screen = GetTokenBalance;
+        break;
+
       // action
       case Screens.AcceptIncomingAction:
         Screen = AcceptIncomingAction;
@@ -497,6 +502,7 @@ class Content extends React.Component<IProps, IState> {
             screens: [
               Screens.GetTokens,
               Screens.GetToken,
+              Screens.GetTokenBalance,
             ],
           }, {
             header: 'Actions',
@@ -625,6 +631,7 @@ class Content extends React.Component<IProps, IState> {
       // token
       [Screens.GetTokens]: initialized,
       [Screens.GetToken]: initialized,
+      [Screens.GetTokenBalance]: accountConnected,
 
       // action
       [Screens.AcceptIncomingAction]: !!incomingAction,

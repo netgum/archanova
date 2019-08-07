@@ -99,12 +99,11 @@ export class AccountFriendRecovery {
     return result;
   }
 
-  public async startAccountFriendRecovery(accountAddress: string, gasPrice: BN): Promise<void> {
+  public async startAccountFriendRecovery(accountAddress: string): Promise<void> {
     const accountFriendRecovery = await this.apiMethods.getAccountFriendRecovery(accountAddress);
 
     this.state.accountFriendRecovery$.next({
       accountAddress,
-      gasPrice,
       friendSignatures: {},
       ...accountFriendRecovery,
     });
@@ -115,7 +114,7 @@ export class AccountFriendRecovery {
   }
 
   public async submitAccountFriendRecovery(): Promise<string> {
-    const { accountFriendRecovery: { accountAddress, gasPrice, friendSignatures } } = this.state;
+    const { accountFriendRecovery: { accountAddress, gasPrice, friendSignatures, guardianSignature } } = this.state;
 
     const friends: string[] = [];
     const signatures: string[] = [];
@@ -132,6 +131,7 @@ export class AccountFriendRecovery {
       friends,
       signatures,
       gasPrice,
+      guardianSignature,
     );
 
     if (hash) {

@@ -12,4 +12,5 @@ export {
   sdkConstants,
   sdkInterfaces,
   sdkModules,
+  sdkTypes,
 };

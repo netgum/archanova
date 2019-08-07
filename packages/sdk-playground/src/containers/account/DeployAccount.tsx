@@ -1,38 +1,35 @@
 import React from 'react';
-import { Example, Screen, InputTransactionSpeed } from '../../components';
+import { Example, Screen, InputGasPriceStrategy } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (transactionSpeed: string) => `
-${!transactionSpeed ? '' : `
-import { sdkModules } from '@archanova/sdk';
+const code1 = (gasPriceStrategy: string) => `
+${!gasPriceStrategy ? '' : `
+import { sdkConstants } from '@archanova/sdk';
 
-const transactionSpeed = ${transactionSpeed};
+const gasPriceStrategy = ${gasPriceStrategy};
 `}
 sdk
-  .estimateAccountDeployment(${mergeMethodArgs(transactionSpeed && 'transactionSpeed')})
+  .estimateAccountDeployment(${mergeMethodArgs(gasPriceStrategy && 'gasPriceStrategy')})
   .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
-const code2 = (transactionSpeed: string) => `
-${!transactionSpeed ? '' : `
-import { sdkModules } from '@archanova/sdk';
+const code2 = () => `
+const estimated; // estimated deployment
 
-const transactionSpeed = ${transactionSpeed};
-`}
 sdk
-  .deployAccount(${mergeMethodArgs(transactionSpeed && 'transactionSpeed')})
+  .deployAccount(estimated)
   .then(hash => console.log('hash', hash))
   .catch(console.error);
 `;
 
 interface IState {
-  transactionSpeed: any;
-  estimated: boolean;
+  gasPriceStrategy: any;
+  estimated: any;
 }
 
 export class DeployAccount extends Screen<IState> {
   public state = {
-    transactionSpeed: null,
+    gasPriceStrategy: null,
     estimated: null,
   };
 
@@ -40,68 +37,63 @@ export class DeployAccount extends Screen<IState> {
     this.run1 = this.run1.bind(this);
     this.run2 = this.run2.bind(this);
 
-    this.transactionSpeedUpdated = this.transactionSpeedUpdated.bind(this);
+    this.gasPriceStrategyUpdated = this.gasPriceStrategyUpdated.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { estimated, transactionSpeed } = this.state;
+    const { estimated, gasPriceStrategy } = this.state;
     return (
       <div>
         <Example
           title="Estimate Account Deployment"
-          code={code1(InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code1(InputGasPriceStrategy.selectedToText(gasPriceStrategy))}
           enabled={enabled}
           run={this.run1}
         >
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedUpdated}
+          <InputGasPriceStrategy
+            selected={gasPriceStrategy}
+            onChange={this.gasPriceStrategyUpdated}
           />
         </Example>
         <Example
           title="Deploy Account"
-          code={code2(InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code2()}
           enabled={enabled && !!estimated}
           run={this.run2}
-        >
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedUpdated}
-          />
-        </Example>
+        />
       </div>
     );
   }
 
-  private transactionSpeedUpdated(transactionSpeed: any): void {
+  private gasPriceStrategyUpdated(gasPriceStrategy: any): void {
     this.setState({
-      transactionSpeed,
+      gasPriceStrategy,
     });
   }
 
   private run1(): void {
-    const { transactionSpeed } = this.state;
+    const { gasPriceStrategy } = this.state;
     this
       .logger
       .wrapSync('sdk.estimateAccountDeployment', async (console) => {
-        console.log('estimated', await this.sdk.estimateAccountDeployment(transactionSpeed));
+        const estimated = console.log('estimated', await this.sdk.estimateAccountDeployment(gasPriceStrategy));
 
         this.setState({
-          estimated: true,
+          estimated,
         });
       });
   }
 
   private run2(): void {
-    const { transactionSpeed } = this.state;
+    const { estimated } = this.state;
     this
       .logger
       .wrapSync('sdk.deployAccount', async (console) => {
-        console.log('hash', await this.sdk.deployAccount(transactionSpeed));
+        console.log('hash', await this.sdk.deployAccount(estimated));
 
         this.setState({
-          estimated: false,
+          estimated: null,
         });
       });
   }

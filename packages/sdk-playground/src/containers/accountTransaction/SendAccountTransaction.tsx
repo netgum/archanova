@@ -1,6 +1,6 @@
 import React from 'react';
 import { ethToWei } from '@netgum/utils';
-import { Example, Screen, InputText, InputTransactionSpeed, Button } from '../../components';
+import { Example, Screen, InputText, InputGasPriceStrategy, Button } from '../../components';
 import { generateRandomAddress, mergeMethodArgs } from '../../shared';
 
 const code1 = (recipient: string[], value: number[], data: string[], transactionSpeed: string) => `
@@ -90,7 +90,7 @@ export class SendAccountTransaction extends Screen<IState> {
             normalizedRecipient,
             this.normalizeList(valueParsed),
             this.normalizeList(data),
-            InputTransactionSpeed.selectedToText(transactionSpeed),
+            InputGasPriceStrategy.selectedToText(transactionSpeed),
           )}
           enabled={normalizedRecipient[0] && enabled}
           run={this.run1}
@@ -117,7 +117,7 @@ export class SendAccountTransaction extends Screen<IState> {
               />
             </React.Fragment>
           ))}
-          <InputTransactionSpeed
+          <InputGasPriceStrategy
             selected={transactionSpeed}
             onChange={this.transactionSpeedChanged}
           />

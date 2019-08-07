@@ -1,21 +1,21 @@
 import { ContractNames, getContractAbi } from '@archanova/contracts';
 import React from 'react';
-import { Example, InputText, InputTransactionSpeed, Screen } from '../../components';
+import { Example, InputText, InputGasPriceStrategy, Screen } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (amount: number, transactionSpeed: string) => `
+const code1 = (amount: number, gasPriceStrategy: string) => `
 import { ContractNames, getContractAbi } from '@archanova/contracts';
-${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
+${!gasPriceStrategy ? '' : 'import { sdkConstants } from \'@archanova/sdk\';'}
 
 const abi = getContractAbi(ContractNames.ERC20Token);
 const contract = sdk.createContractInstance(abi);
 const amount = ${amount};
 const data = contract.encodeMethodInput('mint', amount);
-${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
+${!gasPriceStrategy ? '' : `const gasPriceStrategy = ${gasPriceStrategy};`}
 
 sdk
   .getToken('ETK') // example token
-  .then(({ address }) => sdk.estimateAccountTransaction(address, 0, ${mergeMethodArgs('data', transactionSpeed && 'transactionSpeed')}))
+  .then(({ address }) => sdk.estimateAccountTransaction(address, 0, ${mergeMethodArgs('data', gasPriceStrategy && 'gasPriceStrategy')}))
   .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
@@ -30,7 +30,7 @@ sdk
 `;
 
 interface IState {
-  transactionSpeed: any;
+  gasPriceStrategy: any;
   estimated: any;
   amount: string;
   amountParsed: number;
@@ -38,7 +38,7 @@ interface IState {
 
 export class MintToken extends Screen<IState> {
   public state = {
-    transactionSpeed: null,
+    gasPriceStrategy: null,
     estimated: null,
     amount: '0',
     amountParsed: 0,
@@ -49,17 +49,17 @@ export class MintToken extends Screen<IState> {
     this.run2 = this.run2.bind(this);
 
     this.amountChanged = this.amountChanged.bind(this);
-    this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
+    this.gasPriceStrategyChanged = this.gasPriceStrategyChanged.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { estimated, amount, amountParsed, transactionSpeed } = this.state;
+    const { estimated, amount, amountParsed, gasPriceStrategy } = this.state;
     return (
       <div>
         <Example
           title="Estimate Mint Token"
-          code={code1(amountParsed, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code1(amountParsed, InputGasPriceStrategy.selectedToText(gasPriceStrategy))}
           enabled={enabled}
           run={this.run1}
         >
@@ -70,9 +70,9 @@ export class MintToken extends Screen<IState> {
             value={amount}
             onChange={this.amountChanged}
           />
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedChanged}
+          <InputGasPriceStrategy
+            selected={gasPriceStrategy}
+            onChange={this.gasPriceStrategyChanged}
           />
         </Example>
         <Example
@@ -92,14 +92,14 @@ export class MintToken extends Screen<IState> {
     });
   }
 
-  private transactionSpeedChanged(transactionSpeed: any): void {
+  private gasPriceStrategyChanged(gasPriceStrategy: any): void {
     this.setState({
-      transactionSpeed,
+      gasPriceStrategy,
     });
   }
 
   private run1(): void {
-    const { amountParsed, transactionSpeed } = this.state;
+    const { amountParsed, gasPriceStrategy } = this.state;
     this
       .logger
       .wrapSync('estimateMintToken', async (console) => {
@@ -111,7 +111,7 @@ export class MintToken extends Screen<IState> {
           address,
           0,
           data,
-          transactionSpeed,
+          gasPriceStrategy,
         ));
 
         this.setState({

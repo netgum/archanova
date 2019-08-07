@@ -1,18 +1,18 @@
 import React from 'react';
 import { ethToWei } from '@netgum/utils';
-import { Example, Screen, InputText, InputTransactionSpeed } from '../../components';
+import { Example, Screen, InputText, InputGasPriceStrategy } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (value: number, tokenAddress: string, transactionSpeed: string) => `
-${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
+const code1 = (value: number, tokenAddress: string, gasPriceStrategy: string) => `
+${!gasPriceStrategy ? '' : 'import { sdkConstants } from \'@archanova/sdk\';'}
 ${tokenAddress ? '' : 'import { ethToWei } from \'@netgum/utils\';'}
 
 const value = ${tokenAddress ? value : `ethToWei(${value})`};
 const tokenAddress = ${tokenAddress ? `'${tokenAddress}'` : 'null'};
-${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
+${!gasPriceStrategy ? '' : `const gasPriceStrategy = ${gasPriceStrategy};`}
 
 sdk
-  .estimateWithdrawFromAccountVirtualBalance(${mergeMethodArgs('value', 'tokenAddress', transactionSpeed && 'transactionSpeed')})
+  .estimateWithdrawFromAccountVirtualBalance(${mergeMethodArgs('value', 'tokenAddress', gasPriceStrategy && 'gasPriceStrategy')})
   .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
@@ -28,7 +28,7 @@ sdk
 `;
 
 interface IState {
-  transactionSpeed: any;
+  gasPriceStrategy: any;
   estimated: any;
   value: string;
   valueParsed: number;
@@ -37,7 +37,7 @@ interface IState {
 
 export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
   public state = {
-    transactionSpeed: null,
+    gasPriceStrategy: null,
     estimated: null,
     value: '0',
     tokenAddress: '',
@@ -50,17 +50,17 @@ export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
 
     this.valueChanged = this.valueChanged.bind(this);
     this.tokenAddressChanged = this.tokenAddressChanged.bind(this);
-    this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
+    this.gasPriceStrategyChanged = this.gasPriceStrategyChanged.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { estimated, value, tokenAddress, valueParsed, transactionSpeed } = this.state;
+    const { estimated, value, tokenAddress, valueParsed, gasPriceStrategy } = this.state;
     return (
       <div>
         <Example
           title="Estimate Withdraw From Account Virtual Balance"
-          code={code1(valueParsed, tokenAddress, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code1(valueParsed, tokenAddress, InputGasPriceStrategy.selectedToText(gasPriceStrategy))}
           enabled={enabled}
           run={this.run1}
         >
@@ -76,9 +76,9 @@ export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
             value={tokenAddress}
             onChange={this.tokenAddressChanged}
           />
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedChanged}
+          <InputGasPriceStrategy
+            selected={gasPriceStrategy}
+            onChange={this.gasPriceStrategyChanged}
           />
         </Example>
         <Example
@@ -104,21 +104,21 @@ export class WithdrawFromAccountVirtualBalance extends Screen<IState> {
     });
   }
 
-  private transactionSpeedChanged(transactionSpeed: any): void {
+  private gasPriceStrategyChanged(gasPriceStrategy: any): void {
     this.setState({
-      transactionSpeed,
+      gasPriceStrategy,
     });
   }
 
   private run1(): void {
-    const { valueParsed, tokenAddress, transactionSpeed } = this.state;
+    const { valueParsed, tokenAddress, gasPriceStrategy } = this.state;
     this
       .logger
       .wrapSync('sdk.estimateTopUpAccountVirtualBalance', async (console) => {
         const estimated = console.log('estimated', await this.sdk.estimateWithdrawFromAccountVirtualBalance(
           tokenAddress ? valueParsed : ethToWei(valueParsed),
           tokenAddress,
-          transactionSpeed,
+          gasPriceStrategy,
         ));
 
         this.setState({

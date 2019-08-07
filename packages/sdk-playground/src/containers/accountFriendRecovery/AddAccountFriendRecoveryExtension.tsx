@@ -1,12 +1,12 @@
 import React from 'react';
-import { Example, Screen, InputTransactionSpeed } from '../../components';
+import { Example, Screen, InputGasPriceStrategy } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (transactionSpeed: string) => `
-${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
+const code1 = (gasPriceStrategy: string) => `
+${!gasPriceStrategy ? '' : 'import { sdkConstants } from \'@archanova/sdk\';'}
 
 sdk
-  .estimateAddAccountFriendRecoveryExtension(${mergeMethodArgs(transactionSpeed && 'transactionSpeed')})
+  .estimateAddAccountFriendRecoveryExtension(${mergeMethodArgs(gasPriceStrategy && 'gasPriceStrategy')})
   .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
@@ -21,13 +21,13 @@ sdk
 `;
 
 interface IState {
-  transactionSpeed: any;
+  gasPriceStrategy: any;
   estimated: any;
 }
 
 export class AddAccountFriendRecoveryExtension extends Screen<IState> {
   public state = {
-    transactionSpeed: null,
+    gasPriceStrategy: null,
     estimated: null,
   };
 
@@ -35,23 +35,23 @@ export class AddAccountFriendRecoveryExtension extends Screen<IState> {
     this.run1 = this.run1.bind(this);
     this.run2 = this.run2.bind(this);
 
-    this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
+    this.gasPriceStrategyUpdated = this.gasPriceStrategyUpdated.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { transactionSpeed, estimated } = this.state;
+    const { gasPriceStrategy, estimated } = this.state;
     return (
       <div>
         <Example
           title="Estimate Add Account Friend Recovery Extension"
-          code={code1(InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code1(InputGasPriceStrategy.selectedToText(gasPriceStrategy))}
           enabled={enabled}
           run={this.run1}
         >
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedChanged}
+          <InputGasPriceStrategy
+            selected={gasPriceStrategy}
+            onChange={this.gasPriceStrategyUpdated}
           />
         </Example>
         <Example
@@ -64,19 +64,19 @@ export class AddAccountFriendRecoveryExtension extends Screen<IState> {
     );
   }
 
-  private transactionSpeedChanged(transactionSpeed: any): void {
+  private gasPriceStrategyUpdated(gasPriceStrategy: any): void {
     this.setState({
-      transactionSpeed,
+      gasPriceStrategy,
     });
   }
 
   private run1(): void {
-    const { transactionSpeed } = this.state;
+    const { gasPriceStrategy } = this.state;
     this
       .logger
       .wrapSync('sdk.estimateAddAccountFriendRecoveryExtension', async (console) => {
         const estimated = console.log('estimated', await this.sdk.estimateAddAccountFriendRecoveryExtension(
-          transactionSpeed,
+          gasPriceStrategy,
         ));
         this.setState({
           estimated,

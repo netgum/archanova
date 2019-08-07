@@ -1,16 +1,16 @@
 import React from 'react';
-import { Example, Screen, InputText, InputTransactionSpeed } from '../../components';
+import { Example, Screen, InputText, InputGasPriceStrategy } from '../../components';
 import { mergeMethodArgs } from '../../shared';
 
-const code1 = (address: string, transactionSpeed: string) => `
-${!transactionSpeed ? '' : 'import { sdkModules } from \'@archanova/sdk\';'}
+const code1 = (address: string, gasPriceStrategy: string) => `
+${!gasPriceStrategy ? '' : 'import { sdkConstants } from \'@archanova/sdk\';'}
 
 const deviceAddress = ${address ? `"${address}"` : 'null'};
-${!transactionSpeed ? '' : `const transactionSpeed = ${transactionSpeed};`}
+${!gasPriceStrategy ? '' : `const gasPriceStrategy = ${gasPriceStrategy};`}
 
 sdk
-  .estimateAccountDeviceDeployment(${mergeMethodArgs('deviceAddress', transactionSpeed && 'transactionSpeed')})
-  .then(success => console.log('success', success))
+  .estimateAccountDeviceDeployment(${mergeMethodArgs('deviceAddress', gasPriceStrategy && 'gasPriceStrategy')})
+  .then(estimated => console.log('estimated', estimated))
   .catch(console.error);
 `;
 
@@ -25,13 +25,13 @@ sdk
 
 interface IState {
   address: string;
-  transactionSpeed: any;
+  gasPriceStrategy: any;
   estimated: any;
 }
 
 export class DeployAccountDevice extends Screen<IState> {
   public state = {
-    transactionSpeed: null,
+    gasPriceStrategy: null,
     estimated: null,
     address: '',
   };
@@ -41,17 +41,17 @@ export class DeployAccountDevice extends Screen<IState> {
     this.run2 = this.run2.bind(this);
 
     this.addressChanged = this.addressChanged.bind(this);
-    this.transactionSpeedChanged = this.transactionSpeedChanged.bind(this);
+    this.gasPriceStrategyUpdated = this.gasPriceStrategyUpdated.bind(this);
   }
 
   public renderContent(): any {
     const { enabled } = this.props;
-    const { address, transactionSpeed, estimated } = this.state;
+    const { address, gasPriceStrategy, estimated } = this.state;
     return (
       <div>
         <Example
           title="Estimate Account Device Deployment"
-          code={code1(address, InputTransactionSpeed.selectedToText(transactionSpeed))}
+          code={code1(address, InputGasPriceStrategy.selectedToText(gasPriceStrategy))}
           enabled={address && enabled}
           run={this.run1}
         >
@@ -60,9 +60,9 @@ export class DeployAccountDevice extends Screen<IState> {
             value={address}
             onChange={this.addressChanged}
           />
-          <InputTransactionSpeed
-            selected={transactionSpeed}
-            onChange={this.transactionSpeedChanged}
+          <InputGasPriceStrategy
+            selected={gasPriceStrategy}
+            onChange={this.gasPriceStrategyUpdated}
           />
         </Example>
         <Example
@@ -81,21 +81,22 @@ export class DeployAccountDevice extends Screen<IState> {
     });
   }
 
-  private transactionSpeedChanged(transactionSpeed: any): void {
+  private gasPriceStrategyUpdated(gasPriceStrategy: any): void {
     this.setState({
-      transactionSpeed,
+      gasPriceStrategy,
     });
   }
 
   private run1(): void {
-    const { address, transactionSpeed } = this.state;
+    const { address, gasPriceStrategy } = this.state;
     this
       .logger
       .wrapSync('sdk.estimateAccountDeviceDeployment', async (console) => {
         const estimated = console.log('estimated', await this.sdk.estimateAccountDeviceDeployment(
           address,
-          transactionSpeed,
+          gasPriceStrategy,
         ));
+
         this.setState({
           estimated,
         });

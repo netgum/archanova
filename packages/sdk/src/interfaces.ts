@@ -36,13 +36,14 @@ export interface IAccountDevice {
 
 export interface IAccountFriendRecovery {
   accountAddress: string;
-  gasFee: BN;
-  gasPrice: BN;
   nonce: BN;
   requiredFriends: BN;
   friends: string[];
   friendSignatures?: { [key: string]: string };
   updatedAt: Date;
+  gasFee: BN;
+  gasPrice: BN;
+  guardianSignature: Buffer;
 }
 
 export interface IAccountGameHistory {
@@ -150,18 +151,20 @@ export interface IToken {
 }
 
 export interface IEstimatedAccountDeployment {
-  gasPrice?: BN;
   totalGas: BN;
   totalCost: BN;
+  gasPrice: BN;
+  guardianSignature: Buffer;
 }
 
 export interface IEstimatedAccountProxyTransaction {
   nonce: BN;
-  gasPrice?: BN;
   data?: string[];
   fixedGas: BN;
   totalGas: BN;
   totalCost: BN;
+  gasPrice: BN;
+  guardianSignature: Buffer;
 }
 
 export interface IPaginated<T = any> {

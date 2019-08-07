@@ -1,5 +1,5 @@
 import BN from 'bn.js';
-import { AccountDeviceTypes } from '../constants';
+import { AccountDeviceTypes, GasPriceStrategies } from '../constants';
 import {
   IAccount,
   IAccountDevice,
@@ -10,7 +10,10 @@ import {
   IAccountGame,
   IAccountPayment,
   IAccountTransaction,
-  IEstimatedAccountProxyTransaction, IAccountVirtualBalance, IApp, IAccountVirtualPendingBalance,
+  IEstimatedAccountProxyTransaction,
+  IAccountVirtualBalance,
+  IApp,
+  IAccountVirtualPendingBalance,
 } from '../interfaces';
 import { Api } from './Api';
 
@@ -65,27 +68,23 @@ export class ApiMethods {
     });
   }
 
-  public async estimateAccountDeployment(accountAddress: string, gasPrice: BN): Promise<IEstimatedAccountDeployment> {
-    const result = await this.api.sendRequest<IEstimatedAccountDeployment>({
+  public async estimateAccountDeployment(accountAddress: string, gasPriceStrategy: GasPriceStrategies): Promise<IEstimatedAccountDeployment> {
+    return this.api.sendRequest<IEstimatedAccountDeployment>({
       method: 'POST',
       path: `account/${accountAddress}/deploy`,
       body: {
-        gasPrice,
+        gasPriceStrategy,
       },
     });
-
-    return {
-      ...result,
-      gasPrice,
-    };
   }
 
-  public async deployAccount(accountAddress: string, gasPrice: BN): Promise<string> {
+  public async deployAccount(accountAddress: string, gasPrice: BN, guardianSignature: Buffer): Promise<string> {
     const { hash } = await this.api.sendRequest<{ hash: string }>({
       method: 'PUT',
       path: `account/${accountAddress}/deploy`,
       body: {
         gasPrice,
+        guardianSignature,
       },
     });
 
@@ -149,7 +148,7 @@ export class ApiMethods {
     });
   }
 
-  public async submitAccountFriendRecovery(accountAddress: string, friends: string[], signatures: string[], gasPrice: BN): Promise<string> {
+  public async submitAccountFriendRecovery(accountAddress: string, friends: string[], signatures: string[], gasPrice: BN, guardianSignature: Buffer): Promise<string> {
     const { hash } = await this.api.sendRequest<{
       hash: string;
     }>({
@@ -159,6 +158,7 @@ export class ApiMethods {
         friends,
         signatures,
         gasPrice,
+        guardianSignature,
       },
     });
 
@@ -309,7 +309,7 @@ export class ApiMethods {
     });
   }
 
-  public async estimateAccountProxyTransaction(accountAddress: string, data: string | string[], gasPrice: BN): Promise<IEstimatedAccountProxyTransaction> {
+  public async estimateAccountProxyTransaction(accountAddress: string, data: string | string[], gasPriceStrategy: GasPriceStrategies): Promise<IEstimatedAccountProxyTransaction> {
     if (!Array.isArray(data)) {
       data = [data];
     }
@@ -319,18 +319,17 @@ export class ApiMethods {
       path: `account/${accountAddress}/transaction`,
       body: {
         data,
-        gasPrice,
+        gasPriceStrategy,
       },
     });
 
     return {
       ...result,
       data,
-      gasPrice,
     };
   }
 
-  public async submitAccountProxyTransaction(accountAddress: string, data: string[], signature: Buffer, gasPrice: BN): Promise<string> {
+  public async submitAccountProxyTransaction(accountAddress: string, data: string[], signature: Buffer, gasPrice: BN, guardianSignature: Buffer): Promise<string> {
     const { hash } = await this.api.sendRequest<{ hash: string }>({
       method: 'PUT',
       path: `account/${accountAddress}/transaction`,
@@ -338,6 +337,7 @@ export class ApiMethods {
         data,
         gasPrice,
         signature,
+        guardianSignature,
       },
     });
 
