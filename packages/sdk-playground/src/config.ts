@@ -2,7 +2,6 @@ import { SdkEnvironmentNames } from '@archanova/sdk';
 import { BehaviorSubject } from 'rxjs';
 import { parse as parseUrl } from 'url';
 import { parse as parseQuery } from 'querystring';
-import './environments';
 
 const {
   REACT_APP_ACTIVATE_HELP,
@@ -59,7 +58,8 @@ const reloadHelper = () => {
 
 export let sdkEnvs: string[] = [
   'local',
-  ...Object.values(SdkEnvironmentNames),
+  // ...Object.values(SdkEnvironmentNames),
+  'preview',
 ];
 
 if (!activateHelper.localSdkEnv) {

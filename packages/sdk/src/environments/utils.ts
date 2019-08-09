@@ -8,6 +8,7 @@ import {
   kovan,
   sokol,
   xdai,
+  preview,
 } from './constants';
 
 /**
@@ -40,6 +41,10 @@ export function getSdkEnvironment(name: SdkEnvironmentNames): Environment {
 
     case SdkEnvironmentNames.Xdai:
       result = xdai;
+      break;
+
+    case SdkEnvironmentNames.Preview:
+      result = preview;
       break;
   }
 
