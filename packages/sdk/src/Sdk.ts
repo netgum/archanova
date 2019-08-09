@@ -14,6 +14,18 @@ import {
   GasPriceStrategies,
 } from './constants';
 import {
+  ERR_SDK_NOT_INITIALIZED,
+  ERR_SDK_ALREADY_INITIALIZED,
+  ERR_ACCOUNT_DISCONNECTED,
+  ERR_ACCOUNT_ALREADY_CONNECTED,
+  ERR_INVALID_ACCOUNT_STATE,
+  ERR_INVALID_ACCOUNT_DEVICE_STATE,
+  ERR_INVALID_ACCOUNT_DEVICE_TYPE,
+  ERR_WRONG_NUMBER_OF_ARGUMENTS,
+  ERR_INVALID_GAME_CREATOR,
+  ERR_INVALID_GAME_STATE,
+} from './errors';
+import {
   IAccount,
   IAccountDevice,
   IAccountFriendRecovery,
@@ -39,6 +51,7 @@ import {
   Device,
   Ens,
   Environment,
+  Error,
   Eth,
   Session,
   State,
@@ -54,7 +67,7 @@ export class Sdk {
   public api: Api;
   public readonly state = new State();
 
-  public readonly error$ = new BehaviorSubject<any>(null);
+  public readonly error$ = new BehaviorSubject<Error>(null);
   public readonly event$ = new BehaviorSubject<Sdk.IEvent>(null);
 
   protected accountFriendRecovery: AccountFriendRecovery;
@@ -79,9 +92,36 @@ export class Sdk {
    */
   constructor(private environment: Environment) {
     this.catchError = this.catchError.bind(this);
-    this.estimateAccountTransaction = this.estimateAccountTransaction.bind(this);
 
-    this.setEnvironment(environment);
+    try {
+      let methodsNames = Object.getOwnPropertyNames(Sdk.prototype);
+      methodsNames = methodsNames.slice(
+        1,
+        methodsNames.indexOf('setEnvironment'),
+      );
+
+      for (const methodsName of methodsNames) {
+        const method = (this as any)[methodsName].bind(this);
+        (this as any)[methodsName] = (...args) => {
+          let result: any;
+          try {
+            const promise = method(...args);
+            if (promise instanceof Promise) {
+              result = promise.catch(error => Error.throwFromAny(error));
+            } else {
+              result = promise;
+            }
+          } catch (err) {
+            Error.throwFromAny(err);
+          }
+          return result;
+        };
+      }
+
+      this.setEnvironment(environment);
+    } catch (err) {
+      Error.throwFromAny(err);
+    }
   }
 
   /**
@@ -140,7 +180,7 @@ export class Sdk {
 
     } catch (err) {
       initialized$.next(false);
-      throw new Sdk.Error('not initialized');
+      Error.throwFromAny(err);
     }
   }
 
@@ -340,7 +380,7 @@ export class Sdk {
         gasPrice,
         guardianSignature,
       )
-      .catch(() => null);
+      .catch(() => Error.throwEthTransactionReverted());
   }
 
 // Account Virtual Balance
@@ -640,7 +680,7 @@ export class Sdk {
 
     return this.accountFriendRecovery
       .submitAccountFriendRecovery()
-      .catch(() => null);
+      .catch(() => Error.throwEthTransactionReverted());
   }
 
 // Account Device
@@ -977,7 +1017,7 @@ export class Sdk {
         break;
 
       default:
-        throw new Sdk.Error('invalid number of args');
+        throw ERR_WRONG_NUMBER_OF_ARGUMENTS;
     }
 
     return this.apiMethods.estimateAccountProxyTransaction(
@@ -1000,7 +1040,7 @@ export class Sdk {
     return this
       .accountTransaction
       .submitAccountProxyTransaction(estimated)
-      .catch(() => null);
+      .catch(() => Error.throwEthTransactionReverted(estimated.data));
   }
 
 // Account Payment
@@ -1259,11 +1299,11 @@ export class Sdk {
     const game = await this.apiMethods.getAccountGame(accountAddress, gameId);
 
     if (game.creator.account.address === accountAddress) {
-      throw new Sdk.Error('invalid game creator');
+      throw ERR_INVALID_GAME_CREATOR;
     }
 
     if (game.state !== AccountGameStates.Open) {
-      throw new Sdk.Error('invalid game state');
+      throw ERR_INVALID_GAME_STATE;
     }
 
     return this.accountGame.joinAccountGame(game);
@@ -1297,11 +1337,11 @@ export class Sdk {
     const game = await this.apiMethods.getAccountGame(accountAddress, gameId);
 
     if (game.creator.account.address !== accountAddress) {
-      throw new Sdk.Error('invalid game creator');
+      throw ERR_INVALID_GAME_CREATOR;
     }
 
     if (game.state !== AccountGameStates.Opened) {
-      throw new Sdk.Error('invalid game state');
+      throw ERR_INVALID_GAME_STATE;
     }
 
     return this.accountGame.startAccountGame(game);
@@ -1323,7 +1363,7 @@ export class Sdk {
       (game.whoseTurn === AccountGamePlayers.Creator && game.creator.account.address !== accountAddress) ||
       (game.whoseTurn === AccountGamePlayers.Opponent && game.opponent.account.address !== accountAddress)
     ) {
-      throw new Sdk.Error('invalid game state');
+      throw ERR_INVALID_GAME_STATE;
     }
 
     return this.apiMethods.updateAccountGame(accountAddress, game.id, data);
@@ -1910,8 +1950,8 @@ export class Sdk {
       });
   }
 
-  protected catchError(err): void {
-    this.error$.next(err);
+  protected catchError(err: any): void {
+    this.error$.next(Error.fromAny(err));
   }
 
   protected emitEvent<T = any>(name: Sdk.EventNames, payload: T): void {
@@ -1946,31 +1986,31 @@ export class Sdk {
       : null;
 
     if (options.initialized === true && !initialized) {
-      throw new Sdk.Error('sdk not initialized');
+      throw ERR_SDK_NOT_INITIALIZED;
     }
     if (options.initialized === false && initialized) {
-      throw new Sdk.Error('sdk already initialized');
+      throw ERR_SDK_ALREADY_INITIALIZED;
     }
     if (options.accountConnected === true && !account) {
-      throw new Sdk.Error('account disconnected');
+      throw ERR_ACCOUNT_DISCONNECTED;
     }
     if (options.accountConnected === false && account) {
-      throw new Sdk.Error('account already connected');
+      throw ERR_ACCOUNT_ALREADY_CONNECTED;
     }
     if (options.accountCreated && accountState !== AccountStates.Created) {
-      throw new Sdk.Error('account should be in Created state');
+      throw ERR_INVALID_ACCOUNT_STATE;
     }
     if (options.accountDeployed && accountState !== AccountStates.Deployed) {
-      throw new Sdk.Error('account should be in Deployed state');
+      throw ERR_INVALID_ACCOUNT_STATE;
     }
     if (options.accountDeviceCreated && accountDeviceState !== AccountDeviceStates.Created) {
-      throw new Sdk.Error('account device should be in Created state');
+      throw ERR_INVALID_ACCOUNT_DEVICE_STATE;
     }
     if (options.accountDeviceDeployed && accountDeviceState !== AccountDeviceStates.Deployed) {
-      throw new Sdk.Error('account device should be in Deployed state');
+      throw ERR_INVALID_ACCOUNT_DEVICE_STATE;
     }
     if (options.accountDeviceOwner && accountDeviceType !== AccountDeviceTypes.Owner) {
-      throw new Sdk.Error('account device is not an Owner');
+      throw ERR_INVALID_ACCOUNT_DEVICE_TYPE;
     }
   }
 }
@@ -1978,10 +2018,6 @@ export class Sdk {
 export namespace Sdk {
   export enum StorageNamespaces {
     Device = 'device',
-  }
-
-  export class Error extends global.Error {
-    //
   }
 
   export interface IInitializeOptions {

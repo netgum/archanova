@@ -120,14 +120,8 @@ class Console extends ContextComponent<IProps, IState> {
                 case 'error':
                   try {
                     let data: any = null;
-                    if (args[0].errors && Object.keys(args[0].errors).length) {
-                      data = {
-                        errors: args[0].errors,
-                      };
-                    } else if (args[0].error) {
-                      data = {
-                        error: args[0].error,
-                      };
+                    if (args[0] && args[0].toRawObject) {
+                      data = args[0].toRawObject();
                     }
                     result = (
                       <div key={`loggerEvent_${id}`}>

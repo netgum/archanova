@@ -9,7 +9,7 @@ export class Eth extends EthJs {
     api: Api,
     state: State,
   ) {
-    super(api.toEthProvider(Eth.EthError));
+    super(api.toEthProvider(Eth.Error));
 
     state.eth$.next(this.buildState());
   }
@@ -83,9 +83,9 @@ export namespace Eth {
     contractAddresses?: { [key: string]: string };
   }
 
-  export class EthError extends Error {
+  export class Error extends global.Error {
     constructor(public httpError: any = null) {
-      super('EthError');
+      super('unknown');
     }
   }
 }
