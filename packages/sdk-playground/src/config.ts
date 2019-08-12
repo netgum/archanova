@@ -58,8 +58,7 @@ const reloadHelper = () => {
 
 export let sdkEnvs: string[] = [
   'local',
-  // ...Object.values(SdkEnvironmentNames),
-  'preview',
+  ...Object.values(SdkEnvironmentNames),
 ];
 
 if (!activateHelper.localSdkEnv) {
