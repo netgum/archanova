@@ -1,4 +1,4 @@
-import { Error } from './modules/Error';
+import { Error } from './modules';
 
 export const ERR_SDK_NOT_INITIALIZED = Error.fromAny('sdk not initialized');
 export const ERR_SDK_ALREADY_INITIALIZED = Error.fromAny('sdk already initialized');
@@ -10,3 +10,6 @@ export const ERR_INVALID_ACCOUNT_DEVICE_TYPE = Error.fromAny('invalid account de
 export const ERR_WRONG_NUMBER_OF_ARGUMENTS = Error.fromAny('wrong number of arguments');
 export const ERR_INVALID_GAME_CREATOR = Error.fromAny('invalid game creator');
 export const ERR_INVALID_GAME_STATE = Error.fromAny('invalid game state');
+export const ERR_EXTENSION_ALREADY_ADDED = Error.fromAny('extension already added');
+export const ERR_EXTENSION_NOT_ADDED = Error.fromAny('extension not added');
+export const ERR_ADDING_EXTENSION_IN_PROGRESS = Error.fromAny('adding extension in progress');

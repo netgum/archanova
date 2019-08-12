@@ -24,6 +24,7 @@ import {
 import {
   AddAccountFriendRecoveryExtension,
   SetupAccountFriendRecoveryExtension,
+  GetConnectedAccountFriendRecoveryExtension,
   GetAccountFriendRecovery,
   StartAccountFriendRecovery,
   CancelAccountFriendRecovery,
@@ -206,6 +207,10 @@ class Content extends React.Component<IProps, IState> {
 
       case Screens.SetupAccountFriendRecoveryExtension:
         Screen = SetupAccountFriendRecoveryExtension;
+        break;
+
+      case Screens.GetConnectedAccountFriendRecoveryExtension:
+        Screen = GetConnectedAccountFriendRecoveryExtension;
         break;
 
       case Screens.GetAccountFriendRecovery:
@@ -443,6 +448,7 @@ class Content extends React.Component<IProps, IState> {
             screens: [
               Screens.AddAccountFriendRecoveryExtension,
               Screens.SetupAccountFriendRecoveryExtension,
+              Screens.GetConnectedAccountFriendRecoveryExtension,
               Screens.GetAccountFriendRecovery,
               Screens.StartAccountFriendRecovery,
               Screens.CancelAccountFriendRecovery,
@@ -583,6 +589,7 @@ class Content extends React.Component<IProps, IState> {
       // account friend recovery
       [Screens.AddAccountFriendRecoveryExtension]: accountDeviceDeployed && accountDeviceOwner,
       [Screens.SetupAccountFriendRecoveryExtension]: accountDeviceDeployed && accountDeviceOwner,
+      [Screens.GetConnectedAccountFriendRecoveryExtension]: accountConnected,
       [Screens.GetAccountFriendRecovery]: initialized,
       [Screens.StartAccountFriendRecovery]: initialized && !accountConnected,
       [Screens.CancelAccountFriendRecovery]: initialized && !accountConnected,

@@ -1,5 +1,6 @@
 export * from './AddAccountFriendRecoveryExtension';
 export * from './SetupAccountFriendRecoveryExtension';
+export * from './GetConnectedAccountFriendRecoveryExtension';
 export * from './GetAccountFriendRecovery';
 export * from './StartAccountFriendRecovery';
 export * from './CancelAccountFriendRecovery';

@@ -14,16 +14,19 @@ import {
   GasPriceStrategies,
 } from './constants';
 import {
-  ERR_SDK_NOT_INITIALIZED,
-  ERR_SDK_ALREADY_INITIALIZED,
-  ERR_ACCOUNT_DISCONNECTED,
   ERR_ACCOUNT_ALREADY_CONNECTED,
-  ERR_INVALID_ACCOUNT_STATE,
+  ERR_ACCOUNT_DISCONNECTED,
+  ERR_ADDING_EXTENSION_IN_PROGRESS,
+  ERR_EXTENSION_ALREADY_ADDED,
+  ERR_EXTENSION_NOT_ADDED,
   ERR_INVALID_ACCOUNT_DEVICE_STATE,
   ERR_INVALID_ACCOUNT_DEVICE_TYPE,
-  ERR_WRONG_NUMBER_OF_ARGUMENTS,
+  ERR_INVALID_ACCOUNT_STATE,
   ERR_INVALID_GAME_CREATOR,
   ERR_INVALID_GAME_STATE,
+  ERR_SDK_ALREADY_INITIALIZED,
+  ERR_SDK_NOT_INITIALIZED,
+  ERR_WRONG_NUMBER_OF_ARGUMENTS,
 } from './errors';
 import {
   IAccount,
@@ -32,7 +35,8 @@ import {
   IAccountGame,
   IAccountPayment,
   IAccountTransaction,
-  IAccountVirtualBalance, IAccountVirtualPendingBalance,
+  IAccountVirtualBalance,
+  IAccountVirtualPendingBalance,
   IApp,
   IEstimatedAccountDeployment,
   IEstimatedAccountProxyTransaction,
@@ -528,11 +532,23 @@ export class Sdk {
     const { account } = this.contract;
     const { accountFriendRecovery } = this.contract;
 
-    await this.apiMethods.createAccountDevice(
-      accountAddress,
-      accountFriendRecovery.address,
-      AccountDeviceTypes.Extension,
-    ).catch(() => null);
+    let extensionDevice = await this.getConnectedAccountDevice(accountFriendRecovery.address).catch(() => null);
+
+    if (!extensionDevice) {
+      extensionDevice = await this.apiMethods.createAccountDevice(
+        accountAddress,
+        accountFriendRecovery.address,
+        AccountDeviceTypes.Extension,
+      );
+    }
+
+    if (extensionDevice.nextState) {
+      throw ERR_ADDING_EXTENSION_IN_PROGRESS;
+    }
+
+    if (extensionDevice.state === AccountDeviceStates.Deployed) {
+      throw ERR_EXTENSION_ALREADY_ADDED;
+    }
 
     const data = account.encodeMethodInput(
       'addDevice',
@@ -557,13 +573,24 @@ export class Sdk {
     requiredFriends: number,
     friendAddresses: string[],
     gasPriceStrategy: GasPriceStrategies = GasPriceStrategies.Avg,
-  ): Promise<any> {
+  ): Promise<IEstimatedAccountProxyTransaction> {
     this.require({
       accountDeviceOwner: true,
       accountDeviceDeployed: true,
     });
 
     const { accountFriendRecovery } = this.contract;
+
+    const extensionDevice = await this.getConnectedAccountDevice(accountFriendRecovery.address).catch(() => null);
+
+    if (!extensionDevice) {
+      throw ERR_EXTENSION_NOT_ADDED;
+    }
+
+    if (extensionDevice.state !== AccountDeviceStates.Deployed) {
+      throw ERR_ADDING_EXTENSION_IN_PROGRESS;
+    }
+
     const data = accountFriendRecovery.encodeMethodInput(
       'setup',
       requiredFriends,
@@ -576,6 +603,16 @@ export class Sdk {
       data,
       gasPriceStrategy,
     );
+  }
+
+  /**
+   * gets connected account friend recovery extension
+   */
+  public async getConnectedAccountFriendRecoveryExtension(): Promise<IAccountDevice> {
+    this.require();
+
+    const { accountFriendRecovery } = this.contract;
+    return this.getConnectedAccountDevice(accountFriendRecovery.address).catch(() => null);
   }
 
   /**
