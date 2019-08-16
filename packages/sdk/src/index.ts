@@ -8,6 +8,7 @@ export * from './helpers';
 export * from './environments';
 export * from './redux';
 export * from './Sdk';
+export * from './SdkError';
 
 export {
   sdkConstants,

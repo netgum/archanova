@@ -2,6 +2,7 @@ import EthJs from 'ethjs';
 import { ContractNames, getContractAddress } from '@archanova/contracts';
 import { Api } from './Api';
 import { State } from './State';
+import { EthError } from './EthError';
 
 export class Eth extends EthJs {
   constructor(
@@ -9,7 +10,7 @@ export class Eth extends EthJs {
     api: Api,
     state: State,
   ) {
-    super(api.toEthProvider(Eth.Error));
+    super(api.toEthProvider(EthError));
 
     state.eth$.next(this.buildState());
   }
@@ -81,11 +82,5 @@ export namespace Eth {
     networkId: string;
     gasPrice?: string;
     contractAddresses?: { [key: string]: string };
-  }
-
-  export class Error extends global.Error {
-    constructor(public httpError: any = null) {
-      super('unknown');
-    }
   }
 }

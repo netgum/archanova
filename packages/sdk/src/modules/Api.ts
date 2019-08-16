@@ -5,6 +5,7 @@ import { IProvider } from 'ethjs';
 import { Subject, SubscriptionLike } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { State } from './State';
+import { ApiError } from './ApiError';
 
 export class Api {
   private readonly wsEndpoint: string = null;
@@ -174,20 +175,20 @@ export class Api {
 
     switch (status) {
       case 400:
-        throw new Api.Error(Api.Error.Types.BadRequest, data);
+        throw new ApiError(ApiError.Types.BadRequest, data);
 
       case 401:
-        throw new Api.Error(Api.Error.Types.Unauthorized, data);
+        throw new ApiError(ApiError.Types.Unauthorized, data);
 
       case 403:
-        throw new Api.Error(Api.Error.Types.Forbidden, data);
+        throw new ApiError(ApiError.Types.Forbidden, data);
 
       case 404:
-        throw new Api.Error(Api.Error.Types.NotFound, data);
+        throw new ApiError(ApiError.Types.NotFound, data);
 
       case 500:
       case null:
-        throw new Api.Error(Api.Error.Types.Failed, data);
+        throw new ApiError(ApiError.Types.Failed, data);
     }
 
     return data;
@@ -213,41 +214,6 @@ export namespace Api {
     dontUseReplacer?: boolean;
   }
 
-  export class Error extends global.Error {
-    public error: string = null;
-
-    public errors: { [key: string]: string } = {};
-
-    constructor(
-      public type: Error.Types,
-      response: {
-        error?: string;
-        errors?: {
-          type: string;
-          path: string;
-        }[];
-      } = null,
-    ) {
-      super(type);
-
-      if (response) {
-        if (response.error) {
-          this.error = response.error;
-        } else if (response.errors) {
-          this.errors = response.errors.reduce(
-            (result, error) => {
-              return {
-                ...result,
-                [error.path]: error.type,
-              };
-            },
-            {},
-          );
-        }
-      }
-    }
-  }
-
   export enum EventNames {
     AccountUpdated = 'AccountUpdated',
     AccountVirtualBalanceUpdated = 'AccountVirtualBalanceUpdated',
@@ -271,15 +237,5 @@ export namespace Api {
       token: string;
       code: string;
     }>;
-  }
-
-  export namespace Error {
-    export enum Types {
-      BadRequest = 'BadRequest',
-      Unauthorized = 'Unauthorized',
-      Forbidden = 'Forbidden',
-      NotFound = 'NotFound',
-      Failed = 'Failed',
-    }
   }
 }

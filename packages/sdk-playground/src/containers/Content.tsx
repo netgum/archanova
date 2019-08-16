@@ -86,6 +86,7 @@ import {
 } from './url';
 import {
   SignPersonalMessage,
+  GetTransactionDetails,
 } from './utils';
 import {
   PlayTicTacToe,
@@ -392,6 +393,10 @@ class Content extends React.Component<IProps, IState> {
       case Screens.SignPersonalMessage:
         Screen = SignPersonalMessage;
         break;
+
+      case Screens.GetTransactionDetails:
+        Screen = GetTransactionDetails;
+        break;
     }
 
     return Screen
@@ -527,6 +532,7 @@ class Content extends React.Component<IProps, IState> {
             header: 'Utils',
             screens: [
               Screens.SignPersonalMessage,
+              Screens.GetTransactionDetails,
             ],
           }, {
             header: 'Examples',
@@ -651,6 +657,7 @@ class Content extends React.Component<IProps, IState> {
 
       // utils
       [Screens.SignPersonalMessage]: initialized,
+      [Screens.GetTransactionDetails]: initialized,
     };
   }
 

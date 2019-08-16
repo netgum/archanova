@@ -133,7 +133,7 @@ export class Initialize extends Screen<IState> {
     this
       .logger
       .wrapSync('sdk.initialize', async (console) => {
-        if (sdkEnv !== defaultSdkEnv ) {
+        if (sdkEnv !== defaultSdkEnv) {
           this.config.sdkEnv = sdkEnv;
         }
 

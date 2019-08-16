@@ -23,7 +23,7 @@ import {
   ERR_INVALID_ACCOUNT_DEVICE_TYPE,
   ERR_INVALID_ACCOUNT_STATE,
   ERR_INVALID_GAME_CREATOR,
-  ERR_INVALID_GAME_STATE,
+  ERR_INVALID_GAME_STATE, ERR_NOT_ENOUGH_REAL_FUNDS, ERR_NOT_ENOUGH_VIRTUAL_FUNDS,
   ERR_SDK_ALREADY_INITIALIZED,
   ERR_SDK_NOT_INITIALIZED,
   ERR_WRONG_NUMBER_OF_ARGUMENTS,
@@ -55,7 +55,6 @@ import {
   Device,
   Ens,
   Environment,
-  Error,
   Eth,
   Session,
   State,
@@ -63,6 +62,7 @@ import {
   Url,
 } from './modules';
 import { TAnyData, TAnyNumber } from './types';
+import { SdkError } from './SdkError';
 
 /**
  * Sdk
@@ -98,33 +98,14 @@ export class Sdk {
     this.catchError = this.catchError.bind(this);
 
     try {
-      let methodsNames = Object.getOwnPropertyNames(Sdk.prototype);
-      methodsNames = methodsNames.slice(
-        1,
-        methodsNames.indexOf('setEnvironment'),
+      SdkError.attachTo(
+        Object.getOwnPropertyNames(Sdk.prototype),
+        this,
       );
-
-      for (const methodsName of methodsNames) {
-        const method = (this as any)[methodsName].bind(this);
-        (this as any)[methodsName] = (...args) => {
-          let result: any;
-          try {
-            const promise = method(...args);
-            if (promise instanceof Promise) {
-              result = promise.catch(error => Error.throwFromAny(error));
-            } else {
-              result = promise;
-            }
-          } catch (err) {
-            Error.throwFromAny(err);
-          }
-          return result;
-        };
-      }
 
       this.setEnvironment(environment);
     } catch (err) {
-      Error.throwFromAny(err);
+      SdkError.throwFromAny(err);
     }
   }
 
@@ -184,7 +165,7 @@ export class Sdk {
 
     } catch (err) {
       initialized$.next(false);
-      Error.throwFromAny(err);
+      SdkError.throwFromAny(err);
     }
   }
 
@@ -372,6 +353,7 @@ export class Sdk {
     this.require({
       accountCreated: true,
       accountDeviceOwner: true,
+      accountRealBalance: estimated.totalCost,
     });
 
     const { accountAddress } = this.state;
@@ -384,7 +366,7 @@ export class Sdk {
         gasPrice,
         guardianSignature,
       )
-      .catch(() => Error.throwEthTransactionReverted());
+      .catch(() => SdkError.throwEthTransactionReverted());
   }
 
 // Account Virtual Balance
@@ -717,7 +699,7 @@ export class Sdk {
 
     return this.accountFriendRecovery
       .submitAccountFriendRecovery()
-      .catch(() => Error.throwEthTransactionReverted());
+      .catch(() => SdkError.throwEthTransactionReverted());
   }
 
 // Account Device
@@ -1077,7 +1059,7 @@ export class Sdk {
     return this
       .accountTransaction
       .submitAccountProxyTransaction(estimated)
-      .catch(() => Error.throwEthTransactionReverted(estimated.data));
+      .catch(() => SdkError.throwEthTransactionReverted(estimated.data));
   }
 
 // Account Payment
@@ -1605,6 +1587,25 @@ export class Sdk {
   }
 
   /**
+   * gets transaction details
+   * @param hash
+   */
+  public async getTransactionDetails(hash: string): Promise<Sdk.ITransactionDetails> {
+    let result: Sdk.ITransactionDetails = null;
+
+    const tx = await this.eth.getTransactionByHash(hash).catch(() => null);
+
+    if (tx) {
+      result = {
+        ...tx,
+        receipt: await this.eth.getTransactionReceipt(hash).catch(() => null),
+      };
+    }
+
+    return result;
+  }
+
+  /**
    * creates contract instance
    * @param abi
    * @param address
@@ -1988,7 +1989,7 @@ export class Sdk {
   }
 
   protected catchError(err: any): void {
-    this.error$.next(Error.fromAny(err));
+    this.error$.next(SdkError.fromAny(err));
   }
 
   protected emitEvent<T = any>(name: Sdk.EventNames, payload: T): void {
@@ -2018,9 +2019,18 @@ export class Sdk {
     const accountDeviceState = accountDevice && !accountDevice.nextState
       ? accountDevice.state
       : null;
+
     const accountDeviceType = accountDevice
       ? accountDevice.type
       : null;
+
+    const accountRealBalance = account && account.balance && account.balance.real
+      ? account.balance.real
+      : new BN(0);
+
+    const accountVirtualBalance = account && account.balance && account.balance.virtual
+      ? account.balance.virtual
+      : new BN(0);
 
     if (options.initialized === true && !initialized) {
       throw ERR_SDK_NOT_INITIALIZED;
@@ -2049,6 +2059,12 @@ export class Sdk {
     if (options.accountDeviceOwner && accountDeviceType !== AccountDeviceTypes.Owner) {
       throw ERR_INVALID_ACCOUNT_DEVICE_TYPE;
     }
+    if (options.accountRealBalance && accountRealBalance.lt(options.accountRealBalance)) {
+      throw ERR_NOT_ENOUGH_REAL_FUNDS;
+    }
+    if (options.accountVirtualBalance && accountVirtualBalance.lt(options.accountRealBalance)) {
+      throw ERR_NOT_ENOUGH_VIRTUAL_FUNDS;
+    }
   }
 }
 
@@ -2074,6 +2090,8 @@ export namespace Sdk {
     accountDeviceCreated?: boolean;
     accountDeviceDeployed?: boolean;
     accountDeviceOwner?: boolean;
+    accountRealBalance?: BN;
+    accountVirtualBalance?: BN;
     initialized?: boolean;
   }
 
@@ -2091,5 +2109,9 @@ export namespace Sdk {
   export interface IEvent<T = any> {
     name: EventNames;
     payload: T;
+  }
+
+  export interface ITransactionDetails extends EthJs.ITransaction {
+    receipt?: EthJs.ITransactionReceipt;
   }
 }

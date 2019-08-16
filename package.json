@@ -20,6 +20,7 @@
     "compile:watch": "lerna run compile:watch --parallel",
     "test": "npm run lint",
     "start:sdk:playground": "lerna run --stream --scope \"@archanova/sdk-playground\" start",
+    "build:sdk:playground": "lerna run --stream --scope \"@archanova/sdk-playground\" build",
     "deploy:sdk:playground": "lerna run --stream --scope \"@archanova/sdk-playground\" deploy"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Subscription, from, Subject } from 'rxjs';
-import { ISdkReduxState, Sdk } from '@archanova/sdk';
+import { ISdkReduxState, Sdk, SdkError } from '@archanova/sdk';
 import { filter, switchMap, map } from 'rxjs/operators';
 import { ObjectInspector } from 'react-inspector';
 import { ContextComponent, ILoggerEvent, toRawObject } from '../shared';
@@ -120,7 +120,8 @@ class Console extends ContextComponent<IProps, IState> {
                 case 'error':
                   try {
                     let data: any = null;
-                    if (args[0] && args[0].toRawObject) {
+
+                    if (SdkError.isSdkError(args[0])) {
                       data = args[0].toRawObject();
                     }
                     result = (

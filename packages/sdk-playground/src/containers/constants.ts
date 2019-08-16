@@ -84,6 +84,7 @@ export enum Screens {
 
   // utils
   SignPersonalMessage = 'sign personal message',
+  GetTransactionDetails = 'get transaction details',
 
   // examples
   PlayTicTacToe = 'play tic-tac-toe',

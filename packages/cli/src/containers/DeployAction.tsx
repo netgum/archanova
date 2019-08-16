@@ -1,5 +1,5 @@
 import React from 'react';
-import { sdkModules } from '@archanova/sdk';
+import { SdkError } from '@archanova/sdk';
 import { Box } from 'ink';
 import { Form } from '../components';
 import { ContextComponent } from '../context';
@@ -75,12 +75,12 @@ export class DeployAction extends ContextComponent<{}, IState> {
         });
       } catch (err) {
         if (
-          err instanceof sdkModules.Api.Error &&
-          err.type === sdkModules.Api.Error.Types.BadRequest &&
-          err.errors
+          SdkError.isSdkError(err) &&
+          err.type === SdkError.Types.Http &&
+          err.data
         ) {
           this.setState({
-            errors: err.errors,
+            errors: err.data,
           });
         }
       }
