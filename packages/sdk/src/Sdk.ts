@@ -1,4 +1,4 @@
-import { anyToBN, anyToBuffer, verifyAddress, ZERO_ADDRESS } from '@netgum/utils';
+import { anyToBN, anyToBuffer, verifyAddress, ZERO_ADDRESS, recoverAddressFromPersonalMessage } from '@netgum/utils';
 import BN from 'bn.js';
 import EthJs from 'ethjs';
 import { TAbi } from 'ethjs-abi';
@@ -1584,6 +1584,32 @@ export class Sdk {
     });
 
     return this.device.signPersonalMessage(message);
+  }
+
+  /**
+   * recovers account device from personal message signature
+   * @param accountAddress
+   * @param message
+   * @param signature
+   */
+  public async recoverAccountDeviceFromPersonalMessageSignature(
+    accountAddress: string,
+    message: string | Buffer,
+    signature: string | Buffer,
+  ): Promise<IAccountDevice> {
+    let result: IAccountDevice = null;
+
+    try {
+      const deviceAddress = recoverAddressFromPersonalMessage(message, signature);
+
+      if (deviceAddress) {
+        result = await this.apiMethods.getAccountDevice(accountAddress, deviceAddress);
+      }
+    } catch (err) {
+      result = null;
+    }
+
+    return result;
   }
 
   /**

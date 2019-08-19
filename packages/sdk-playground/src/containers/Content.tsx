@@ -86,6 +86,7 @@ import {
 } from './url';
 import {
   SignPersonalMessage,
+  RecoverAccountDeviceFromPersonalMessageSignature,
   GetTransactionDetails,
 } from './utils';
 import {
@@ -394,6 +395,10 @@ class Content extends React.Component<IProps, IState> {
         Screen = SignPersonalMessage;
         break;
 
+      case Screens.RecoverAccountDeviceFromPersonalMessageSignature:
+        Screen = RecoverAccountDeviceFromPersonalMessageSignature;
+        break;
+
       case Screens.GetTransactionDetails:
         Screen = GetTransactionDetails;
         break;
@@ -532,6 +537,7 @@ class Content extends React.Component<IProps, IState> {
             header: 'Utils',
             screens: [
               Screens.SignPersonalMessage,
+              Screens.RecoverAccountDeviceFromPersonalMessageSignature,
               Screens.GetTransactionDetails,
             ],
           }, {
@@ -657,6 +663,7 @@ class Content extends React.Component<IProps, IState> {
 
       // utils
       [Screens.SignPersonalMessage]: initialized,
+      [Screens.RecoverAccountDeviceFromPersonalMessageSignature]: initialized,
       [Screens.GetTransactionDetails]: initialized,
     };
   }

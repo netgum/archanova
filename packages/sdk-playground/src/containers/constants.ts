@@ -84,6 +84,7 @@ export enum Screens {
 
   // utils
   SignPersonalMessage = 'sign personal message',
+  RecoverAccountDeviceFromPersonalMessageSignature = 'recover account device from personal message signature',
   GetTransactionDetails = 'get transaction details',
 
   // examples
